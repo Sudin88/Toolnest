@@ -33,7 +33,7 @@ export const pdfTools: ToolDefinition[] = [
     faqs: [
       {
         q: "Is there a limit on how many files or pages I can merge?",
-        a: "The limit is your device's memory rather than a server quota. In practice a few hundred pages works comfortably on a phone; very large jobs are slower because the whole document is held in memory at once.",
+        a: "The limit is your device's memory rather than a server quota. In practice a few hundred pages work comfortably on a phone; very large jobs are slower because the whole document is held in memory at once.",
       },
       {
         q: "Do bookmarks and form fields survive the merge?",

@@ -129,7 +129,7 @@ export default function ConvertImage() {
                   </dl>
                 </>
               ) : (
-                <Empty>Press convert to see the result.</Empty>
+                <Empty>Choose “Convert image” to see the result.</Empty>
               )}
             </div>
           </div>

@@ -102,7 +102,7 @@ export const developerTools: ToolDefinition[] = [
       },
       {
         q: "Could two UUIDs ever collide?",
-        a: "A version 4 UUID has 122 random bits. You would need to generate about 2.7 trillion of them before a collision became likely, which is why they are treated as unique in practice.",
+        a: "A version 4 UUID has 122 random bits. You would need to generate about 2.7 × 10¹⁸ of them before a collision became likely, which is why they are treated as unique in practice.",
       },
     ],
   },
@@ -123,7 +123,7 @@ export const developerTools: ToolDefinition[] = [
       "Set the length — 16 characters or more is a sensible default for anything you care about.",
       "Pick the character sets you need. Numbers and symbols are usually required; ambiguity-free mode removes characters that are easily misread.",
       "Read the strength estimate, which is based on the real size of the character pool you selected.",
-      "Copy the password into your password manager. Then paste it somewhere safe, because it is not stored here.",
+      "Copy the password into your password manager before you navigate away — it is not stored here.",
     ],
     faqs: [
       {
@@ -132,7 +132,7 @@ export const developerTools: ToolDefinition[] = [
       },
       {
         q: "How long should a password be?",
-        a: "Length beats symbol soup. At 16 characters using letters, digits and symbols the search space is beyond practical brute force. Passphrases of four or five random words are equally strong and far easier to type.",
+        a: "Length beats symbol soup. At 16 characters using letters, digits and symbols the search space is beyond practical brute force. A passphrase of several random words is easier to remember and type, though it takes five or six words to come close to that strength.",
       },
       {
         q: "What does excluding ambiguous characters do?",

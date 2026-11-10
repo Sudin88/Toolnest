@@ -145,8 +145,8 @@ export default function TipCalculator() {
 
       <Note>
         The traditional percentage refers to the pre-tax amount, so enter the bill before tax. Every
-        figure here is a guide — the split is even, and tipping conventions vary by country, so a
-        Google of local practice is worth more than any calculator.
+        figure here is a guide — the split is even, and tipping conventions vary by country, so
+        checking local etiquette is worth more than any calculator.
       </Note>
     </div>
   );

@@ -173,7 +173,7 @@ export const imageTools: ToolDefinition[] = [
   },
   {
     slug: "image-color-picker",
-    name: "Image Color Picker",
+    name: "Image Colour Picker",
     category: "image",
     tagline: "Pick exact colours and copy HEX, RGB or HSL",
     description:

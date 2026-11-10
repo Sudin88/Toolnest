@@ -39,7 +39,7 @@ export const dailyTools: ToolDefinition[] = [
     limits: [
       "There is a capacity ceiling — a few thousand characters at the lowest error-correction level, much less at the highest.",
       "The output is a flat PNG with no vector or SVG export, and no logo or colour artwork baked in.",
-      "It renders text and URLs; Wi-Fi, vCard and payment formats are not generated.",
+      "Link, plain-text, Wi-Fi and contact-card codes are supported; payment formats and other specialised types are not.",
     ],
   },
   {
@@ -92,7 +92,7 @@ export const dailyTools: ToolDefinition[] = [
       "Enter the bill amount before tip.",
       "Pick a tip percentage, or type your own if the local convention differs.",
       "Set how many people are splitting it.",
-      "Read the per-person total, then use rounding-up to the nearest unit if you would rather pay in whole money.",
+      "Read the per-person total, then use rounding-up if you would rather pay whole units.",
     ],
     faqs: [
       {
@@ -115,7 +115,7 @@ export const dailyTools: ToolDefinition[] = [
     category: "daily",
     tagline: "Elapsed time with laps and keyboard control",
     description:
-      "A precise stopwatch with lap splits, a lap comparison column and keyboard shortcuts, which keeps accurate time even if the tab is backgrounded.",
+      "A precise stopwatch with lap splits, a lap comparison column and keyboard shortcuts. It keeps accurate time even if the tab is backgrounded.",
     icon: Timer,
     keywords: ["stopwatch", "online stopwatch", "lap timer", "elapsed time"],
     local: true,

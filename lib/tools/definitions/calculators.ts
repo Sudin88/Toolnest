@@ -27,7 +27,7 @@ export const calculatorTools: ToolDefinition[] = [
         a: "A move from 10 percent to 15 percent is a 5 percentage point rise but a 50 percent increase, because the change is measured against the starting value of 10.",
       },
       {
-        q: "Why does my increase and decrease not return the original number?",
+        q: "Why does an increase followed by the matching decrease not return the original number?",
         a: "Percentages are not reversible that way. A 50 percent rise needs a 33 percent fall to get back, because the second calculation uses a larger base.",
       },
     ],
@@ -200,7 +200,7 @@ export const calculatorTools: ToolDefinition[] = [
       },
       {
         q: "How precise are the conversions?",
-        a: "Conversion factors are defined exact values where the standard defines them, and accurate to at least ten significant figures elsewhere. Displayed precision is rounded for readability.",
+        a: "Conversion factors are exact where the standard defines them, and accurate to at least ten significant figures elsewhere. Displayed precision is rounded for readability.",
       },
     ],
   },

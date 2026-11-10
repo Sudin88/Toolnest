@@ -197,7 +197,7 @@ export const textTools: ToolDefinition[] = [
       "Paste the original text into the left box and the revised text into the right box.",
       "Read the diff — removed lines are marked, added lines are marked, and unchanged lines are left plain.",
       "Switch to word-level view when a single line changed in several places and you want to see precisely where.",
-      "Turn on whitespace-insensitive comparison when only indentation or trailing spaces differ.",
+      "Turn on ignore letter case when capitalisation alone should not count as a difference.",
     ],
     faqs: [
       {

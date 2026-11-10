@@ -149,7 +149,7 @@ export default function CompressImage() {
                   />
                 </>
               ) : (
-                <Empty>Press compress to see the result and its size.</Empty>
+                <Empty>Choose “Compress image” to see the result and its size.</Empty>
               )}
             </div>
           </div>

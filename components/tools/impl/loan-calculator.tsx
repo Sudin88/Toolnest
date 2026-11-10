@@ -82,8 +82,8 @@ export default function LoanCalculator() {
       {neverRepays ? (
         <Note tone="warn">
           At this interest rate the payment does not cover the interest charged each month, so the
-          balance would never fall. Increase the term or the rate assumptions are the problem — check
-          the numbers.
+          balance would never fall. Raise the monthly payment, lengthen the term, or lower the rate —
+          and check the numbers you entered.
         </Note>
       ) : null}
 

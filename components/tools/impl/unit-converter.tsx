@@ -73,7 +73,7 @@ export default function UnitConverter() {
       <div className="panel p-5 sm:p-6">
         {result === null ? (
           <p className="text-sm text-muted">
-            Enter a value in {UNIT_GROUPS[category].label.toLowerCase()} to convert it.
+            Enter a value to convert it.
           </p>
         ) : (
           <>
