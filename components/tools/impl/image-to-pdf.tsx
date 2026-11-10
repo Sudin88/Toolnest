@@ -1,7 +1,7 @@
 "use client";
 
 import { PDFDocument } from "pdf-lib";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { ImagePreview, useImageFile } from "@/components/tools/image-workbench";
 import { FileDrop, NumberInput, Select } from "@/components/tools/interactive";
@@ -40,9 +40,14 @@ export default function ImageToPdf() {
   const [blob, setBlob] = useState<Blob | null>(null);
   const [working, setWorking] = useState(false);
 
-  useEffect(() => {
+  // A new source invalidates any previous result. Adjusting state during render
+  // is React's documented pattern for resetting on an input change, and it avoids
+  // the extra render pass an effect would cost.
+  const [blobSource, setBlobSource] = useState(image);
+  if (blobSource !== image) {
+    setBlobSource(image);
     setBlob(null);
-  }, [image]);
+  }
 
   const geometry = useMemo<Geometry | null>(() => {
     if (!image) return null;

@@ -4,12 +4,11 @@ import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { pageMetadata } from "@/lib/seo";
 import { adsEnabled } from "@/lib/site";
-import { THEME_STORAGE_KEY } from "@/components/theme/theme-script";
 
 export const metadata: Metadata = pageMetadata({
   title: "Cookies",
   description:
-    "ToolNest sets no cookies for its tools to work. Here is the single value it stores in your browser, and what advertising does when it is enabled.",
+    "ToolNest sets no cookies for its tools to work. Here are the two values it keeps in your browser, and what advertising does when it is enabled.",
   path: "/cookies",
 });
 
@@ -26,7 +25,10 @@ export default function CookiesPage() {
           <h2>The short version</h2>
           <ul>
             <li>The tools work with cookies blocked entirely.</li>
-            <li>One value is stored in local storage, and it is not a cookie: your theme choice.</li>
+            <li>
+              Two values are held in your browser, and neither is a cookie: the tools you opened
+              recently, and a short-lived draft of the inputs in the tab you are using.
+            </li>
             <li>Advertising cookies only appear if this deployment has enabled ads.</li>
           </ul>
 
@@ -38,21 +40,31 @@ export default function CookiesPage() {
           </p>
 
           <h2>Local storage</h2>
-          <p>
-            The site stores one key in your browser&rsquo;s local storage:
-          </p>
+          <p>The site stores one key in your browser&rsquo;s local storage:</p>
           <ul>
             <li>
-              <code>{THEME_STORAGE_KEY}</code> — either <code>&quot;light&quot;</code> or{" "}
-              <code>&quot;dark&quot;</code>, so the theme you picked is applied before the page paints
-              on your next visit. It contains nothing about you, and clearing your browser&rsquo;s site
-              data removes it. Without it, the site simply falls back to your system preference.
+              <code>toolnest-recents</code> — a list of the tool identifiers you opened most recently,
+              so the home page and the search palette can offer them back. It holds slugs only, never
+              anything you typed or opened, and clearing your browser&rsquo;s site data removes it.
             </li>
           </ul>
           <p>
             Local storage is not sent to the server with each request the way a cookie is, which is
             part of why it is a good fit here.
           </p>
+
+          <h2>Session storage</h2>
+          <p>
+            The site also keeps one key in <code>sessionStorage</code>, which is discarded the moment
+            the tab closes:
+          </p>
+          <ul>
+            <li>
+              <code>toolnest-draft</code> — a short draft of the small inputs in a calculator or a
+              text tool, so a reload does not lose a number you were part-way through. It is scoped to
+              the tab, and tools that handle files, passwords or tokens never use it.
+            </li>
+          </ul>
 
           <h2>Advertising cookies</h2>
           {adsEnabled ? (

@@ -1,11 +1,11 @@
 import {
-  Code,
-  FileImage,
-  Maximize2,
-  Minimize2,
-  Pipette,
-  RefreshCw,
-} from "lucide-react";
+  FaEyeDropper,
+  FaFileArrowUp,
+  FaFileCode,
+  FaMaximize,
+  FaMinimize,
+  FaRightLeft,
+} from "react-icons/fa6";
 
 import type { ToolDefinition } from "@/lib/tools/types";
 
@@ -17,7 +17,7 @@ export const imageTools: ToolDefinition[] = [
     tagline: "Shrink a photo and see exactly what it saved",
     description:
       "Reduce the file size of a JPEG, PNG or WebP image with a quality control, and compare the original and compressed sizes side by side.",
-    icon: Minimize2,
+    icon: FaMinimize,
     keywords: ["compress image", "reduce image size", "image compressor", "optimise jpeg"],
     local: true,
     status: "live",
@@ -60,7 +60,7 @@ export const imageTools: ToolDefinition[] = [
     tagline: "Exact pixels or percentages, aspect ratio locked",
     description:
       "Resize an image to an exact width and height or by percentage, with the aspect ratio locked by default and several resampling grades.",
-    icon: Maximize2,
+    icon: FaMaximize,
     keywords: ["resize image", "image resizer", "change image dimensions", "scale image pixel"],
     local: true,
     status: "live",
@@ -100,7 +100,7 @@ export const imageTools: ToolDefinition[] = [
     tagline: "JPEG, PNG and WebP in either direction",
     description:
       "Convert an image between JPEG, PNG and WebP, with a quality control for the lossy formats and a preview of the size trade-off.",
-    icon: RefreshCw,
+    icon: FaRightLeft,
     keywords: ["image converter", "jpg to png", "png to webp", "convert image format"],
     local: true,
     status: "live",
@@ -139,7 +139,7 @@ export const imageTools: ToolDefinition[] = [
     tagline: "One image into a clean, correctly sized page",
     description:
       "Turn a single image into a PDF page, choosing the paper size, orientation, fit mode and margin rather than settling for a default.",
-    icon: FileImage,
+    icon: FaFileArrowUp,
     keywords: ["image to pdf", "jpg to pdf", "png to pdf", "convert picture to pdf"],
     local: true,
     status: "live",
@@ -178,7 +178,7 @@ export const imageTools: ToolDefinition[] = [
     tagline: "Pick exact colours and copy HEX, RGB or HSL",
     description:
       "Pick colours from any image and copy the value as HEX, RGB or HSL, with magnified sampling so you can target a single pixel accurately.",
-    icon: Pipette,
+    icon: FaEyeDropper,
     keywords: ["color picker from image", "eyedropper online", "hex color from image", "pick color from photo"],
     local: true,
     status: "live",
@@ -217,7 +217,7 @@ export const imageTools: ToolDefinition[] = [
     tagline: "Inline an image as a data URI",
     description:
       "Convert an image into a base64 data URI for CSS or HTML, and see the size cost of inlining it before you commit to it.",
-    icon: Code,
+    icon: FaFileCode,
     keywords: ["image to base64", "data uri generator", "base64 image", "inline image css"],
     local: true,
     status: "live",

@@ -18,7 +18,10 @@ export function formatBytes(bytes: number, decimals = 1) {
   const units = ["B", "KB", "MB", "GB"];
   const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
   const value = bytes / 1024 ** exponent;
-  const fixed = exponent === 0 ? 0 : value < 10 ? decimals : Math.round(value);
+  // `decimals` is a count of digits to show, not the value to print. Printing it
+  // directly reported 612 bytes as "0 B" and 2 KB as "1 KB". Rounding the fixed
+  // string through Number also drops a pointless trailing ".0".
+  const fixed = value < 10 ? String(Number(value.toFixed(decimals))) : String(Math.round(value));
   return `${fixed} ${units[exponent]}`;
 }
 

@@ -6,14 +6,15 @@ import { Check, NumberInput, Select } from "@/components/tools/interactive";
 import { Note, Stat, StatGrid } from "@/components/tools/parts";
 import { computeLoan } from "@/lib/calc";
 import { CURRENCIES, formatMoney as money } from "@/lib/currency";
+import { useToolDraft } from "@/lib/tool-draft";
 
 export default function LoanCalculator() {
-  const [currency, setCurrency] = useState("USD");
-  const [amount, setAmount] = useState<number | "">(250000);
-  const [rate, setRate] = useState<number | "">(6.5);
-  const [term, setTerm] = useState<number | "">(30);
-  const [termUnit, setTermUnit] = useState("years");
-  const [extra, setExtra] = useState<number | "">(0);
+  const [currency, setCurrency] = useToolDraft<string>("loan-calculator", "currency", "USD");
+  const [amount, setAmount] = useToolDraft<number | "">("loan-calculator", "amount", 250000);
+  const [rate, setRate] = useToolDraft<number | "">("loan-calculator", "rate", 6.5);
+  const [term, setTerm] = useToolDraft<number | "">("loan-calculator", "term", 30);
+  const [termUnit, setTermUnit] = useToolDraft<string>("loan-calculator", "termUnit", "years");
+  const [extra, setExtra] = useToolDraft<number | "">("loan-calculator", "extra", 0);
   const [showAll, setShowAll] = useState(false);
 
   const months =

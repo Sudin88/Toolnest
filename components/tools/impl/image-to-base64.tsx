@@ -12,17 +12,14 @@ const SMALL_ENOUGH_BYTES = 2 * 1024;
 
 export default function ImageToBase64() {
   const { image, file, url, error, busy, load, setError } = useImageFile();
-  const [dataUri, setDataUri] = useState<string | null>(null);
+  const [read, setRead] = useState<{ file: File; dataUri: string } | null>(null);
 
   useEffect(() => {
-    if (!file) {
-      setDataUri(null);
-      return;
-    }
+    if (!file) return;
     let cancelled = false;
     readFileAsDataUrl(file)
       .then((value) => {
-        if (!cancelled) setDataUri(value);
+        if (!cancelled) setRead({ file, dataUri: value });
       })
       .catch((cause) => {
         if (!cancelled) setError(cause instanceof Error ? cause.message : "The file could not be read.");
@@ -31,6 +28,10 @@ export default function ImageToBase64() {
       cancelled = true;
     };
   }, [file, setError]);
+
+  // A result is only valid for the file it was read from, so staleness is derived
+  // rather than reset in an effect.
+  const dataUri = read && read.file === file ? read.dataUri : null;
 
   const raw = dataUri ? dataUri.slice(dataUri.indexOf(",") + 1) : "";
   const cssValue = dataUri ? `background-image: url("${dataUri}");` : "";

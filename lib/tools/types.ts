@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { IconType } from "react-icons";
 
 export type ToolCategoryId =
   | "pdf"
@@ -28,7 +28,11 @@ export interface ToolDefinition {
   tagline: string;
   /** Meta description, 120–160 chars, unique per tool. */
   description: string;
-  icon: LucideIcon;
+  /**
+   * The tool's file-type or object mark, from the icon library. It is rendered
+   * in its category's colour, so a tool reads as part of its shelf.
+   */
+  icon: IconType;
   /** Terms a visitor might search for to find this tool. */
   keywords: string[];
   /** True when the tool never sends input off the device. */
@@ -54,7 +58,14 @@ export interface ToolCategory {
   navLabel: string;
   tagline: string;
   description: string;
-  icon: LucideIcon;
+  icon: IconType;
+  /**
+   * The colour a category's icons are drawn in — the conventional colour of the
+   * thing it holds (a red for PDF, say). Tools inherit it. It is a plain CSS
+   * colour, not a token, because it belongs to the icon set rather than to the
+   * site palette.
+   */
+  color: string;
   /** Opening paragraph on the category page. */
   intro: string;
 }

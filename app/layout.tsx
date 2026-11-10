@@ -1,30 +1,26 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Manrope } from "next/font/google";
+import localFont from "next/font/local";
+import Script from "next/script";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { ThemeScript } from "@/components/theme/theme-script";
-import { siteConfig } from "@/lib/site";
+import { adsEnabled, siteConfig } from "@/lib/site";
 
 import "./globals.css";
 
-const inter = Inter({
+/**
+ * One self-hosted family. Inter carries every surface — headings, body, labels
+ * and numbers — so the site has a single voice. The file is copied from
+ * `@fontsource` into `app/fonts/`, so a build makes no request anywhere,
+ * including Google. Monospaced surfaces (code, JSON, kbd) use the plain system
+ * stack, which costs no download.
+ */
+const inter = localFont({
+  src: [
+    { path: "./fonts/inter-variable.woff2", weight: "100 900", style: "normal" },
+    { path: "./fonts/inter-variable-italic.woff2", weight: "100 900", style: "italic" },
+  ],
   variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const manrope = Manrope({
-  variable: "--font-manrope",
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains",
-  subsets: ["latin"],
-  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -70,20 +66,14 @@ export const metadata: Metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  // Matches --canvas in each theme so the browser chrome does not flash white.
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#09090f" },
-    { media: "(prefers-color-scheme: light)", color: "#faf9fc" },
-  ],
+  // The whole site is light: canvas is pure white, so the browser chrome matches.
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" data-theme="dark" suppressHydrationWarning className="h-full">
-      <head>
-        <ThemeScript />
-      </head>
-      <body className={`${inter.variable} ${manrope.variable} ${jetbrainsMono.variable} flex min-h-full flex-col`}>
+    <html lang="en" className="h-full">
+      <body className={`${inter.variable} flex min-h-full flex-col`}>
         <a
           href="#main"
           className="sr-only rounded-md bg-accent px-4 py-2 text-on-accent focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50"
@@ -95,6 +85,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <SiteFooter />
+        {/* The AdSense loader only exists when a real publisher id is set, so an
+            unconfigured deploy makes no third-party request at all. */}
+        {adsEnabled ? (
+          <Script
+            id="adsbygoogle-loader"
+            strategy="afterInteractive"
+            crossOrigin="anonymous"
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${siteConfig.adsenseClient}`}
+          />
+        ) : null}
       </body>
     </html>
   );

@@ -3,13 +3,19 @@
 import { useMemo, useState } from "react";
 
 import { CopyButton, Segmented, TextArea } from "@/components/tools/interactive";
-import { Empty, Note, OutputBox } from "@/components/tools/parts";
+import { Empty, Note, OutputBox, ResultFooter, TryExample } from "@/components/tools/parts";
+import { useToolInput } from "@/lib/tool-input";
 
 type Mode = "encode" | "decode";
 type Scope = "component" | "full";
 
+const SAMPLE = "a name & a message = 100%";
+const SAMPLE_ENCODED = "a%20name%20%26%20a%20message%20%3D%20100%25";
+
 export default function UrlEncoderDecoder() {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useToolInput<string>("url-encoder-decoder", "input", "", {
+    handover: true,
+  });
   const [mode, setMode] = useState<Mode>("encode");
   const [scope, setScope] = useState<Scope>("component");
 
@@ -73,10 +79,14 @@ export default function UrlEncoderDecoder() {
       />
 
       <div>
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-          <span className="label mb-0">Result</span>
+        <ResultFooter>
           <CopyButton value={output} disabled={Boolean(error) || output.length === 0} />
-        </div>
+        </ResultFooter>
+        {input.length === 0 ? (
+          <div className="mb-3 flex flex-wrap gap-2">
+            <TryExample onClick={() => setInput(mode === "encode" ? SAMPLE : SAMPLE_ENCODED)} />
+          </div>
+        ) : null}
         {error ? (
           <p className="flex min-h-16 items-center rounded-md border border-highlight/45 bg-highlight/5 px-4 py-3 text-sm text-highlight-strong" role="alert">
             {error}

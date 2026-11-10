@@ -1,15 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { CopyButton, TextArea } from "@/components/tools/interactive";
-import { Empty, Note } from "@/components/tools/parts";
+import { Empty, Note, ResultFooter, TryExample } from "@/components/tools/parts";
 import { CASE_IDS, CASE_LABELS, applyCase, countCharacters, type CaseId } from "@/lib/text";
+import { useToolDraft } from "@/lib/tool-draft";
+import { useToolInput } from "@/lib/tool-input";
 import { cn, formatNumber } from "@/lib/utils";
 
+const SAMPLE = "the QUICK brown fox JUMPS over the lazy dog";
+
 export default function CaseConverter() {
-  const [text, setText] = useState("");
-  const [active, setActive] = useState<CaseId>("upper");
+  const [text, setText] = useToolInput<string>("case-converter", "text", "", { handover: true });
+  const [active, setActive] = useToolDraft<CaseId>("case-converter", "active", "upper");
 
   const result = useMemo(() => applyCase(text, active), [text, active]);
   const hasText = text.trim().length > 0;
@@ -47,10 +51,9 @@ export default function CaseConverter() {
       </div>
 
       <div>
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-          <span className="label mb-0">Result — {CASE_LABELS[active]}</span>
+        <ResultFooter label={`Result — ${CASE_LABELS[active]}`}>
           <CopyButton value={result} disabled={!hasText} />
-        </div>
+        </ResultFooter>
         {hasText ? (
           <textarea
             className="field field-mono"
@@ -60,7 +63,9 @@ export default function CaseConverter() {
             aria-label={`Converted text in ${CASE_LABELS[active]}`}
           />
         ) : (
-          <Empty>Your converted text will appear here.</Empty>
+          <Empty action={<TryExample onClick={() => setText(SAMPLE)} />}>
+            Your converted text will appear here.
+          </Empty>
         )}
         {hasText ? (
           <p className="hint mt-1.5 num">

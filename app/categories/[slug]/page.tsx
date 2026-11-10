@@ -1,14 +1,14 @@
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { AdSlot } from "@/components/ads/ad-slot";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { JsonLd } from "@/components/seo/json-ld";
-import { ToolCard } from "@/components/tools/tool-card";
+import { ToolIndexFilter } from "@/components/tools/tool-index-filter";
+import { IconTile } from "@/components/ui/icon-tile";
 import { breadcrumbJsonLd, itemListJsonLd, pageMetadata } from "@/lib/seo";
 import { categories, categoryBySlug } from "@/lib/tools/categories";
-import { countByCategory, toolsInCategory } from "@/lib/tools/registry";
+import { countByCategory, liveToolsInCategory } from "@/lib/tools/registry";
+import { indexGroups } from "@/lib/tools/index-view";
 
 /**
  * Category pages are the hub layer between the homepage and the tools. They are
@@ -30,7 +30,7 @@ export async function generateMetadata({
 
   // A category with nothing live yet is a holding page, not something we want
   // search engines to index or rank.
-  const isEmpty = !toolsInCategory(category.id).some((tool) => tool.status === "live");
+  const isEmpty = liveToolsInCategory(category.id).length === 0;
 
   return pageMetadata({
     title: category.name,
@@ -45,114 +45,68 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   const category = categoryBySlug.get(slug);
   if (!category) notFound();
 
-  const Icon = category.icon;
-  const all = toolsInCategory(category.id);
-  const live = all.filter((tool) => tool.status === "live");
-  const planned = all.filter((tool) => tool.status === "planned");
+  const group = indexGroups().find((entry) => entry.slug === category.slug);
+  const tools = liveToolsInCategory(category.id);
   const others = categories.filter((item) => item.id !== category.id);
 
   return (
     <>
-      <div className="border-b border-line bg-surface-2">
-        <div className="container-page py-8 sm:py-10">
-          <Breadcrumbs
-            items={[{ label: "Home", href: "/" }, { label: category.name }]}
-          />
-          <div className="mt-5 flex items-start gap-4">
-            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-lg border border-line bg-surface text-accent">
-              <Icon className="size-6" aria-hidden="true" />
-            </span>
-            <div>
-              <h1 className="text-3xl font-extrabold text-fg sm:text-4xl">{category.name}</h1>
-              <p className="mt-1.5 text-base text-muted">{category.tagline}</p>
+      <div className="border-b border-line">
+        <div className="container-page pb-10 pt-10 sm:pb-12 sm:pt-14">
+          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: category.name }]} />
+
+          <div className="mt-6 flex items-start gap-4">
+            <IconTile icon={category.icon} color={category.color} size="lg" />
+            <div className="min-w-0">
+              <h1 className="text-3xl font-bold leading-tight tracking-[-0.03em] text-fg sm:text-5xl">
+                {category.name}
+              </h1>
+              <p className="mt-2 text-base text-muted">{category.tagline}</p>
             </div>
           </div>
-          <p className="mt-5 max-w-[68ch] text-[0.9375rem] leading-relaxed text-muted">
-            {category.intro}
-          </p>
+
+          <p className="measure mt-6 text-[0.9375rem] leading-relaxed text-muted">{category.intro}</p>
         </div>
       </div>
 
       <div className="container-page pt-12">
-        {live.length > 0 ? (
-          <section aria-labelledby="category-tools">
-            <h2 id="category-tools" className="text-xl font-extrabold text-fg">
-              {live.length} {live.length === 1 ? "tool" : "tools"} ready
-            </h2>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {live.map((tool) => (
-                <ToolCard key={tool.slug} tool={tool} />
-              ))}
-            </div>
-          </section>
+        {group ? (
+          <ToolIndexFilter groups={[group]} showGroupHeadings={false} />
         ) : (
-          <p className="measure max-w-[62ch] text-[0.9375rem] leading-relaxed text-muted">
-            Nothing in this category is finished yet. The tools below are being built — they will
-            move up to working links when they are ready.
+          <p className="measure text-[0.9375rem] leading-relaxed text-muted">
+            Nothing in this category is finished yet. The tools are being built — they will appear here
+            as working links when they are ready.
           </p>
         )}
 
-        {planned.length > 0 ? (
-          <section aria-labelledby="category-planned" className="mt-12">
-            <h2 id="category-planned" className="text-lg font-bold text-fg">
-              In the works
-            </h2>
-            <ul className="mt-4 flex flex-wrap gap-2">
-              {planned.map((tool) => (
-                <li
-                  key={tool.slug}
-                  className="rounded-full border border-dashed border-line-strong px-3.5 py-1.5 text-sm text-muted"
-                >
-                  {tool.name}
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
-
-        <div className="pt-14">
-          <AdSlot slot={`category-${category.id}`} minHeight={120} />
-        </div>
-
         <section aria-labelledby="other-categories" className="pt-14">
-          <h2 id="other-categories" className="text-lg font-bold text-fg">
+          <h2 id="other-categories" className="eyebrow">
             Other categories
           </h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {others.map((item) => (
-              <Link
-                key={item.slug}
-                href={`/categories/${item.slug}`}
-                className="panel card-interactive group flex items-center justify-between gap-3 p-4 no-underline"
-              >
-                <span>
-                  <span className="block font-display text-[0.9375rem] font-bold text-fg">
+          <ul className="mt-4 flex flex-wrap gap-2">
+            {others.map((item) => {
+              const counts = countByCategory(item.id);
+              return (
+                <li key={item.slug}>
+                  <Link href={`/categories/${item.slug}`} className="chip">
                     {item.name}
-                  </span>
-                  <span className="num mt-0.5 block text-xs text-muted">
-                    {countByCategory(item.id).live} tools
-                  </span>
-                </span>
-                <ArrowRight
-                  className="size-4 shrink-0 text-muted transition-transform duration-150 ease-out group-hover:translate-x-0.5 group-hover:text-accent"
-                  aria-hidden="true"
-                />
-              </Link>
-            ))}
-          </div>
+                    <span className="num text-muted">
+                      {counts.live > 0 ? counts.live : "soon"}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </section>
       </div>
 
-      <JsonLd
-        data={breadcrumbJsonLd([
-          { name: category.name, path: `/categories/${category.slug}` },
-        ])}
-      />
-      {live.length > 0 ? (
+      <JsonLd data={breadcrumbJsonLd([{ name: category.name, path: `/categories/${category.slug}` }])} />
+      {tools.length > 0 ? (
         <JsonLd
           data={itemListJsonLd(
             category.name,
-            live.map((tool) => ({ name: tool.name, path: `/tools/${tool.slug}` })),
+            tools.map((tool) => ({ name: tool.name, path: `/tools/${tool.slug}` })),
           )}
         />
       ) : null}

@@ -95,16 +95,18 @@ export default function Stopwatch() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [toggle, lap, reset]);
 
-  // Splits need the chronological order, so reverse the newest-first list.
-  const rows = useMemo(() => {
-    const chrono = [...laps].reverse();
-    let previous = 0;
-    return chrono.map((total, index) => {
-      const split = total - previous;
-      previous = total;
-      return { lap: index + 1, total, split };
-    });
-  }, [laps]);
+  // Splits need the chronological order, so reverse the newest-first list and
+  // read the previous total by index rather than folding a mutable cursor.
+  const chrono = useMemo(() => [...laps].reverse(), [laps]);
+  const rows = useMemo(
+    () =>
+      chrono.map((total, index) => ({
+        lap: index + 1,
+        total,
+        split: total - (chrono[index - 1] ?? 0),
+      })),
+    [chrono],
+  );
 
   const splits = rows.map((row) => row.split);
   const best = splits.length > 0 ? Math.min(...splits) : 0;

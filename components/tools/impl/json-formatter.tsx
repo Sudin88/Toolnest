@@ -3,15 +3,16 @@
 import { useMemo, useState } from "react";
 
 import { Check, CopyButton, Segmented, Select, TextArea } from "@/components/tools/interactive";
-import { Empty, Note, OutputBox, Stat, StatGrid } from "@/components/tools/parts";
+import { Empty, Note, OutputBox, ResultFooter, Stat, StatGrid } from "@/components/tools/parts";
 import { downloadText } from "@/lib/download";
 import { countKeys, minifyJson, parseJson, stringifyJson } from "@/lib/json-tool";
+import { useToolInput } from "@/lib/tool-input";
 import { formatBytes, formatNumber } from "@/lib/utils";
 
 const SAMPLE = `{
   "name": "ToolNest",
-  "tools": 35,
-  "categories": ["pdf", "image", "text"],
+  "tools": 28,
+  "categories": ["image", "text", "calculators"],
   "free": true,
   "creator": { "private": false, "note": "no account needed" }
 }`;
@@ -19,7 +20,7 @@ const SAMPLE = `{
 type Layout = "pretty" | "minified";
 
 export default function JsonFormatter() {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useToolInput<string>("json-formatter", "input", "", { handover: true });
   const [layout, setLayout] = useState<Layout>("pretty");
   const [indent, setIndent] = useState("2");
   const [sortKeys, setSortKeys] = useState(false);
@@ -53,14 +54,16 @@ export default function JsonFormatter() {
         placeholder='{ "hello": "world" }'
       />
 
-      <div className="flex flex-wrap gap-2">
-        <button type="button" className="btn btn-secondary btn-sm" onClick={() => setInput(SAMPLE)}>
-          Load sample
-        </button>
-        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setInput("")} disabled={!hasInput}>
-          Clear
-        </button>
-      </div>
+      {hasInput ? (
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setInput(SAMPLE)}>
+            Load sample
+          </button>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setInput("")}>
+            Clear
+          </button>
+        </div>
+      ) : null}
 
       <div className="grid gap-5 sm:grid-cols-2">
         <Segmented<Layout>
@@ -125,27 +128,34 @@ export default function JsonFormatter() {
       ) : null}
 
       <div>
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-          <span className="label mb-0">Result</span>
-          <div className="flex gap-2">
-            <CopyButton value={output} disabled={!parsed.ok} />
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              disabled={!parsed.ok}
-              onClick={() => downloadText(output, "formatted.json", "application/json")}
-            >
-              Download
-            </button>
-          </div>
-        </div>
+        <ResultFooter>
+          <CopyButton value={output} disabled={!parsed.ok} />
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            disabled={!parsed.ok}
+            onClick={() => downloadText(output, "formatted.json", "application/json")}
+          >
+            Download
+          </button>
+        </ResultFooter>
         {parsed.ok ? (
           <OutputBox as="pre">
             {output.length > 0 ? output : "{}"}
           </OutputBox>
         ) : (
-          <Empty>
-            {hasInput ? "Fix the error above and the formatted output will appear here." : "Paste some JSON to format it."}
+          <Empty
+            action={
+              hasInput ? undefined : (
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => setInput(SAMPLE)}>
+                  Try an example
+                </button>
+              )
+            }
+          >
+            {hasInput
+              ? "Fix the error above and the formatted output will appear here."
+              : "Paste some JSON to format it — nothing is uploaded."}
           </Empty>
         )}
       </div>

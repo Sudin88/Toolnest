@@ -27,8 +27,9 @@ export default function PrivacyPage() {
             <li>No account, no sign-in, no profile.</li>
             <li>Files you open in a tool are processed in your browser and are not transmitted.</li>
             <li>
-              The only thing stored in your browser is your light or dark theme choice, under the key{" "}
-              <code>toolnest-theme</code>.
+              The only things stored in your browser are the tools you opened recently, under the key{" "}
+              <code>toolnest-recents</code>, and a tab-scoped draft of small inputs under{" "}
+              <code>toolnest-draft</code>.
             </li>
             <li>No analytics or tracking scripts run unless this deployment has turned them on.</li>
           </ul>
@@ -64,7 +65,8 @@ export default function PrivacyPage() {
           <h2>Cookies and local storage</h2>
           <p>
             The site itself sets no cookies for the tools to work — there is no session to maintain. It
-            writes one value to your browser&rsquo;s local storage so your theme choice survives a reload.
+            writes a list of recently opened tools to your browser&rsquo;s local storage, and a
+            tab-scoped draft of small inputs to session storage, so a reload does not lose your place.
             The{" "}
             <Link href="/cookies" className="link">
               cookies page
@@ -105,7 +107,7 @@ export default function PrivacyPage() {
 
           <h2>Your choices</h2>
           <ul>
-            <li>Clearing site data in your browser removes the stored theme preference.</li>
+            <li>Clearing site data in your browser removes the stored list of recent tools.</li>
             <li>Blocking or clearing cookies does not break any tool.</li>
             <li>
               You can opt out of personalised advertising through Google&rsquo;s ad settings or your

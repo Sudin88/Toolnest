@@ -26,7 +26,7 @@ interface Output {
 }
 
 export default function ResizeImage() {
-  const { image, url, error, busy, load, setError } = useImageFile();
+  const { image, error, busy, load, setError } = useImageFile();
   const [mode, setMode] = useState<Mode>("pixels");
   const [width, setWidth] = useState<number | "">("");
   const [height, setHeight] = useState<number | "">("");
@@ -36,13 +36,19 @@ export default function ResizeImage() {
   const [output, setOutput] = useState<Output | null>(null);
   const [working, setWorking] = useState(false);
 
-  useEffect(() => {
-    if (!image) return;
-    setWidth(image.width);
-    setHeight(image.height);
-    setPercent(100);
-    setOutput(null);
-  }, [image]);
+  // A new source re-seeds the fields and invalidates any previous result. Done
+  // during render rather than in an effect: it is state derived from an input
+  // change, so React's own pattern applies and no extra pass is needed.
+  const [source, setSource] = useState(image);
+  if (source !== image) {
+    setSource(image);
+    if (image) {
+      setWidth(image.width);
+      setHeight(image.height);
+      setPercent(100);
+      setOutput(null);
+    }
+  }
 
   useEffect(() => {
     if (!output) return;
@@ -139,7 +145,7 @@ export default function ResizeImage() {
                     aria-pressed={mode === value}
                     onClick={() => setMode(value)}
                     className={`rounded px-3 py-1.5 text-sm font-medium transition-colors duration-150 ease-out ${
-                      mode === value ? "bg-surface text-fg shadow-xs" : "text-muted hover:text-fg"
+                      mode === value ? "bg-accent text-on-accent" : "text-muted hover:text-fg"
                     }`}
                   >
                     {value === "pixels" ? "Exact pixels" : "Percentage"}

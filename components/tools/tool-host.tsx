@@ -1,7 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect } from "react";
 import type { ComponentType } from "react";
+
+import { recordRecent } from "@/lib/recents";
 
 /**
  * The tools are client-side, interactive and only ever needed one at a time, so
@@ -11,11 +14,17 @@ import type { ComponentType } from "react";
 
 function skeleton() {
   return (
-    <div className="panel flex flex-col gap-4 p-5 sm:p-6" role="status" aria-live="polite">
+    <div className="panel flex flex-col gap-5 p-5 sm:p-6" role="status" aria-live="polite">
       <span className="sr-only">Loading the tool…</span>
-      <div className="h-10 w-full animate-pulse rounded-md bg-surface-3" />
-      <div className="h-24 w-full animate-pulse rounded-md bg-surface-3" />
-      <div className="h-10 w-40 animate-pulse rounded-md bg-surface-3" />
+      <div className="flex flex-col gap-2">
+        <div className="h-3 w-24 animate-pulse rounded-sm bg-surface-3" />
+        <div className="h-24 w-full animate-pulse rounded-md bg-surface-3" />
+      </div>
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="h-10 w-full animate-pulse rounded-md bg-surface-3" />
+        <div className="h-10 w-full animate-pulse rounded-md bg-surface-3" />
+      </div>
+      <div className="h-10 w-32 animate-pulse rounded-md bg-surface-3" />
     </div>
   );
 }
@@ -57,9 +66,23 @@ const COMPONENTS: Record<string, ComponentType> = {
   "image-to-pdf": load(() => import("@/components/tools/impl/image-to-pdf")),
   "image-color-picker": load(() => import("@/components/tools/impl/image-color-picker")),
   "image-to-base64": load(() => import("@/components/tools/impl/image-to-base64")),
+  // PDF
+  "merge-pdf": load(() => import("@/components/tools/impl/merge-pdf")),
+  "split-pdf": load(() => import("@/components/tools/impl/split-pdf")),
+  "rotate-pdf": load(() => import("@/components/tools/impl/rotate-pdf")),
+  "extract-pdf-pages": load(() => import("@/components/tools/impl/extract-pdf-pages")),
+  "watermark-pdf": load(() => import("@/components/tools/impl/watermark-pdf")),
+  "images-to-pdf": load(() => import("@/components/tools/impl/images-to-pdf")),
+  "pdf-page-counter": load(() => import("@/components/tools/impl/pdf-page-counter")),
 };
 
 export function ToolHost({ slug }: { slug: string }) {
+  // Opening a tool is what "recently used" means, so it is recorded here rather
+  // than on the page, which is a server component and has no storage access.
+  useEffect(() => {
+    recordRecent(slug);
+  }, [slug]);
+
   const Component = COMPONENTS[slug];
 
   if (!Component) {

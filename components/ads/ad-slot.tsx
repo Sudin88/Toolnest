@@ -30,7 +30,7 @@ export function AdSlot({
       aria-label="Advertisement"
       style={{ contain: "layout" }}
     >
-      <p className="mb-1.5 text-[0.6875rem] uppercase tracking-wide text-muted">Advertisement</p>
+      <p className="mb-1.5 text-xs uppercase tracking-wide text-muted">Advertisement</p>
       <div
         className="flex items-center justify-center overflow-hidden rounded-lg border border-line bg-surface-2"
         style={{ minHeight, maxWidth: format === "rectangle" ? 340 : undefined }}

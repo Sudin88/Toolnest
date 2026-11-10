@@ -67,12 +67,6 @@ export function popularTools(limit = 8): ToolDefinition[] {
   return liveTools.slice(0, limit);
 }
 
-export function recentlyAdded(limit = 6): ToolDefinition[] {
-  return [...liveTools]
-    .sort((a, b) => b.added.localeCompare(a.added))
-    .slice(0, limit);
-}
-
 /**
  * Sibling tools in the same category first, then the most popular tools
  * elsewhere — keeps every page internally linked without hand-maintained lists.

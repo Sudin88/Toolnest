@@ -3,30 +3,140 @@
 import { CornerDownLeft, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import type { SearchEntry } from "@/lib/search-index";
 import { rankEntries } from "@/lib/search-rank";
+import { useRecentSlugs } from "@/lib/recents";
+import { useFavouriteSlugs } from "@/lib/favourites";
+import { categories } from "@/lib/tools/categories";
 import { cn } from "@/lib/utils";
 
 const MAX_RESULTS = 8;
+const MAX_CATEGORIES = 3;
+const MAX_STARTER = 4;
+
+const subscribeToPlatform = () => () => {};
+
+/** Reads the platform on the client only, with no effect and no hydration gap. */
+function useIsMac() {
+  return useSyncExternalStore(
+    subscribeToPlatform,
+    () => /Mac|iPod|iPhone|iPad/.test(navigator.userAgent),
+    () => false,
+  );
+}
+
+/**
+ * True when the event target is somewhere a visitor is already typing, so the
+ * global `/` shortcut never hijacks a real input.
+ */
+function isTypingTarget(target: EventTarget | null) {
+  const element = target as HTMLElement | null;
+  if (!element) return false;
+  const tag = element.tagName;
+  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || element.isContentEditable;
+}
+
+/** One row in the palette: a tool, or a category the query names. */
+interface PaletteItem {
+  id: string;
+  href: string;
+  name: string;
+  tagline: string;
+  tag: string;
+}
+
+interface PaletteGroup {
+  label: string;
+  items: PaletteItem[];
+}
+
+function toolItem(entry: SearchEntry): PaletteItem {
+  return {
+    id: `tool-search-option-${entry.slug}`,
+    href: `/tools/${entry.slug}`,
+    name: entry.name,
+    tagline: entry.tagline,
+    tag: entry.group,
+  };
+}
+
+function categoryItem(category: (typeof categories)[number]): PaletteItem {
+  return {
+    id: `tool-search-category-${category.slug}`,
+    href: `/categories/${category.slug}`,
+    name: category.name,
+    tagline: category.tagline,
+    tag: "Category",
+  };
+}
 
 export function ToolSearch({ entries }: { entries: SearchEntry[] }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLUListElement>(null);
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
+  const shortcutLabel = useIsMac() ? "⌘K" : "Ctrl K";
+  const recentSlugs = useRecentSlugs();
+  const favouriteSlugs = useFavouriteSlugs();
 
-  const results = useMemo(() => rankEntries(entries, query, MAX_RESULTS), [entries, query]);
+  // An empty palette is a starting point, not a blank: what you opened last,
+  // then what you starred, then the most popular tools, then the categories. A
+  // query searches tools and categories together.
+  const groups = useMemo<PaletteGroup[]>(() => {
+    const q = query.trim().toLowerCase();
 
-  useEffect(() => setActive(0), [query]);
+    if (!q) {
+      const bySlug = new Map(entries.map((entry) => [entry.slug, entry]));
+      const resolve = (slugs: string[], limit: number) =>
+        slugs
+          .map((slug) => bySlug.get(slug))
+          .filter((entry): entry is SearchEntry => Boolean(entry))
+          .slice(0, limit)
+          .map(toolItem);
+
+      const recent = resolve(recentSlugs, MAX_STARTER);
+      const recentSet = new Set(recent.map((item) => item.href));
+      const favourites = resolve(favouriteSlugs, MAX_STARTER).filter(
+        (item) => !recentSet.has(item.href),
+      );
+      const shown = new Set([...recent, ...favourites].map((item) => item.href));
+      const popular = entries
+        .filter((entry) => !shown.has(`/tools/${entry.slug}`))
+        .slice(0, MAX_STARTER)
+        .map(toolItem);
+
+      return [
+        ...(recent.length > 0 ? [{ label: "Recent", items: recent }] : []),
+        ...(favourites.length > 0 ? [{ label: "Favourites", items: favourites }] : []),
+        ...(popular.length > 0 ? [{ label: "Popular", items: popular }] : []),
+        { label: "Categories", items: categories.map(categoryItem) },
+      ];
+    }
+
+    const tools = rankEntries(entries, query, MAX_RESULTS).map(toolItem);
+    const matchedCategories = categories
+      .filter(
+        (category) =>
+          category.name.toLowerCase().includes(q) || category.navLabel.toLowerCase().includes(q),
+      )
+      .slice(0, MAX_CATEGORIES)
+      .map(categoryItem);
+
+    return [{ label: "Results", items: [...tools, ...matchedCategories] }];
+  }, [query, entries, recentSlugs, favouriteSlugs]);
+
+  const flat = useMemo(() => groups.flatMap((group) => group.items), [groups]);
 
   const open = useCallback(() => {
     const dialog = dialogRef.current;
     if (!dialog || dialog.open) return;
     setQuery("");
+    // Reset the highlight alongside the query rather than in an effect keyed on
+    // it: the two always change together.
+    setActive(0);
     dialog.showModal();
     // Focus lands in the field, which is the only thing a visitor wants to use.
     requestAnimationFrame(() => inputRef.current?.focus());
@@ -34,10 +144,17 @@ export function ToolSearch({ entries }: { entries: SearchEntry[] }) {
 
   const close = useCallback(() => dialogRef.current?.close(), []);
 
-  // Cmd/Ctrl+K opens search from anywhere, matching what people expect.
+  // Cmd/Ctrl+K opens search from anywhere, matching what people expect. A bare
+  // `/` does the same, unless the visitor is already typing in a field.
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        open();
+        return;
+      }
+      if (event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        if (isTypingTarget(event.target)) return;
         event.preventDefault();
         open();
       }
@@ -57,46 +174,47 @@ export function ToolSearch({ entries }: { entries: SearchEntry[] }) {
 
   // Keep the highlighted row visible while arrowing through a long list.
   useEffect(() => {
-    const node = listRef.current?.children[active] as HTMLElement | undefined;
-    node?.scrollIntoView({ block: "nearest" });
-  }, [active]);
+    const id = flat[active]?.id;
+    if (id) document.getElementById(id)?.scrollIntoView({ block: "nearest" });
+  }, [active, flat]);
 
   function onInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      setActive((index) => (results.length ? (index + 1) % results.length : 0));
+      setActive((index) => (flat.length ? (index + 1) % flat.length : 0));
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
-      setActive((index) => (results.length ? (index - 1 + results.length) % results.length : 0));
+      setActive((index) => (flat.length ? (index - 1 + flat.length) % flat.length : 0));
     } else if (event.key === "Enter") {
-      const target = results[active];
+      const target = flat[active];
       if (target) {
         event.preventDefault();
         close();
-        router.push(`/tools/${target.slug}`);
+        router.push(target.href);
       }
     }
   }
 
+  let optionIndex = -1;
+
   return (
     <>
+      {/* Full field once the nav has the width for it, an icon button below that. */}
       <button
         type="button"
         onClick={open}
-        className="group hidden h-11 min-w-[15rem] items-center gap-2.5 rounded-md border border-line bg-surface-2 px-3 text-left text-sm text-muted transition-colors duration-150 ease-out hover:border-line-strong hover:text-fg sm:flex sm:w-64"
+        className="group hidden h-10 w-72 items-center gap-2.5 rounded-md border border-line-strong bg-surface-2 px-3 text-left text-sm text-muted transition-colors duration-150 ease-out hover:border-accent hover:text-fg xl:flex"
       >
-        <Search className="size-[17px] shrink-0" aria-hidden="true" />
+        <Search className="size-[17px] shrink-0 text-accent-text" aria-hidden="true" />
         <span className="flex-1 truncate">Search tools</span>
-        <kbd className="hidden shrink-0 rounded border border-line bg-surface px-1.5 py-0.5 font-mono text-[0.6875rem] text-muted lg:inline">
-          Ctrl K
-        </kbd>
+        <kbd className="kbd shrink-0">{shortcutLabel}</kbd>
       </button>
 
       <button
         type="button"
         onClick={open}
         aria-label="Search tools"
-        className="inline-flex size-11 items-center justify-center rounded-md border border-line text-fg transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-accent sm:hidden"
+        className="inline-flex size-10 items-center justify-center rounded-md border border-line text-fg transition-colors duration-150 ease-out hover:border-accent/60 hover:bg-surface-2 hover:text-accent xl:hidden"
       >
         <Search className="size-[18px]" aria-hidden="true" />
       </button>
@@ -115,62 +233,93 @@ export function ToolSearch({ entries }: { entries: SearchEntry[] }) {
             ref={inputRef}
             type="search"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setActive(0);
+            }}
             onKeyDown={onInputKeyDown}
-            placeholder="Search by name or task…"
-            aria-label="Search tools"
+            placeholder="Search tools and categories…"
+            aria-label="Search tools and categories"
             aria-controls="tool-search-results"
-            aria-activedescendant={results[active] ? `tool-search-option-${results[active].slug}` : undefined}
+            aria-activedescendant={flat[active]?.id}
             autoComplete="off"
             className="h-14 min-w-0 flex-1 bg-transparent text-base text-fg outline-none placeholder:text-muted"
           />
         </div>
 
-        <ul
-          ref={listRef}
+        <div
           id="tool-search-results"
           role="listbox"
-          aria-label="Matching tools"
+          aria-label="Search results"
           className="scroll-region max-h-[min(24rem,60dvh)] p-2"
         >
-          {results.length === 0 ? (
-            <li className="px-3 py-8 text-center text-sm text-muted">
-              No tool matches “{query}”.{" "}
+          {flat.length === 0 ? (
+            <p className="px-3 py-8 text-center text-sm text-muted">
+              Nothing matches “{query}”.{" "}
               <Link href="/tools" onClick={close} className="link">
                 Browse all tools
               </Link>
               .
-            </li>
+            </p>
           ) : (
-            results.map((entry, index) => (
-              <li key={entry.slug} role="none">
-                <Link
-                  id={`tool-search-option-${entry.slug}`}
-                  role="option"
-                  aria-selected={index === active}
-                  href={`/tools/${entry.slug}`}
-                  onClick={close}
-                  onMouseEnter={() => setActive(index)}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2.5 no-underline",
-                    index === active ? "bg-surface-2 text-fg" : "text-fg",
-                  )}
+            groups.map((group) => (
+              <div key={group.label} role="group" aria-label={group.label}>
+                <p
+                  aria-hidden="true"
+                  className="px-3 pb-1 pt-3 text-xs font-medium uppercase tracking-[0.08em] text-muted"
                 >
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold">{entry.name}</span>
-                    <span className="block truncate text-xs text-muted">{entry.tagline}</span>
-                  </span>
-                  <span className="shrink-0 rounded border border-line px-1.5 py-0.5 text-[0.6875rem] text-muted">
-                    {entry.group}
-                  </span>
-                  {index === active ? (
-                    <CornerDownLeft className="size-3.5 shrink-0 text-muted" aria-hidden="true" />
-                  ) : null}
-                </Link>
-              </li>
+                  {group.label}
+                </p>
+                {group.items.map((item) => {
+                  optionIndex += 1;
+                  const index = optionIndex;
+                  return (
+                    <Link
+                      key={item.id}
+                      id={item.id}
+                      role="option"
+                      aria-selected={index === active}
+                      href={item.href}
+                      onClick={close}
+                      onMouseEnter={() => setActive(index)}
+                      className={cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2.5 no-underline",
+                        index === active ? "bg-surface-2 text-fg" : "text-fg",
+                      )}
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold">{item.name}</span>
+                        <span className="block truncate text-xs text-muted">{item.tagline}</span>
+                      </span>
+                      <span className="shrink-0 rounded border border-line px-1.5 py-0.5 text-xs text-muted">
+                        {item.tag}
+                      </span>
+                      {index === active ? (
+                        <CornerDownLeft className="size-3.5 shrink-0 text-muted" aria-hidden="true" />
+                      ) : null}
+                    </Link>
+                  );
+                })}
+              </div>
             ))
           )}
-        </ul>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-line px-4 py-2.5 text-xs text-muted">
+          <span className="flex items-center gap-1.5">
+            <kbd className="kbd">↑</kbd>
+            <kbd className="kbd">↓</kbd>
+            to move
+          </span>
+          <span className="flex items-center gap-1.5">
+            <kbd className="kbd">Enter</kbd>
+            to open
+          </span>
+          <span className="flex items-center gap-1.5">
+            <kbd className="kbd">Esc</kbd>
+            to close
+          </span>
+        </div>
       </dialog>
     </>
   );

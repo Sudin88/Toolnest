@@ -32,6 +32,7 @@ export default function PasswordGenerator() {
 
   // Regenerate whenever the pool changes. Runs only in the browser.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- cryptographic randomness must be drawn after hydration; generating during render would mismatch the prerendered HTML
     if (feasible) setPassword(generatePassword(options));
   }, [options, feasible]);
 

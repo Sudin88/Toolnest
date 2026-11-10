@@ -15,6 +15,7 @@ export default function AgeCalculator() {
 
   // "Today" is resolved after mount so the prerendered HTML stays deterministic.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- seeding editable state with the current date; the value must not exist at prerender time and has no render-time equivalent
     setAsOf(toIsoDateValue(new Date()));
   }, []);
 

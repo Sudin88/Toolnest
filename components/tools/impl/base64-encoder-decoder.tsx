@@ -3,15 +3,21 @@
 import { useMemo, useState } from "react";
 
 import { Check, CopyButton, Segmented, TextArea } from "@/components/tools/interactive";
-import { Empty, Note, OutputBox, Stat, StatGrid } from "@/components/tools/parts";
+import { Empty, Note, OutputBox, ResultFooter, Stat, StatGrid, TryExample } from "@/components/tools/parts";
 import { decodeBase64, encodeBase64 } from "@/lib/base64";
 import { downloadText } from "@/lib/download";
+import { useToolInput } from "@/lib/tool-input";
 import { formatNumber } from "@/lib/utils";
 
 type Mode = "encode" | "decode";
 
+const SAMPLE_TEXT = "Small tools, done properly.";
+const SAMPLE_BASE64 = "U21hbGwgdG9vbHMsIGRvbmUgcHJvcGVybHku";
+
 export default function Base64EncoderDecoder() {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useToolInput<string>("base64-encoder-decoder", "input", "", {
+    handover: true,
+  });
   const [mode, setMode] = useState<Mode>("encode");
   const [urlSafe, setUrlSafe] = useState(false);
   const [tolerant, setTolerant] = useState(true);
@@ -56,6 +62,14 @@ export default function Base64EncoderDecoder() {
         <Check checked={tolerant} onChange={setTolerant} label="Tolerate missing padding" hint="Repairs the length if the string came from a system that strips the = characters." />
       )}
 
+      {!hasInput ? (
+        <div className="flex flex-wrap gap-2">
+          <TryExample
+            onClick={() => setInput(mode === "encode" ? SAMPLE_TEXT : SAMPLE_BASE64)}
+          />
+        </div>
+      ) : null}
+
       <StatGrid className="lg:grid-cols-3">
         <Stat label="Input bytes" value={formatNumber(inputBytes)} />
         <Stat label="Output bytes" value={formatNumber(outputBytes)} />
@@ -71,20 +85,17 @@ export default function Base64EncoderDecoder() {
       </StatGrid>
 
       <div>
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-          <span className="label mb-0">Result</span>
-          <div className="flex gap-2">
-            <CopyButton value={result.output} disabled={!hasInput || Boolean(result.error)} />
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              disabled={!hasInput || Boolean(result.error)}
-              onClick={() => downloadText(result.output, mode === "encode" ? "encoded.txt" : "decoded.txt")}
-            >
-              Download
-            </button>
-          </div>
-        </div>
+        <ResultFooter>
+          <CopyButton value={result.output} disabled={!hasInput || Boolean(result.error)} />
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            disabled={!hasInput || Boolean(result.error)}
+            onClick={() => downloadText(result.output, mode === "encode" ? "encoded.txt" : "decoded.txt")}
+          >
+            Download
+          </button>
+        </ResultFooter>
         {result.error ? (
           <p
             role="alert"

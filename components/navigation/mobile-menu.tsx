@@ -5,12 +5,16 @@ import Link from "next/link";
 import { useLayoutEffect, useState } from "react";
 
 import { Logo } from "@/components/brand/logo";
+import { IconTile } from "@/components/ui/icon-tile";
 import type { SearchEntry } from "@/lib/search-index";
 import { primaryNav, secondaryNav } from "@/lib/site";
+import { categoryBySlug } from "@/lib/tools/categories";
 
 /**
  * The mobile navigation. It receives the same search index as the desktop bar so
- * a visitor on a phone can still search without the search bar being visible.
+ * a visitor on a phone can still see how much is behind the menu. Categories
+ * carry their icon, so the menu matches the index rather than flattening it into
+ * a list of words.
  */
 export function MobileMenu({ entries }: { entries: SearchEntry[] }) {
   const [open, setOpen] = useState(false);
@@ -29,45 +33,59 @@ export function MobileMenu({ entries }: { entries: SearchEntry[] }) {
         aria-expanded={open}
         aria-controls="mobile-nav"
         aria-label={open ? "Close menu" : "Open menu"}
-        className="inline-flex size-11 items-center justify-center rounded-md border border-line text-fg transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-accent"
+        className="inline-flex size-10 items-center justify-center rounded-md border border-line text-fg transition-colors duration-150 ease-out hover:border-accent/60 hover:bg-surface-2 hover:text-accent"
       >
-        {open ? <X className="size-[18px]" aria-hidden="true" /> : <Menu className="size-[18px]" aria-hidden="true" />}
+        {open ? (
+          <X className="size-[18px]" aria-hidden="true" />
+        ) : (
+          <Menu className="size-[18px]" aria-hidden="true" />
+        )}
       </button>
 
       {open ? (
         <div
           id="mobile-nav"
-          className="absolute inset-x-0 top-full border-b border-line bg-surface shadow-lg"
+          className="sheet-in absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-b border-line bg-surface shadow-lg"
         >
           <nav aria-label="Tools" className="container-page py-5">
-            <div className="flex items-center justify-between pb-4">
-              <Logo size={24} />
+            <div className="flex items-center justify-between gap-4 border-b border-line pb-4">
+              <Logo size={26} />
               <span className="text-xs text-muted">{entries.length} tools ready</span>
             </div>
 
-            <p className="pb-2 text-xs font-semibold uppercase tracking-wide text-muted">Categories</p>
-            <ul className="grid grid-cols-2 gap-1 pb-5">
-              {primaryNav.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className="flex min-h-11 items-center rounded-md px-3 text-[0.9375rem] font-medium text-fg no-underline hover:bg-surface-2"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
+            <p className="pt-5 pb-2.5 font-mono text-xs uppercase tracking-[0.12em] text-muted">
+              Categories
+            </p>
+            <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+              {primaryNav.map((item) => {
+                const category = categoryBySlug.get(item.href.split("/").pop() ?? "");
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="flex min-h-12 items-center gap-3 rounded-md px-3 text-[0.9375rem] font-medium text-fg no-underline transition-colors duration-150 ease-out hover:bg-surface-2"
+                    >
+                      {category ? (
+                        <IconTile icon={category.icon} color={category.color} size="sm" />
+                      ) : null}
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
 
-            <p className="pb-2 text-xs font-semibold uppercase tracking-wide text-muted">More</p>
-            <ul className="grid grid-cols-2 gap-1">
+            <p className="pt-6 pb-2.5 font-mono text-xs uppercase tracking-[0.12em] text-muted">
+              More
+            </p>
+            <ul className="grid grid-cols-2 gap-1.5">
               {secondaryNav.map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}
                     onClick={() => setOpen(false)}
-                    className="flex min-h-11 items-center rounded-md px-3 text-[0.9375rem] text-muted no-underline hover:bg-surface-2 hover:text-fg"
+                    className="flex min-h-12 items-center rounded-md px-3 text-[0.9375rem] text-muted no-underline transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-fg"
                   >
                     {item.label}
                   </Link>

@@ -1,12 +1,12 @@
 import {
-  AlignLeft,
-  CaseSensitive,
-  GitCompare,
-  Link2,
-  ListX,
-  Pilcrow,
-  Type,
-} from "lucide-react";
+  FaArrowDownAZ,
+  FaCodeCompare,
+  FaFont,
+  FaLink,
+  FaListCheck,
+  FaParagraph,
+  FaTextWidth,
+} from "react-icons/fa6";
 
 import type { ToolDefinition } from "@/lib/tools/types";
 
@@ -18,7 +18,7 @@ export const textTools: ToolDefinition[] = [
     tagline: "Words, sentences, paragraphs and reading time",
     description:
       "Count words, characters, sentences and paragraphs as you type, with estimated reading time and keyword density. Nothing is uploaded — the count runs in your browser.",
-    icon: AlignLeft,
+    icon: FaFont,
     keywords: ["word count", "count words online", "reading time", "essay length", "keyword density"],
     local: true,
     status: "live",
@@ -58,7 +58,7 @@ export const textTools: ToolDefinition[] = [
     tagline: "Character and byte limits for posts and metadata",
     description:
       "Count characters with and without spaces, then check your text against real limits for meta descriptions, titles, tweets and SMS messages.",
-    icon: Type,
+    icon: FaTextWidth,
     keywords: ["character counter", "character limit", "twitter character count", "meta description length"],
     local: true,
     status: "live",
@@ -93,7 +93,7 @@ export const textTools: ToolDefinition[] = [
     tagline: "Sentence case, title case, camelCase and more",
     description:
       "Convert text to UPPER, lower, Sentence, Title, camelCase, PascalCase, snake_case and kebab-case in one click, with Unicode-aware word splitting.",
-    icon: CaseSensitive,
+    icon: FaArrowDownAZ,
     keywords: ["case converter", "title case", "uppercase converter", "camelcase", "snake case"],
     local: true,
     status: "live",
@@ -128,7 +128,7 @@ export const textTools: ToolDefinition[] = [
     tagline: "Deduplicate, sort and trim a list",
     description:
       "Paste a list and remove duplicate lines, with options for case-insensitive matching, trimming whitespace, sorting and dropping blank lines.",
-    icon: ListX,
+    icon: FaListCheck,
     keywords: ["remove duplicate lines", "deduplicate list", "unique lines", "dedupe text online"],
     local: true,
     status: "live",
@@ -158,7 +158,7 @@ export const textTools: ToolDefinition[] = [
     tagline: "Placeholder paragraphs, sentences or words",
     description:
       "Generate classic lorem ipsum placeholder text by paragraph, sentence or word count, with an option to start with the traditional opening line.",
-    icon: Pilcrow,
+    icon: FaParagraph,
     keywords: ["lorem ipsum", "placeholder text", "dummy text generator", "filler text"],
     local: true,
     status: "live",
@@ -187,7 +187,7 @@ export const textTools: ToolDefinition[] = [
     tagline: "See exactly what changed between two drafts",
     description:
       "Compare two blocks of text and get a line-by-line and word-level diff showing what was added, removed and left unchanged.",
-    icon: GitCompare,
+    icon: FaCodeCompare,
     keywords: ["text compare", "diff checker", "compare two texts", "find differences"],
     local: true,
     status: "live",
@@ -222,7 +222,7 @@ export const textTools: ToolDefinition[] = [
     tagline: "Percent-encode and decode URL components",
     description:
       "Percent-encode text for use in a URL query string or decode an encoded URL back to readable text, with full Unicode support.",
-    icon: Link2,
+    icon: FaLink,
     keywords: ["url encoder", "percent encoding", "url decode", "encodeuriComponent online"],
     local: true,
     status: "live",

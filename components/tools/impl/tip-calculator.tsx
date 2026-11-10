@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
-
 import { NumberInput, Select } from "@/components/tools/interactive";
 import { Note, Stat, StatGrid } from "@/components/tools/parts";
 import { CURRENCIES, formatMoney } from "@/lib/currency";
+import { useToolDraft } from "@/lib/tool-draft";
 
 const QUICK_TIPS = [10, 12, 15, 18, 20, 25];
 
@@ -17,11 +16,11 @@ const ROUNDING = [
 ];
 
 export default function TipCalculator() {
-  const [currency, setCurrency] = useState("USD");
-  const [bill, setBill] = useState<number | "">(60);
-  const [percent, setPercent] = useState<number | "">(18);
-  const [people, setPeople] = useState<number | "">(2);
-  const [rounding, setRounding] = useState("none");
+  const [currency, setCurrency] = useToolDraft<string>("tip-calculator", "currency", "USD");
+  const [bill, setBill] = useToolDraft<number | "">("tip-calculator", "bill", 60);
+  const [percent, setPercent] = useToolDraft<number | "">("tip-calculator", "percent", 18);
+  const [people, setPeople] = useToolDraft<number | "">("tip-calculator", "people", 2);
+  const [rounding, setRounding] = useToolDraft<string>("tip-calculator", "rounding", "none");
 
   const billValue = bill === "" ? 0 : Number(bill);
   const pct = percent === "" ? 0 : Number(percent);

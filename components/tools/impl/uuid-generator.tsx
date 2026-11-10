@@ -22,6 +22,7 @@ export default function UuidGenerator() {
 
   // Generated in an effect so nothing random runs during prerendering.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- random identifiers must be drawn after hydration; generating during render would mismatch the prerendered HTML
     setValues(generateUuids(options));
   }, [options]);
 

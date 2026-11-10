@@ -1,4 +1,4 @@
-import { Dices, QrCode, Receipt, Timer } from "lucide-react";
+import { FaDice, FaQrcode, FaReceipt, FaStopwatch } from "react-icons/fa6";
 
 import type { ToolDefinition } from "@/lib/tools/types";
 
@@ -10,7 +10,7 @@ export const dailyTools: ToolDefinition[] = [
     tagline: "Create a QR code for a link, text or Wi-Fi",
     description:
       "Generate a QR code from a URL, plain text, contact details or Wi-Fi credentials, with size and colour options and a PNG download.",
-    icon: QrCode,
+    icon: FaQrcode,
     keywords: ["qr code generator", "create qr code", "wifi qr code", "free qr code png"],
     local: true,
     status: "live",
@@ -49,7 +49,7 @@ export const dailyTools: ToolDefinition[] = [
     tagline: "Fair random numbers in any range",
     description:
       "Generate one or many random integers or decimals within a range you set, using unbiased rejection sampling so every value is equally likely.",
-    icon: Dices,
+    icon: FaDice,
     keywords: ["random number generator", "random number between", "pick a random number", "rng online"],
     local: true,
     status: "live",
@@ -82,7 +82,7 @@ export const dailyTools: ToolDefinition[] = [
     tagline: "Tip, total and an even split between people",
     description:
       "Work out the tip on a bill at any percentage, add it to the total, and split the result evenly between any number of people.",
-    icon: Receipt,
+    icon: FaReceipt,
     keywords: ["tip calculator", "gratuity calculator", "split the bill", "how much to tip"],
     local: true,
     status: "live",
@@ -116,7 +116,7 @@ export const dailyTools: ToolDefinition[] = [
     tagline: "Elapsed time with laps and keyboard control",
     description:
       "A precise stopwatch with lap splits, a lap comparison column and keyboard shortcuts. It keeps accurate time even if the tab is backgrounded.",
-    icon: Timer,
+    icon: FaStopwatch,
     keywords: ["stopwatch", "online stopwatch", "lap timer", "elapsed time"],
     local: true,
     status: "live",

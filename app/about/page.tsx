@@ -4,7 +4,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { pageMetadata } from "@/lib/seo";
 import { categories } from "@/lib/tools/categories";
-import { countByCategory, liveTools, tools } from "@/lib/tools/registry";
+import { countByCategory, liveTools, plannedTools, tools } from "@/lib/tools/registry";
 
 export const metadata: Metadata = pageMetadata({
   title: "About ToolNest",
@@ -16,6 +16,7 @@ export const metadata: Metadata = pageMetadata({
 export default function AboutPage() {
   const live = liveTools.length;
   const total = tools.length;
+  const planned = plannedTools.length;
 
   return (
     <>
@@ -29,9 +30,11 @@ export default function AboutPage() {
           <h2>What it is</h2>
           <p>
             A directory of free utilities organised into six categories — PDF, image, text,
-            calculators, developer and everyday tools. There are {total} tools on the roadmap and{" "}
-            {live} of them are working today. The rest are listed honestly as being in the works, and
-            none of them is linked as if it were finished.
+            calculators, developer and everyday tools. There are {total} tools in the directory and{" "}
+            {live} of them work today.{" "}
+            {planned > 0
+              ? "The rest are listed honestly as being in the works, and none of them is linked as if it were finished."
+              : "Every one of them is finished and working."}
           </p>
 
           <h2>How the tools work</h2>
@@ -51,8 +54,9 @@ export default function AboutPage() {
           <p>
             Nothing here needs to remember you. There is no history to sync, no documents to store and
             no settings worth a profile, so the sign-up form you would have filled in is missing on
-            purpose. The one piece of state the site keeps is your light or dark theme preference,
-            stored in your own browser.
+            purpose. The only state the site keeps lives in your own browser: a short list of the tools
+            you opened recently, a handful of favourites, and the draft of anything you were halfway
+            through.
           </p>
 
           <h2>How it is paid for</h2>
@@ -60,24 +64,31 @@ export default function AboutPage() {
             ToolNest is free, and it stays free because of advertising. Ads are deliberately kept out
             of the working area: never inside a tool, never beside a download button, never between a
             file picker and its result. You will see a clearly labelled slot below the tool, in the
-            place a magazine would put a page's advertisement.
+            place a magazine would put a page’s advertisement.
           </p>
 
-          <h2>What is coming</h2>
-          <p>The PDF category is the next block of work. Each category page lists exactly what is being built.</p>
-          <ul>
-            {categories.map((category) => {
-              const counts = countByCategory(category.id);
-              return (
-                <li key={category.slug}>
-                  <Link href={`/categories/${category.slug}`} className="link">
-                    {category.name}
-                  </Link>{" "}
-                  — {counts.live} of {counts.total} ready
-                </li>
-              );
-            })}
-          </ul>
+          {planned > 0 ? (
+            <>
+              <h2>What is coming</h2>
+              <p>
+                These are the tools still being built. Each category page lists exactly what is in the
+                works.
+              </p>
+              <ul>
+                {categories.map((category) => {
+                  const counts = countByCategory(category.id);
+                  return (
+                    <li key={category.slug}>
+                      <Link href={`/categories/${category.slug}`} className="link">
+                        {category.name}
+                      </Link>{" "}
+                      — {counts.live} of {counts.total} ready
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          ) : null}
         </div>
       </div>
     </>

@@ -22,9 +22,9 @@ export function Stat({
   hint?: ReactNode;
 }) {
   return (
-    <div className="panel-inset px-4 py-3">
+    <div className="panel-inset px-4 py-3.5">
       <dt className="text-xs font-medium text-muted">{label}</dt>
-      <dd className="num mt-1 text-xl font-bold leading-none text-fg">{value}</dd>
+      <dd className="num mt-1.5 text-xl font-bold leading-none text-fg">{value}</dd>
       {hint ? <dd className="mt-1.5 text-xs leading-snug text-muted">{hint}</dd> : null}
     </div>
   );
@@ -79,16 +79,67 @@ export function OutputBox({
   );
 }
 
-export function Empty({ children, className }: { children: ReactNode; className?: string }) {
+/**
+ * The blank slate for a tool that has nothing to show yet. When `action` is
+ * supplied it sits under the sentence, giving the visitor a one-click way to see
+ * the tool working with an example rather than an empty box to stare at.
+ */
+export function Empty({
+  children,
+  action,
+  className,
+}: {
+  children: ReactNode;
+  action?: ReactNode;
+  className?: string;
+}) {
   return (
-    <p
+    <div
       className={cn(
-        "flex min-h-24 items-center justify-center rounded-md border border-dashed border-line-strong px-4 py-6 text-center text-sm text-muted",
+        "flex min-h-24 flex-col items-center justify-center gap-3 rounded-md border border-dashed border-line-strong px-4 py-6 text-center text-sm text-muted",
         className,
       )}
     >
-      {children}
-    </p>
+      <p>{children}</p>
+      {action}
+    </div>
+  );
+}
+
+/**
+ * One shared way to drop a worked example into a tool. Every example is a small
+ * constant next to its tool, so the button only ever sets state the tool already
+ * owns — it never invents content.
+ */
+export function TryExample({ onClick, children }: { onClick: () => void; children?: ReactNode }) {
+  return (
+    <button type="button" className="btn btn-secondary btn-sm" onClick={onClick}>
+      {children ?? "Try an example"}
+    </button>
+  );
+}
+
+/**
+ * The result footer every tool ends with. The label sits left, the actions sit
+ * right in a fixed order: the primary action (Copy or Download) is always the
+ * first button, so it lands in the same place on every tool, and the inline
+ * “Copied” confirmation comes from the button itself rather than a floating
+ * toast. Keeping it one component is what makes the position predictable.
+ */
+export function ResultFooter({
+  label = "Result",
+  children,
+  className,
+}: {
+  label?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("mb-2 flex flex-wrap items-center justify-between gap-3", className)}>
+      <span className="label mb-0">{label}</span>
+      <div className="flex flex-wrap items-center gap-2">{children}</div>
+    </div>
   );
 }
 

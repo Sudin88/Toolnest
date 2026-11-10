@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { NumberInput, Select } from "@/components/tools/interactive";
 import { Note } from "@/components/tools/parts";
 import { UNIT_GROUPS, convertUnit, type UnitCategory } from "@/lib/calc";
+import { useToolDraft } from "@/lib/tool-draft";
 
 const fmt = (value: number) =>
   Number.isFinite(value)
@@ -14,10 +15,10 @@ const fmt = (value: number) =>
 const CATEGORY_ORDER: UnitCategory[] = ["length", "weight", "volume", "temperature"];
 
 export default function UnitConverter() {
-  const [category, setCategory] = useState<UnitCategory>("length");
-  const [from, setFrom] = useState("cm");
-  const [to, setTo] = useState("in");
-  const [value, setValue] = useState<number | "">(100);
+  const [category, setCategory] = useToolDraft<UnitCategory>("unit-converter", "category", "length");
+  const [from, setFrom] = useToolDraft<string>("unit-converter", "from", "cm");
+  const [to, setTo] = useToolDraft<string>("unit-converter", "to", "in");
+  const [value, setValue] = useToolDraft<number | "">("unit-converter", "value", 100);
 
   const units = UNIT_GROUPS[category].units;
 

@@ -7,6 +7,14 @@ import { Empty, Stat, StatGrid } from "@/components/tools/parts";
 import { diffText, type LineDiff } from "@/lib/diff";
 import { cn, formatNumber } from "@/lib/utils";
 
+const SAMPLE_LEFT = `The workshop opens at nine.
+Bring your own tools.
+Tea is provided.`;
+
+const SAMPLE_RIGHT = `The workshop opens at half past nine.
+Bring your own tools, and a notebook.
+Tea and coffee are provided.`;
+
 export default function TextCompare() {
   const [left, setLeft] = useState("");
   const [right, setRight] = useState("");
@@ -55,7 +63,22 @@ export default function TextCompare() {
       <div>
         <h3 className="mb-2 font-display text-[0.9375rem] font-bold text-fg">Differences</h3>
         {!hasInput ? (
-          <Empty>Paste two versions of the same text to see what changed.</Empty>
+          <Empty
+            action={
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => {
+                  setLeft(SAMPLE_LEFT);
+                  setRight(SAMPLE_RIGHT);
+                }}
+              >
+                Try an example
+              </button>
+            }
+          >
+            Paste two versions of the same text to see what changed.
+          </Empty>
         ) : diff.added === 0 && diff.removed === 0 ? (
           <p className="rounded-md border border-line bg-surface-2 px-4 py-3 text-sm text-muted">
             The two blocks are identical{ignoreCase ? " ignoring letter case" : ""}.

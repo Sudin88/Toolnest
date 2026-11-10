@@ -13,7 +13,7 @@ export function JsonLd({ data }: { data: unknown }) {
   return (
     <script
       type="application/ld+json"
-      // eslint-disable-next-line react/no-danger -- serialised from our own typed data
+      // Serialised from our own typed data — nothing here comes from user input.
       dangerouslySetInnerHTML={{ __html: serializeJsonLd(data) }}
     />
   );

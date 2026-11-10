@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { NumberInput, Segmented } from "@/components/tools/interactive";
 import { Note } from "@/components/tools/parts";
 import { isWhatPercent, percentChange, percentOf } from "@/lib/calc";
+import { useToolDraft } from "@/lib/tool-draft";
 
 type Mode = "of" | "isPercent" | "change";
 
@@ -12,9 +13,9 @@ const fmt = (value: number) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 }).format(value);
 
 export default function PercentageCalculator() {
-  const [mode, setMode] = useState<Mode>("of");
-  const [a, setA] = useState<number | "">(25);
-  const [b, setB] = useState<number | "">(200);
+  const [mode, setMode] = useToolDraft<Mode>("percentage-calculator", "mode", "of");
+  const [a, setA] = useToolDraft<number | "">("percentage-calculator", "a", 25);
+  const [b, setB] = useToolDraft<number | "">("percentage-calculator", "b", 200);
 
   const result = useMemo(() => {
     if (a === "" || b === "") return null;

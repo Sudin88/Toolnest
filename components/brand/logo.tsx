@@ -1,9 +1,10 @@
 import { cn } from "@/lib/utils";
 
 /**
- * The ToolNest mark: a hub with three connections inside a rounded nest.
- * Drawn as a masked span so it inherits the brand gradient without shipping an
- * inline gradient definition (see `.logo-symbol` in globals.css).
+ * The ToolNest mark: a tray holding a tool head — a nest, drawn from two
+ * strokes. It is a masked span so the symbol is a single colour that follows
+ * the theme (see `.logo-symbol` in globals.css), and it stays legible at 16px
+ * as the favicon.
  */
 export function LogoMark({
   className,
@@ -38,7 +39,7 @@ export function Logo({
       {withWordmark ? (
         <span
           className={cn(
-            "font-display text-[1.0625rem] font-extrabold tracking-[-0.03em] text-fg",
+            "text-[1.3rem] font-semibold leading-none tracking-[-0.02em] text-fg",
             wordmarkClassName,
           )}
         >

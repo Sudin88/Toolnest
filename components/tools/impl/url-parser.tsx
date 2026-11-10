@@ -1,13 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { CopyButton, TextInput } from "@/components/tools/interactive";
-import { Empty, Note } from "@/components/tools/parts";
+import { Empty, Note, TryExample } from "@/components/tools/parts";
+import { useToolInput } from "@/lib/tool-input";
 import { parseUrl } from "@/lib/url-tool";
 
+const SAMPLE = "https://shop.example.com:8443/orders/2026?ref=newsletter&page=2#items";
+
 export default function UrlParser() {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useToolInput<string>("url-parser", "input", "", { handover: true });
 
   const parsed = useMemo(() => parseUrl(input), [input]);
 
@@ -38,7 +41,11 @@ export default function UrlParser() {
       />
 
       {input.trim().length === 0 ? (
-        <Empty>Paste a full URL — including the https:// — to break it into its parts.</Empty>
+        <Empty
+          action={<TryExample onClick={() => setInput(SAMPLE)} />}
+        >
+          Paste a full URL — including the https:// — to break it into its parts.
+        </Empty>
       ) : !parsed.ok ? (
         <p
           role="alert"

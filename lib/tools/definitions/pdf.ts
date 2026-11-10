@@ -1,12 +1,12 @@
 import {
-  FileDown,
-  Images,
-  Layers,
-  Merge,
-  RotateCw,
-  Scissors,
-  Stamp,
-} from "lucide-react";
+  FaArrowsRotate,
+  FaCodeMerge,
+  FaFileArrowDown,
+  FaFileLines,
+  FaImages,
+  FaScissors,
+  FaStamp,
+} from "react-icons/fa6";
 
 import type { ToolDefinition } from "@/lib/tools/types";
 
@@ -17,16 +17,16 @@ export const pdfTools: ToolDefinition[] = [
     category: "pdf",
     tagline: "Combine PDFs in the order you choose",
     description:
-      "Combine several PDF files into one document, reorder them by dragging, and download the merged file — all without uploading anything.",
-    icon: Merge,
+      "Combine several PDF files into one document, reorder them into the order you want, and download the merged file — all without uploading anything.",
+    icon: FaCodeMerge,
     keywords: ["merge pdf", "combine pdf", "join pdf files", "pdf merger"],
     local: true,
-    status: "planned",
+    status: "live",
     rank: 100,
     added: "2026-08-01",
     howTo: [
       "Add two or more PDF files by dropping them onto the panel or using the file picker.",
-      "Drag the rows to set the order the documents should appear in. The first file's pages come first.",
+      "Use the move buttons to set the order the documents should appear in. The first file's pages come first.",
       "Check the page total, since that is the fastest way to spot a file you added twice.",
       "Merge, then download. The combined file is assembled in your browser.",
     ],
@@ -56,14 +56,14 @@ export const pdfTools: ToolDefinition[] = [
     tagline: "Split by page range or into single pages",
     description:
       "Split a PDF into separate files by page range, by a fixed number of pages, or one file per page, and download them together as a zip.",
-    icon: Scissors,
+    icon: FaScissors,
     keywords: ["split pdf", "separate pdf pages", "pdf splitter", "extract pdf range"],
     local: true,
-    status: "planned",
+    status: "live",
     rank: 96,
     added: "2026-08-01",
     howTo: [
-      "Load a PDF. The page count and a thumbnail of the first page confirm you have the right file.",
+      "Load a PDF. The page count and file size confirm you have the right document.",
       "Choose a split mode: by range, every N pages, or one file per page.",
       "Check the preview of how many files you will get and which pages land in each.",
       "Split, then download the zip archive.",
@@ -90,17 +90,17 @@ export const pdfTools: ToolDefinition[] = [
     tagline: "Turn pages upright, all or just some",
     description:
       "Rotate every page in a PDF by 90, 180 or 270 degrees, or fix only the pages that a scanner saved sideways.",
-    icon: RotateCw,
+    icon: FaArrowsRotate,
     keywords: ["rotate pdf", "turn pdf pages", "fix sideways pdf", "pdf orientation"],
     local: true,
-    status: "planned",
+    status: "live",
     rank: 86,
     added: "2026-08-03",
     howTo: [
-      "Load a PDF and check the orientation preview.",
-      "Apply a rotation to all pages, or switch to per-page mode and set each page individually.",
-      "Use the preview to confirm the pages now read correctly.",
-      "Download the rotated file.",
+      "Load a PDF, then choose whether to turn every page or set them one at a time.",
+      "In per-page mode every page lists its current angle and the angle it will end up at.",
+      "Turn the pages that need it and reset any you change your mind about.",
+      "Rotate, then download the file.",
     ],
     faqs: [
       {
@@ -124,10 +124,10 @@ export const pdfTools: ToolDefinition[] = [
     tagline: "Pull out the pages you need, in any order",
     description:
       "Pull selected pages out of a PDF into a new document — reorder them, duplicate them, or drop the ones you do not need.",
-    icon: FileDown,
+    icon: FaFileArrowDown,
     keywords: ["extract pdf pages", "pdf page extractor", "delete pdf pages", "reorder pdf pages"],
     local: true,
-    status: "planned",
+    status: "live",
     rank: 84,
     added: "2026-08-03",
     howTo: [
@@ -157,16 +157,16 @@ export const pdfTools: ToolDefinition[] = [
     tagline: "Stamp text across some or all pages",
     description:
       "Add a text watermark to a PDF with control over the wording, size, colour, opacity, rotation and which pages it appears on.",
-    icon: Stamp,
+    icon: FaStamp,
     keywords: ["pdf watermark", "add watermark to pdf", "stamp pdf", "draft watermark"],
     local: true,
-    status: "planned",
+    status: "live",
     rank: 80,
     added: "2026-08-05",
     howTo: [
       "Load a PDF and type the watermark text, for example CONFIDENTIAL or a document reference.",
       "Set the size and opacity. Watermarks people complain about are usually too opaque, so start around 15 percent.",
-      "Choose the rotation and position. Diagonal across the centre is the usual choice for a document that must stay readable.",
+      "Choose flat, diagonal or vertical rotation. The mark is centred on the page, so diagonal across the middle is the usual choice for a document that must stay readable.",
       "Limit it to a page range if only part of the document is confidential, then download.",
     ],
     faqs: [
@@ -180,7 +180,7 @@ export const pdfTools: ToolDefinition[] = [
       },
       {
         q: "Will the watermark cover important content?",
-        a: "It is drawn on top of the page, so it will. Lower the opacity, reduce the size, or restrict the mark to a margin for a document that must remain legible.",
+        a: "It is drawn on top of the page, so it will. Lower the opacity, reduce the size, or restrict the mark to the pages that need it.",
       },
     ],
   },
@@ -190,17 +190,17 @@ export const pdfTools: ToolDefinition[] = [
     category: "pdf",
     tagline: "Many images into one PDF, page per image",
     description:
-      "Combine several images into a single PDF with one image per page, choosing paper size, orientation, fit mode, margins and captions.",
-    icon: Images,
+      "Combine several images into a single PDF with one image per page, choosing paper size, orientation, fit mode and margins.",
+    icon: FaImages,
     keywords: ["images to pdf", "jpg to pdf", "multiple images to pdf", "photo to pdf"],
     local: true,
-    status: "planned",
+    status: "live",
     rank: 88,
     added: "2026-08-10",
     howTo: [
-      "Add your images and drag them into the order you want.",
+      "Add your images and use the move buttons to set the page order.",
       "Choose a paper size and orientation, or let each page match its image.",
-      "Set the fit mode and margin, and add captions if the document needs them.",
+      "Set the fit mode and margin. The page preview shows where the first image will land.",
       "Build the PDF and download it.",
     ],
     faqs: [
@@ -210,11 +210,11 @@ export const pdfTools: ToolDefinition[] = [
       },
       {
         q: "Are the images re-compressed?",
-        a: "JPEG images are embedded as they are, so there is no further quality loss. Other formats are converted, which can change the file size.",
+        a: "JPEG images are embedded as they are, so there is no further quality loss. Other formats are rasterised to PNG, which can change the file size.",
       },
       {
-        q: "Can I add page numbers?",
-        a: "Captions are supported. Page numbers are not, since the page furniture is drawn onto the page rather than added as a footer field.",
+        q: "Can I add captions or page numbers?",
+        a: "Not currently. Auto-adding text under each image is deliberately out of scope for now — add the text to the image, or stamp the finished PDF with the watermark tool.",
       },
     ],
   },
@@ -224,17 +224,17 @@ export const pdfTools: ToolDefinition[] = [
     category: "pdf",
     tagline: "Page count and basic document facts, instantly",
     description:
-      "Count the pages in a PDF and read its page sizes, orientation mix, encryption status and embedded metadata without opening a reader.",
-    icon: Layers,
+      "Count the pages in a PDF and read its page sizes, orientation mix and embedded metadata without opening a reader.",
+    icon: FaFileLines,
     keywords: ["pdf page count", "how many pages in pdf", "pdf information", "count pdf pages"],
     local: true,
-    status: "planned",
+    status: "live",
     rank: 70,
     added: "2026-08-12",
     howTo: [
       "Drop in a PDF. The count appears without any further action.",
       "Check page dimensions and whether the document mixes orientations or sizes.",
-      "Expand the metadata section to see the title, author and creation tool recorded in the file, if any.",
+      "Read the metadata section to see the title, author and creation tool recorded in the file, if any.",
       "Load another file to compare — the table keeps a running list.",
     ],
     faqs: [

@@ -1,47 +1,55 @@
 import Link from "next/link";
 
-import { HeroSearch } from "@/components/home/hero-search";
+import { HomeShortcuts } from "@/components/home/home-shortcuts";
+import { MiniTasks } from "@/components/home/mini-tasks";
+import { SmartBox } from "@/components/home/smart-box";
 import { buildSearchIndex } from "@/lib/search-index";
-import { liveTools, popularTools } from "@/lib/tools/registry";
+import { indexCatalog } from "@/lib/tools/index-view";
+import { liveTools } from "@/lib/tools/registry";
 
+/**
+ * The hero is the one authored moment on the page: a left-aligned headline in
+ * Inter, one sentence that states the real promise, and the smart box, which is
+ * the primary action. Everything below it is the index.
+ *
+ * The box comes first and the prose second, because a visitor who has something
+ * to paste should not have to read past a paragraph to find out where to put it.
+ * “Runs on your device” is stated here exactly once, and again on a tool page —
+ * never repeated down the rows of the index, where it would carry no information.
+ */
 export function Hero() {
   const searchIndex = buildSearchIndex();
-  const popular = popularTools(5);
+  const catalog = indexCatalog();
 
   return (
-    <section className="relative isolate overflow-hidden border-b border-line">
-      <div className="hero-atmosphere" aria-hidden="true" />
-      <div className="grid-lines" aria-hidden="true" />
+    <section className="border-b border-line">
+      <div className="container-page pb-12 pt-12 sm:pb-14 sm:pt-16">
+        <p className="eyebrow">Free · No account · {liveTools.length} tools</p>
 
-      <div className="container-page relative z-10 pt-14 pb-12 sm:pt-20 sm:pb-16 lg:pt-24 lg:pb-20">
-        <h1 className="max-w-[20ch] text-[2.125rem] font-extrabold leading-[1.06] text-fg sm:text-5xl lg:text-[3.5rem]">
-          Everything you need. One simple toolbox.
+        <h1 className="mt-4 max-w-[18ch] text-4xl font-bold leading-[1.03] tracking-[-0.035em] text-fg sm:text-5xl lg:text-[4rem]">
+          Small tools, done properly.
         </h1>
 
-        <p className="mt-5 max-w-[58ch] text-base leading-relaxed text-muted sm:text-lg">
-          Free online tools for your everyday work. Convert, compress, calculate, create and get
-          things done — without an account, and without uploading your files.
+        <p className="measure mt-4 text-base leading-relaxed text-muted sm:text-lg">
+          A search box, a paste area and a drop zone in one field. Type what you need, paste the text
+          you have, or drop a file — the tools all run on your device, so your file or your words never
+          leave this tab.
         </p>
 
-        <div className="mt-8 max-w-2xl">
-          <HeroSearch entries={searchIndex} />
+        <div className="mt-7 max-w-3xl">
+          <SmartBox entries={searchIndex} />
+          <p className="mt-3 text-sm text-muted">
+            Press <kbd className="kbd">/</kbd> anywhere to search, or{" "}
+            <Link href="#tools-index" className="link">
+              browse the full index
+            </Link>
+            .
+          </p>
+
+          <HomeShortcuts catalog={catalog} />
         </div>
 
-        <div className="mt-7 flex flex-wrap items-center gap-x-2 gap-y-2">
-          <span className="text-sm text-muted">Popular:</span>
-          {popular.map((tool) => (
-            <Link
-              key={tool.slug}
-              href={`/tools/${tool.slug}`}
-              className="rounded-full border border-line bg-surface/70 px-3 py-1.5 text-[0.8125rem] font-medium text-fg no-underline transition-colors duration-150 ease-out hover:border-accent/50 hover:bg-surface"
-            >
-              {tool.name}
-            </Link>
-          ))}
-          <span className="num ml-1 text-[0.8125rem] text-muted">
-            {liveTools.length} tools and counting
-          </span>
-        </div>
+        <MiniTasks />
       </div>
     </section>
   );

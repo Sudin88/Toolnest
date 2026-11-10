@@ -1,4 +1,10 @@
-import { Binary, Braces, Fingerprint, KeyRound, Link } from "lucide-react";
+import {
+  FaCode,
+  FaFingerprint,
+  FaKey,
+  FaLink,
+  FaSquareBinary,
+} from "react-icons/fa6";
 
 import type { ToolDefinition } from "@/lib/tools/types";
 
@@ -10,7 +16,7 @@ export const developerTools: ToolDefinition[] = [
     tagline: "Format, validate and minify JSON",
     description:
       "Paste JSON to reformat it with indentation, minify it for transport, or find out exactly where it is invalid — with the line and column reported.",
-    icon: Braces,
+    icon: FaCode,
     keywords: ["json formatter", "json validator", "pretty print json", "minify json", "json beautifier"],
     local: true,
     status: "live",
@@ -48,7 +54,7 @@ export const developerTools: ToolDefinition[] = [
     tagline: "Encode text to base64 and decode it back",
     description:
       "Convert text to base64 or decode base64 back to text, with correct UTF-8 handling and support for URL-safe output and missing padding.",
-    icon: Binary,
+    icon: FaSquareBinary,
     keywords: ["base64 encode", "base64 decode", "base64 converter", "url safe base64"],
     local: true,
     status: "live",
@@ -79,7 +85,7 @@ export const developerTools: ToolDefinition[] = [
     tagline: "Generate RFC 9562 v4 and v7 identifiers",
     description:
       "Generate cryptographically random UUID v4 values, or time-ordered v7 values that sort correctly in a database index, one at a time or in bulk.",
-    icon: Fingerprint,
+    icon: FaFingerprint,
     keywords: ["uuid generator", "guid generator", "uuid v4", "uuid v7", "bulk uuid"],
     local: true,
     status: "live",
@@ -113,7 +119,7 @@ export const developerTools: ToolDefinition[] = [
     tagline: "Strong random passwords, generated on your device",
     description:
       "Generate strong passwords with cryptographic randomness. Choose the length and character sets, exclude ambiguous characters, and copy without the value ever leaving your browser.",
-    icon: KeyRound,
+    icon: FaKey,
     keywords: ["password generator", "strong password", "random password", "secure password online"],
     local: true,
     status: "live",
@@ -152,7 +158,7 @@ export const developerTools: ToolDefinition[] = [
     tagline: "Break a URL into protocol, host, path and query",
     description:
       "Split any URL into its components — protocol, host, port, path, query parameters and fragment — and read query values as a clean table.",
-    icon: Link,
+    icon: FaLink,
     keywords: ["url parser", "query string parser", "url components", "parse url online"],
     local: true,
     status: "live",

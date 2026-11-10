@@ -1,4 +1,11 @@
-import { Activity, CalendarClock, CalendarRange, Landmark, Percent, Ruler } from "lucide-react";
+import {
+  FaBuildingColumns,
+  FaCalendarDays,
+  FaCalendarWeek,
+  FaHeartPulse,
+  FaPercent,
+  FaRulerCombined,
+} from "react-icons/fa6";
 
 import type { ToolDefinition } from "@/lib/tools/types";
 
@@ -10,7 +17,7 @@ export const calculatorTools: ToolDefinition[] = [
     tagline: "Percent of, percent change, and increase or decrease",
     description:
       "Work out a percentage of a number, what percentage one number is of another, and the percentage increase or decrease between two values.",
-    icon: Percent,
+    icon: FaPercent,
     keywords: ["percentage calculator", "percent change", "percentage increase", "what is x percent of y"],
     local: true,
     status: "live",
@@ -39,7 +46,7 @@ export const calculatorTools: ToolDefinition[] = [
     tagline: "Exact age in years, months, days and totals",
     description:
       "Calculate an exact age in years, months and days from a birth date, with total days, weeks, hours and the next birthday countdown.",
-    icon: CalendarClock,
+    icon: FaCalendarDays,
     keywords: ["age calculator", "how old am i", "date of birth calculator", "age in days"],
     local: true,
     status: "live",
@@ -69,7 +76,7 @@ export const calculatorTools: ToolDefinition[] = [
     tagline: "Body mass index in metric or imperial units",
     description:
       "Calculate body mass index from height and weight in metric or imperial units, with the standard category band and the caveats that make it an estimate.",
-    icon: Activity,
+    icon: FaHeartPulse,
     keywords: ["bmi calculator", "body mass index", "bmi chart", "healthy weight range"],
     local: true,
     status: "live",
@@ -108,7 +115,7 @@ export const calculatorTools: ToolDefinition[] = [
     tagline: "Monthly payment, total interest and amortisation",
     description:
       "Work out the monthly repayment on a loan from the amount, interest rate and term, and see total interest alongside a full amortisation schedule.",
-    icon: Landmark,
+    icon: FaBuildingColumns,
     keywords: ["loan calculator", "monthly payment calculator", "amortisation schedule", "interest calculator"],
     local: true,
     status: "live",
@@ -147,7 +154,7 @@ export const calculatorTools: ToolDefinition[] = [
     tagline: "Days, weeks and months between two dates",
     description:
       "Find the exact difference between two dates in days, weeks, months and years, with the option to exclude weekends or count only business days.",
-    icon: CalendarRange,
+    icon: FaCalendarWeek,
     keywords: ["date difference", "days between dates", "business days calculator", "date duration"],
     local: true,
     status: "live",
@@ -177,7 +184,7 @@ export const calculatorTools: ToolDefinition[] = [
     tagline: "Length, weight, temperature and volume",
     description:
       "Convert between common units of length, weight, volume and temperature, including the offset conversions that catch people out.",
-    icon: Ruler,
+    icon: FaRulerCombined,
     keywords: ["unit converter", "metric to imperial", "cm to inches", "kg to lbs", "celsius to fahrenheit"],
     local: true,
     status: "live",

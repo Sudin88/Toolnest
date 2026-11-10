@@ -41,10 +41,14 @@ export default function CompressImage() {
   const [output, setOutput] = useState<Output | null>(null);
   const [working, setWorking] = useState(false);
 
-  // A new source invalidates any previous result.
-  useEffect(() => {
+  // A new source invalidates any previous result. Adjusting state during render
+  // is React's documented pattern for resetting on an input change, and it avoids
+  // the extra render pass an effect would cost.
+  const [outputSource, setOutputSource] = useState(image);
+  if (outputSource !== image) {
+    setOutputSource(image);
     setOutput(null);
-  }, [image]);
+  }
 
   // Revoke the previous preview URL whenever a new result replaces it.
   useEffect(() => {

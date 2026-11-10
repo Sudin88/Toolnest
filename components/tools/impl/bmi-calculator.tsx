@@ -37,14 +37,14 @@ function BandBar({ bmi }: { bmi: number }) {
       </div>
       <div className="relative mt-1 h-4">
         <span
-          className="absolute -translate-x-1/2 text-[0.6875rem] font-semibold text-fg"
+          className="absolute -translate-x-1/2 text-xs font-semibold text-fg"
           style={{ left: `${left}%` }}
           aria-hidden="true"
         >
           ▲
         </span>
       </div>
-      <div className="flex justify-between text-[0.6875rem] text-muted">
+      <div className="flex justify-between text-xs text-muted">
         <span>Under 18.5</span>
         <span>18.5 – 24.9</span>
         <span>25 – 29.9</span>

@@ -24,6 +24,7 @@ export default function LoremIpsumGenerator() {
   // Seed with a sample on first paint so the panel is never empty. This runs in
   // the browser only, so nothing random is generated during prerendering.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- a random sample cannot be generated at prerender time without a hydration mismatch, so the panel is seeded once in the browser
     setOutput(generateLorem("paragraphs", 3, false));
   }, []);
 

@@ -3,12 +3,23 @@
 import { useMemo, useState } from "react";
 
 import { Check, CopyButton, TextArea } from "@/components/tools/interactive";
-import { Empty, OutputBox, Stat, StatGrid } from "@/components/tools/parts";
+import { Empty, OutputBox, ResultFooter, Stat, StatGrid, TryExample } from "@/components/tools/parts";
 import { dedupeLines } from "@/lib/text";
+import { useToolInput } from "@/lib/tool-input";
 import { formatNumber } from "@/lib/utils";
 
+const SAMPLE = `apple
+banana
+apple
+Cherry
+
+banana
+apple`;
+
 export default function RemoveDuplicateLines() {
-  const [text, setText] = useState("");
+  const [text, setText] = useToolInput<string>("remove-duplicate-lines", "text", "", {
+    handover: true,
+  });
   const [ignoreCase, setIgnoreCase] = useState(true);
   const [trim, setTrim] = useState(true);
   const [removeEmpty, setRemoveEmpty] = useState(true);
@@ -40,6 +51,12 @@ export default function RemoveDuplicateLines() {
         <Check checked={sort} onChange={setSort} label="Sort the result alphabetically" />
       </fieldset>
 
+      {!hasInput ? (
+        <div className="flex flex-wrap gap-2">
+          <TryExample onClick={() => setText(SAMPLE)} />
+        </div>
+      ) : null}
+
       <StatGrid className="lg:grid-cols-3">
         <Stat label="Lines in" value={formatNumber(result.total)} />
         <Stat label="Lines out" value={formatNumber(result.kept)} />
@@ -47,10 +64,9 @@ export default function RemoveDuplicateLines() {
       </StatGrid>
 
       <div>
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-          <span className="label mb-0">Cleaned list</span>
+        <ResultFooter label="Cleaned list">
           <CopyButton value={result.output} disabled={!hasInput} />
-        </div>
+        </ResultFooter>
         {hasInput ? <OutputBox>{result.output}</OutputBox> : <Empty>Paste a list to clean it up.</Empty>}
       </div>
     </div>

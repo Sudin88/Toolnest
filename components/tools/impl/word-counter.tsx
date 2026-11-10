@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { CopyButton, TextArea } from "@/components/tools/interactive";
-import { Note, Stat, StatGrid } from "@/components/tools/parts";
+import { Note, ResultFooter, Stat, StatGrid, TryExample } from "@/components/tools/parts";
 import {
   countCharacters,
   countParagraphs,
@@ -13,10 +13,15 @@ import {
   readingTime,
   utf8ByteLength,
 } from "@/lib/text";
+import { useToolInput } from "@/lib/tool-input";
 import { formatNumber } from "@/lib/utils";
 
+const SAMPLE = `Small tools are worth doing properly. A word counter that runs in the tab, a converter that never uploads your file, a calculator that asks nothing of you.
+
+Paste your own draft here and the counts update as you type — the reading time, the sentences, the terms you lean on. Nothing is sent anywhere.`;
+
 export default function WordCounter() {
-  const [text, setText] = useState("");
+  const [text, setText] = useToolInput<string>("word-counter", "text", "", { handover: true });
 
   const stats = useMemo(() => {
     const words = countWords(text);
@@ -51,6 +56,12 @@ export default function WordCounter() {
         hint="The text stays in this tab. Nothing is sent anywhere."
       />
 
+      {text.length === 0 ? (
+        <div className="flex flex-wrap gap-2">
+          <TryExample onClick={() => setText(SAMPLE)} />
+        </div>
+      ) : null}
+
       <StatGrid>
         <Stat label="Words" value={formatNumber(stats.words)} />
         <Stat label="Characters" value={formatNumber(stats.characters)} hint={`${formatNumber(stats.bytes)} bytes in UTF-8`} />
@@ -70,8 +81,9 @@ export default function WordCounter() {
           </strong>{" "}
           at 200 words per minute.
         </p>
-        <CopyButton value={summary} label="Copy summary" disabled={text.length === 0} />
-      </div>
+        <ResultFooter label="Summary" className="mb-0 w-full sm:w-auto">
+          <CopyButton value={summary} label="Copy summary" disabled={text.length === 0} />
+        </ResultFooter>      </div>
 
       <div>
         <h3 className="font-display text-[0.9375rem] font-bold text-fg">Most used words</h3>

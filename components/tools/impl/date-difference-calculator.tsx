@@ -23,8 +23,10 @@ export default function DateDifferenceCalculator() {
   // Today is resolved after mount so the prerendered HTML stays deterministic.
   useEffect(() => {
     const today = new Date();
+    /* eslint-disable react-hooks/set-state-in-effect -- seeding editable dates with the current date; the value must not exist at prerender time and has no render-time equivalent */
     setStart(toIsoDateValue(today));
     setEnd(toIsoDateValue(addDays(today, 30)));
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   const result = useMemo(() => {

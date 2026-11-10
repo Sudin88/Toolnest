@@ -42,7 +42,9 @@ export default function QrCodeGenerator() {
   const [fg, setFg] = useState("#0b0a12");
   const [bg, setBg] = useState("#ffffff");
   const [transparent, setTransparent] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // A failure belongs to the payload that produced it, so a stale message is
+  // derived away on the next render instead of being cleared inside an effect.
+  const [failure, setFailure] = useState<{ payload: string; message: string } | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -77,6 +79,8 @@ export default function QrCodeGenerator() {
       .join("\n");
   })();
 
+  const error = failure && failure.payload === payload ? failure.message : null;
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -84,7 +88,6 @@ export default function QrCodeGenerator() {
     if (!payload) {
       const context = canvas.getContext("2d");
       context?.clearRect(0, 0, canvas.width, canvas.height);
-      setError(null);
       return;
     }
 
@@ -96,13 +99,15 @@ export default function QrCodeGenerator() {
       color: { dark: fg, light: transparent ? "#0000" : bg },
     })
       .then(() => {
-        if (!cancelled) setError(null);
+        if (!cancelled) setFailure(null);
       })
       .catch(() => {
         if (!cancelled) {
-          setError(
-            "This content is too long for a QR code at the chosen error-correction level. Shorten it, or lower the level to L.",
-          );
+          setFailure({
+            payload,
+            message:
+              "This content is too long for a QR code at the chosen error-correction level. Shorten it, or lower the level to L.",
+          });
         }
       });
 
@@ -132,7 +137,7 @@ export default function QrCodeGenerator() {
                 aria-pressed={mode === item.value}
                 onClick={() => setMode(item.value)}
                 className={`rounded px-3 py-1.5 text-sm font-medium transition-colors duration-150 ease-out ${
-                  mode === item.value ? "bg-surface text-fg shadow-xs" : "text-muted hover:text-fg"
+                  mode === item.value ? "bg-accent text-on-accent" : "text-muted hover:text-fg"
                 }`}
               >
                 {item.label}
