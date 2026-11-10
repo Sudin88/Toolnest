@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "toolnest",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-10",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      // The worker calls itself to read the incremental cache and to run the
+      // image loader. The service name must match `name` above.
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "toolnest"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "placement": {
+    // Run the worker close to the assets it serves rather than only at the
+    // origin the request happened to arrive at.
+    "mode": "smart"
+  }
+}
