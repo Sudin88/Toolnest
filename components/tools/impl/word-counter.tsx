@@ -20,7 +20,7 @@ import { formatNumber } from "@/lib/utils";
 
 const SAMPLE = `Small tools are worth doing properly. A word counter that runs in the tab, a converter that never uploads your file, a calculator that asks nothing of you.
 
-Paste your own draft here and the counts update as you type — the reading time, the sentences, the terms you lean on. Nothing is sent anywhere.`;
+Paste your own draft here and the counts update as you type: the reading time, the sentences, the terms you lean on. Nothing is sent anywhere.`;
 
 export default function WordCounter() {
   const [text, setText] = useToolInput<string>("word-counter", "text", "", { handover: true });
@@ -63,7 +63,7 @@ export default function WordCounter() {
         value={text}
         onChange={setText}
         rows={12}
-        placeholder="Type or paste here — the counts update as you go."
+        placeholder="Type or paste here: the counts update as you go."
         hint="The text stays in this tab. Nothing is sent anywhere."
       />
 
@@ -92,7 +92,7 @@ export default function WordCounter() {
                   ? `${stats.reading.minutes} min`
                   : stats.reading.seconds > 0
                     ? `${stats.reading.seconds} sec`
-                    : "—"}
+                    : "-"}
               </strong>{" "}
               at 200 words per minute.
             </p>

@@ -41,7 +41,7 @@ export default function RemoveDuplicateLines() {
   return (
     <div className="flex flex-col gap-6">
       <TextArea
-        label="Your list — one item per line"
+        label="Your list: one item per line"
         value={text}
         onChange={setText}
         rows={10}

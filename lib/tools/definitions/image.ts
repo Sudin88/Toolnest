@@ -26,7 +26,7 @@ export const imageTools: ToolDefinition[] = [
     howTo: [
       "Drop in an image, or click to choose one.",
       "Set the quality level. 70 to 80 percent is usually indistinguishable from the original at a fraction of the size.",
-      "Optionally cap the longest edge — most savings on photographs come from reducing dimensions rather than quality.",
+      "Optionally cap the longest edge. Most savings on photographs come from reducing dimensions rather than quality.",
       "Compare the before and after byte counts, then download the result if it is genuinely smaller.",
     ],
     faqs: [
@@ -40,7 +40,7 @@ export const imageTools: ToolDefinition[] = [
       },
       {
         q: "Why did my PNG get larger?",
-        a: "PNG is lossless, so re-encoding it rarely helps and a quality setting does nothing. Convert to JPEG or WebP first if the image is a photograph — the tool tells you when the output is bigger and lets you keep the original.",
+        a: "PNG is lossless, so re-encoding it rarely helps and a quality setting does nothing. Convert to JPEG or WebP first if the image is a photograph. The tool tells you when the output is bigger and lets you keep the original.",
       },
       {
         q: "Can I compress a transparent PNG?",
@@ -49,7 +49,7 @@ export const imageTools: ToolDefinition[] = [
     ],
     limits: [
       "Output is JPEG, PNG or WebP only; other formats must be converted first.",
-      "There is no way to hit an exact target size — the quality control reduces size by degrees.",
+      "There is no way to hit an exact target size. The quality control reduces size by degrees.",
       "Large images are decoded into memory in full, so very large files depend on how much RAM your browser has available.",
     ],
   },
@@ -70,7 +70,7 @@ export const imageTools: ToolDefinition[] = [
       "Load an image and note its current dimensions.",
       "Type a new width or height. With the aspect ratio locked the other value follows automatically.",
       "Switch the lock off when a system demands exact dimensions and you are willing to crop or stretch.",
-      "Choose a resampling grade — high quality costs a little more time and produces smoother edges when enlarging.",
+      "Choose a resampling grade: high quality costs a little more time and produces smoother edges when enlarging.",
       "Download the resized image.",
     ],
     faqs: [
@@ -88,7 +88,7 @@ export const imageTools: ToolDefinition[] = [
       },
     ],
     limits: [
-      "Enlarging interpolates pixels — it cannot add real detail.",
+      "Enlarging interpolates pixels; it cannot add real detail.",
       "Re-encoding drops EXIF and other embedded metadata, including GPS coordinates.",
       "Output is PNG, JPEG or WebP only; the smaller side of the aspect ratio can be rounded by a pixel.",
     ],
@@ -127,7 +127,7 @@ export const imageTools: ToolDefinition[] = [
       },
     ],
     limits: [
-      "Formats are limited to JPEG, PNG and WebP — SVG, HEIC and TIFF cannot be produced.",
+      "Formats are limited to JPEG, PNG and WebP. SVG, HEIC and TIFF cannot be produced.",
       "An animated GIF or WebP is converted from its first frame only; the animation is not preserved.",
       "Colour profiles are not carried over, so the output may look slightly different in a colour-managed viewer.",
     ],
@@ -147,14 +147,14 @@ export const imageTools: ToolDefinition[] = [
     added: "2026-08-10",
     howTo: [
       "Load an image and check the preview.",
-      "Pick a paper size — A4 or Letter — or choose a page that matches the image exactly.",
+      "Pick a paper size, A4 or Letter, or choose a page that matches the image exactly.",
       "Choose whether the image should fit inside the page or fill it, and set the margin.",
       "Download the PDF. It is built in the browser, so the image is never uploaded.",
     ],
     faqs: [
       {
         q: "Can I put several images into one PDF?",
-        a: "Use Images to PDF instead — it accepts a list and produces one document with a page per image, including a caption option.",
+        a: "Use Images to PDF instead. It accepts a list and produces one document with a page per image, including a caption option.",
       },
       {
         q: "Why is the image blurry in the PDF?",
@@ -166,7 +166,7 @@ export const imageTools: ToolDefinition[] = [
       },
     ],
     limits: [
-      "One image per document — for several images use Images to PDF.",
+      "One image per document. For several images use Images to PDF.",
       "There is no OCR, so the text on the page is not selectable or searchable.",
       "No encryption, password protection or digital signature can be applied.",
     ],
@@ -207,7 +207,7 @@ export const imageTools: ToolDefinition[] = [
     limits: [
       "Images over about 24 megapixels are sampled at reduced resolution to keep the page responsive.",
       "Values come from the decoded pixels, so an embedded colour profile is ignored and the numbers may differ from a colour-managed editor.",
-      "Sampling reads single pixels — there is no averaging over a region.",
+      "Sampling reads single pixels; there is no averaging over a region.",
     ],
   },
   {
@@ -225,13 +225,13 @@ export const imageTools: ToolDefinition[] = [
     added: "2026-08-18",
     howTo: [
       "Drop in an image file.",
-      "Watch the size comparison — base64 inflates a file by roughly a third, which is the number that matters.",
+      "Watch the size comparison: base64 inflates a file by roughly a third, which is the number that matters.",
       "Copy the ready-to-use CSS value or the raw base64 string, depending on where it is going.",
     ],
     faqs: [
       {
         q: "When should I inline an image?",
-        a: "For very small icons that would otherwise cost a network round trip — under roughly two kilobytes. Beyond that the extra bytes in every page load cost more than the request they save.",
+        a: "For very small icons that would otherwise cost a network round trip (under roughly two kilobytes). Beyond that the extra bytes in every page load cost more than the request they save.",
       },
       {
         q: "Why is the base64 larger than the original file?",
@@ -240,7 +240,7 @@ export const imageTools: ToolDefinition[] = [
     ],
     limits: [
       "The whole file is held in memory as a data URI, so very large images can be slow or may fail.",
-      "Base64 cannot be streamed or cached separately — it is re-downloaded with every page that contains it.",
+      "Base64 cannot be streamed or cached separately. It is re-downloaded with every page that contains it.",
       "There is no gzip on top of it, so the size shown is the size transferred.",
     ],
   },

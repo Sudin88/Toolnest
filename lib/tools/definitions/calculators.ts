@@ -24,7 +24,7 @@ export const calculatorTools: ToolDefinition[] = [
     rank: 90,
     added: "2026-08-04",
     howTo: [
-      "Pick the question you are actually asking — the three boxes answer different things.",
+      "Pick the question you are actually asking. The three boxes answer different things.",
       "Enter your numbers and read the result, which updates as you type.",
       "Check the formula line underneath. It shows the arithmetic that produced the answer, so you can confirm the tool understood the question.",
     ],
@@ -53,7 +53,7 @@ export const calculatorTools: ToolDefinition[] = [
     rank: 84,
     added: "2026-08-07",
     howTo: [
-      "Enter the date of birth and the date to measure against — today by default.",
+      "Enter the date of birth and the date to measure against, today by default.",
       "Read the exact age in years, months and days.",
       "Use the totals when a form needs a single figure in days or weeks.",
       "Check the next-birthday line, which handles the 29 February case explicitly.",
@@ -95,7 +95,7 @@ export const calculatorTools: ToolDefinition[] = [
       },
       {
         q: "Why is BMI adjusted for some populations?",
-        a: "Risk thresholds differ by population — for people of South Asian descent, for example, health risk rises at a lower BMI, which is why some health services use 23 rather than 25 as the upper bound of the healthy band.",
+        a: "Risk thresholds differ by population: for people of South Asian descent, for example, health risk rises at a lower BMI, which is why some health services use 23 rather than 25 as the upper bound of the healthy band.",
       },
       {
         q: "Should children use this calculator?",
@@ -103,7 +103,7 @@ export const calculatorTools: ToolDefinition[] = [
       },
     ],
     limits: [
-      "BMI is a screening figure, not a diagnosis — it cannot distinguish muscle from fat or account for where fat is carried.",
+      "BMI is a screening figure, not a diagnosis; it cannot distinguish muscle from fat or account for where fat is carried.",
       "It is not valid during pregnancy, for athletes with high muscle mass, or for children, who need age percentiles instead.",
       "It uses only height and weight; it knows nothing about your health history.",
     ],
@@ -142,7 +142,7 @@ export const calculatorTools: ToolDefinition[] = [
       },
     ],
     limits: [
-      "The result covers principal and interest only — no fees, insurance, tax or late charges.",
+      "The result covers principal and interest only: no fees, insurance, tax or late charges.",
       "It assumes a fixed rate and a fixed payment for the whole term, so variable rates and payment holidays are not modelled.",
       "It is an estimate, not a lender's offer or financial advice.",
     ],
@@ -161,7 +161,7 @@ export const calculatorTools: ToolDefinition[] = [
     rank: 78,
     added: "2026-08-13",
     howTo: [
-      "Set the start and end dates. The order does not matter — the tool reports the direction.",
+      "Set the start and end dates. The order does not matter. The tool reports the direction.",
       "Read the difference in each unit; the breakdown into years, months and days is the one people usually need.",
       "Turn on business days to exclude Saturdays and Sundays, which is what most deadlines actually mean.",
       "Add the project or notice period to the end date to find a deadline.",
@@ -173,7 +173,7 @@ export const calculatorTools: ToolDefinition[] = [
       },
       {
         q: "Does the business-day count account for public holidays?",
-        a: "Only weekends are excluded. Public holidays vary by country and year, so they are not assumed — subtract them yourself from the business-day total.",
+        a: "Only weekends are excluded. Public holidays vary by country and year, so they are not assumed. Subtract them yourself from the business-day total.",
       },
     ],
   },
@@ -191,7 +191,7 @@ export const calculatorTools: ToolDefinition[] = [
     rank: 88,
     added: "2026-08-13",
     howTo: [
-      "Choose a category — length, weight, volume or temperature.",
+      "Choose a category: length, weight, volume or temperature.",
       "Set the units you are converting from and to.",
       "Type a value and read the converted result.",
       "Open the reference table to see the full set of units at a glance instead of converting one at a time.",

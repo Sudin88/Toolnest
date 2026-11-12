@@ -104,34 +104,34 @@ export default function PasswordGenerator() {
         <Check
           checked={options.lowercase}
           onChange={(lowercase) => update({ lowercase })}
-          label="Lowercase letters — a–z"
+          label="Lowercase letters (a–z)"
         />
         <Check
           checked={options.uppercase}
           onChange={(uppercase) => update({ uppercase })}
-          label="Uppercase letters — A–Z"
+          label="Uppercase letters (A–Z)"
         />
-        <Check checked={options.digits} onChange={(digits) => update({ digits })} label="Digits — 0–9" />
+        <Check checked={options.digits} onChange={(digits) => update({ digits })} label="Digits (0–9)" />
         <Check
           checked={options.symbols}
           onChange={(symbols) => update({ symbols })}
-          label="Symbols — !@#$%…"
+          label="Symbols (!@#$%…)"
         />
         <Check
           checked={options.avoidAmbiguous}
           onChange={(avoidAmbiguous) => update({ avoidAmbiguous })}
           label="Exclude easily confused characters"
-          hint="Removes l, I, 1, O and 0 — helpful when a human has to retype it."
+          hint="Removes l, I, 1, O and 0; helpful when a human has to retype it."
         />
       </fieldset>
 
       {!feasible ? (
-        <Note tone="warn">Choose at least one character set — there is nothing to draw from.</Note>
+        <Note tone="warn">Choose at least one character set. There is nothing to draw from.</Note>
       ) : (
         <Note>
           {selectedSets} of 4 sets selected, so each character has {alphabetSize} possibilities. The
           password is drawn with the browser&apos;s cryptographic random generator, shown here, and
-          never stored or transmitted — copy it into your password manager now, because leaving this
+          never stored or transmitted. Copy it into your password manager now, because leaving this
           page discards it.
         </Note>
       )}

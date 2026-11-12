@@ -17,7 +17,7 @@ export const textTools: ToolDefinition[] = [
     category: "text",
     tagline: "Words, sentences, paragraphs and reading time",
     description:
-      "Count words, characters, sentences and paragraphs as you type, with estimated reading time and keyword density. Nothing is uploaded — the count runs in your browser.",
+      "Count words, characters, sentences and paragraphs as you type, with estimated reading time and keyword density. Nothing is uploaded; the count runs in your browser.",
     icon: FaFont,
     keywords: ["word count", "count words online", "reading time", "essay length", "keyword density"],
     local: true,
@@ -25,7 +25,7 @@ export const textTools: ToolDefinition[] = [
     rank: 96,
     added: "2026-08-04",
     howTo: [
-      "Type or paste your text into the box. Counts update on every keystroke — there is no process button.",
+      "Type or paste your text into the box. Counts update on every keystroke; there is no process button.",
       "Read the summary strip for words, characters, sentences and paragraphs.",
       "Check the reading-time estimate when you are writing to a length or time limit.",
       "Open the keyword list to see which terms you use most, and whether that matches the point you are making.",
@@ -46,7 +46,7 @@ export const textTools: ToolDefinition[] = [
       },
     ],
     limits: [
-      "Words are split on whitespace, so languages written without spaces — Chinese, Japanese, Thai — count as roughly one word per sentence.",
+      "Words are split on whitespace, so languages written without spaces (Chinese, Japanese, Thai) count as roughly one word per sentence.",
       "Reading time is a fixed words-per-minute estimate, not a measure of your own speed.",
       "Sentence detection is punctuation-based, so abbreviations, decimals and ellipses can mislead it.",
     ],
@@ -66,7 +66,7 @@ export const textTools: ToolDefinition[] = [
     added: "2026-08-06",
     howTo: [
       "Paste your text into the box.",
-      "Watch the character total with spaces and without spaces — editors use different ones.",
+      "Watch the character total with spaces and without spaces; editors use different ones.",
       "Compare against a preset limit such as a 60-character page title or a 155-character meta description.",
       "Check the UTF-8 byte figure when a system measures bytes rather than characters, such as an SMS or a database column.",
     ],
@@ -82,7 +82,7 @@ export const textTools: ToolDefinition[] = [
     ],
     limits: [
       "Characters are counted as Unicode code points, so an emoji with a skin-tone modifier or a flag counts as several, not one.",
-      "Grapheme counting — what a reader perceives as a single character — is not offered.",
+      "Grapheme counting (what a reader perceives as a single character) is not offered.",
       "The preset limits are the platforms' published figures and can change without notice.",
     ],
   },
@@ -101,7 +101,7 @@ export const textTools: ToolDefinition[] = [
     added: "2026-08-06",
     howTo: [
       "Paste the text you want to convert.",
-      "Pick a case from the buttons — the result appears beside your input.",
+      "Pick a case from the buttons. The result appears beside your input.",
       "Use Title Case for headings, sentence case for UI labels, and snake or kebab case for identifiers.",
       "Copy the result. Your original text stays untouched so you can try another option.",
     ],
@@ -116,7 +116,7 @@ export const textTools: ToolDefinition[] = [
       },
     ],
     limits: [
-      "Scripts with no letter case — Chinese, Japanese, Thai — are unaffected by the cased conversions.",
+      "Scripts with no letter case (Chinese, Japanese, Thai) are unaffected by the cased conversions.",
       "camelCase and snake_case drop punctuation instead of escaping it, so they are for identifiers, not prose.",
       "Title case applies an English small-word list to decide which words stay lowercase.",
     ],
@@ -176,7 +176,7 @@ export const textTools: ToolDefinition[] = [
       },
       {
         q: "Is the output random every time?",
-        a: "Yes — the generator draws from the standard lorem ipsum vocabulary, so repeated runs differ while the look of the text stays consistent.",
+        a: "Yes. The generator draws from the standard lorem ipsum vocabulary, so repeated runs differ while the look of the text stays consistent.",
       },
     ],
   },
@@ -195,7 +195,7 @@ export const textTools: ToolDefinition[] = [
     added: "2026-08-14",
     howTo: [
       "Paste the original text into the left box and the revised text into the right box.",
-      "Read the diff — removed lines are marked, added lines are marked, and unchanged lines are left plain.",
+      "Read the diff: removed lines are marked, added lines are marked, and unchanged lines are left plain.",
       "Switch to word-level view when a single line changed in several places and you want to see precisely where.",
       "Turn on ignore letter case when capitalisation alone should not count as a difference.",
     ],

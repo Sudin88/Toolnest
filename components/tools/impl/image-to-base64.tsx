@@ -66,7 +66,7 @@ export default function ImageToBase64() {
     <div className="flex flex-col gap-6">
       <FileDrop
         label="Drop an image here"
-        hint="It is read as a data URI — no network request is involved."
+        hint="It is read as a data URI: no network request is involved."
         accept="image/*"
         onFile={(files) => void load(files)}
       />
@@ -124,7 +124,7 @@ export default function ImageToBase64() {
                 </Note>
               ) : (
                 <Note>
-                  At {formatBytes(image.size)} this is small enough that inlining can be worthwhile — it
+                  At {formatBytes(image.size)} this is small enough that inlining can be worthwhile: it
                   saves a network round trip. Remember that it also stops the image from being cached
                   separately from the document that contains it.
                 </Note>

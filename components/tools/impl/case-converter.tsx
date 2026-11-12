@@ -59,7 +59,7 @@ export default function CaseConverter() {
       </div>
 
       <div>
-        <ResultFooter label={`Result — ${CASE_LABELS[active]}`}>
+        <ResultFooter label={`Result: ${CASE_LABELS[active]}`}>
           <CopyButton value={result} disabled={!showResult} />
         </ResultFooter>
         {tooLong ? (

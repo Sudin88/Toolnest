@@ -140,7 +140,7 @@ export default function ImagesToPdf() {
 
       {entries.length === 0 ? (
         <Note>
-          Add images to build a document, one image per page. Nothing is uploaded — the pages are
+          Add images to build a document, one image per page. Nothing is uploaded: the pages are
           assembled by pdf-lib in this tab.
         </Note>
       ) : (

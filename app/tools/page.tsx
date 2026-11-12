@@ -7,7 +7,7 @@ import { liveTools } from "@/lib/tools/registry";
 
 export const metadata = pageMetadata({
   title: "All tools",
-  description: `Browse every free tool on AllTools — ${liveTools.length} utilities for PDFs, images, text, numbers and small daily jobs. No account, and the work happens in your browser.`,
+  description: `Browse every free tool on AllTools: ${liveTools.length} utilities for PDFs, images, text, numbers and small daily jobs. No account, and the work happens in your browser.`,
   path: "/tools",
 });
 

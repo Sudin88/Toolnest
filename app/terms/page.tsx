@@ -25,7 +25,7 @@ export default function TermsPage() {
           <h2>Using the site</h2>
           <p>
             AllTools is free to use for personal and commercial work. You do not need to register, and
-            there is no usage limit other than not deliberately trying to break the service — bulk
+            there is no usage limit other than not deliberately trying to break the service: bulk
             automated requests that degrade it for everyone else, attempts to bypass security, or
             anything that would put the site in legal jeopardy are not permitted.
           </p>
@@ -54,14 +54,14 @@ export default function TermsPage() {
             screening number and not a medical diagnosis, and it is not intended for children. The loan
             calculator covers principal and interest only and ignores fees, insurance and tax; it is
             not financial advice. The date and age tools follow the calendar conventions documented on
-            their own pages. For anything that matters — health, money, contracts — confirm the result
+            their own pages. For anything that matters (health, money, contracts), confirm the result
             with a qualified professional.
           </p>
 
           <h2>Availability</h2>
           <p>
             The site may change, and any tool may be modified or withdrawn. Because the tools run on
-            your device, work already completed is unaffected — a tool cannot reach into a file you
+            your device, work already completed is unaffected: a tool cannot reach into a file you
             have already downloaded.
           </p>
 

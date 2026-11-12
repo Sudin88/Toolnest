@@ -161,7 +161,7 @@ export default function ImageToPdf() {
 
           <Note>
             The page contains a picture of the image, not text, so nothing in it can be selected or
-            searched. For a print-quality page you want roughly 300 pixels per inch — an A4 page wants
+            searched. For a print-quality page you want roughly 300 pixels per inch: an A4 page wants
             about 2,480 pixels across. Everything is assembled by pdf-lib in the browser; the image is
             never uploaded.
           </Note>

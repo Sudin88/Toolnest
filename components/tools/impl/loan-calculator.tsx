@@ -88,14 +88,14 @@ export default function LoanCalculator() {
           value={currency}
           onChange={setCurrency}
           options={[...CURRENCIES]}
-          hint="Formatting only — the maths is currency-agnostic."
+          hint="Formatting only. The maths is currency-agnostic."
         />
       </div>
 
       {neverRepays ? (
         <Note tone="warn">
           At this interest rate the payment does not cover the interest charged each month, so the
-          balance would never fall. Raise the monthly payment, lengthen the term, or lower the rate —
+          balance would never fall. Raise the monthly payment, lengthen the term, or lower the rate,
           and check the numbers you entered.
         </Note>
       ) : null}
@@ -212,7 +212,7 @@ export default function LoanCalculator() {
         The monthly payment comes from the standard amortisation formula: principal × periodic rate
         ÷ (1 − (1 + periodic rate)⁻ⁿ). Interest is charged on the outstanding balance, which is why
         the early payments are almost entirely interest. The result covers principal and interest
-        only — arrangement fees, insurance and tax are additional.
+        only: arrangement fees, insurance and tax are additional.
       </Note>
     </div>
   );

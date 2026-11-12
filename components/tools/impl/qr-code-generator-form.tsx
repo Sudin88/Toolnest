@@ -156,7 +156,7 @@ export function QrCodeForm({
             onChange={(next) => onChange({ level: next as QrLevel })}
             options={[
               { value: "L", label: "Low (7%)" },
-              { value: "M", label: "Medium (15%) — recommended" },
+              { value: "M", label: "Medium (15%), recommended" },
               { value: "Q", label: "Quartile (25%)" },
               { value: "H", label: "High (30%)" },
             ]}

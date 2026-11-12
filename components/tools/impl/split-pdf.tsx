@@ -142,7 +142,7 @@ export default function SplitPdf() {
           {mode === "range" ? (
             <>
               <TextInput
-                label="Ranges — one file per line or per semicolon"
+                label="Ranges: one file per line or per semicolon"
                 value={ranges}
                 onChange={(value) => setRanges(value)}
                 placeholder="e.g. 1-3; 4; 5-8"
@@ -231,7 +231,7 @@ export default function SplitPdf() {
 
           <Note>
             Splitting usually produces several documents, so they are returned together as a zip
-            rather than as a dozen separate downloads. Pages are copied, not re-compressed — the
+            rather than as a dozen separate downloads. Pages are copied, not re-compressed: the
             content is byte-identical to the original. Nothing is uploaded.
           </Note>
         </>

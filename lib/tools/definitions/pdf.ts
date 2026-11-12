@@ -17,7 +17,7 @@ export const pdfTools: ToolDefinition[] = [
     category: "pdf",
     tagline: "Combine PDFs in the order you choose",
     description:
-      "Combine several PDF files into one document, reorder them into the order you want, and download the merged file — all without uploading anything.",
+      "Combine several PDF files into one document, reorder them into the order you want, and download the merged file, all without uploading anything.",
     icon: FaCodeMerge,
     keywords: ["merge pdf", "combine pdf", "join pdf files", "pdf merger"],
     local: true,
@@ -71,7 +71,7 @@ export const pdfTools: ToolDefinition[] = [
     faqs: [
       {
         q: "How do I write a page range?",
-        a: "Use 1-based numbers separated by commas, with a hyphen for a run — for example 1-3, 7, 10-12. Ranges that fall outside the document are reported rather than silently ignored.",
+        a: "Use 1-based numbers separated by commas, with a hyphen for a run, for example 1-3, 7, 10-12. Ranges that fall outside the document are reported rather than silently ignored.",
       },
       {
         q: "Why is the output a zip file?",
@@ -123,7 +123,7 @@ export const pdfTools: ToolDefinition[] = [
     category: "pdf",
     tagline: "Pull out the pages you need, in any order",
     description:
-      "Pull selected pages out of a PDF into a new document — reorder them, duplicate them, or drop the ones you do not need.",
+      "Pull selected pages out of a PDF into a new document: reorder them, duplicate them, or drop the ones you do not need.",
     icon: FaFileArrowDown,
     keywords: ["extract pdf pages", "pdf page extractor", "delete pdf pages", "reorder pdf pages"],
     local: true,
@@ -142,7 +142,7 @@ export const pdfTools: ToolDefinition[] = [
       },
       {
         q: "Is this different from Split PDF?",
-        a: "Split produces several files, usually all of them. Extract produces one file containing only the pages you asked for — better when most of the document is not wanted.",
+        a: "Split produces several files, usually all of them. Extract produces one file containing only the pages you asked for, better when most of the document is not wanted.",
       },
       {
         q: "Do extracted pages keep their links and form fields?",
@@ -172,7 +172,7 @@ export const pdfTools: ToolDefinition[] = [
     faqs: [
       {
         q: "Does a watermark protect a document?",
-        a: "No. It is a visible marking, not a security control — anyone can remove it with the right tool. Use encryption and permissions if you need actual protection.",
+        a: "No. It is a visible marking, not a security control; anyone can remove it with the right tool. Use encryption and permissions if you need actual protection.",
       },
       {
         q: "Can I use an image as a watermark?",
@@ -214,7 +214,7 @@ export const pdfTools: ToolDefinition[] = [
       },
       {
         q: "Can I add captions or page numbers?",
-        a: "Not currently. Auto-adding text under each image is deliberately out of scope for now — add the text to the image, or stamp the finished PDF with the watermark tool.",
+        a: "Not currently. Auto-adding text under each image is deliberately out of scope for now. Add the text to the image, or stamp the finished PDF with the watermark tool.",
       },
     ],
   },
@@ -235,7 +235,7 @@ export const pdfTools: ToolDefinition[] = [
       "Drop in a PDF. The count appears without any further action.",
       "Check page dimensions and whether the document mixes orientations or sizes.",
       "Read the metadata section to see the title, author and creation tool recorded in the file, if any.",
-      "Load another file to compare — the table keeps a running list.",
+      "Load another file to compare; the table keeps a running list.",
     ],
     faqs: [
       {

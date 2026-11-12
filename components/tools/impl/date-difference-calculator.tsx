@@ -87,8 +87,8 @@ export default function DateDifferenceCalculator() {
 
       <Note>
         The count is exclusive of the end date by default, so 1 March to 2 March is one day. Turn on
-        the switch above to include it. Only weekends are excluded from the business-day figure —
-        public holidays vary by country and year, so subtract them yourself.
+        the switch above to include it. Only weekends are excluded from the business-day figure.
+        Public holidays vary by country and year, so subtract them yourself.
       </Note>
     </div>
   );

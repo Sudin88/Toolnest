@@ -19,7 +19,7 @@ export default function ContactPage() {
     <>
       <PageHeader
         title="Contact"
-        intro="AllTools is a small project. If something is broken or missing, saying so is genuinely useful — the reports that help most describe what you expected, what happened instead, and which browser you were using."
+        intro="AllTools is a small project. If something is broken or missing, saying so is genuinely useful. The reports that help most describe what you expected, what happened instead, and which browser you were using."
       />
 
       <div className="container-page pb-20 pt-12">
@@ -52,7 +52,7 @@ export default function ContactPage() {
             <li>The file itself, if the problem only appears with one particular file.</li>
           </ul>
           <p>
-            Please do not send files that contain anything confidential — a small reproduction is
+            Please do not send files that contain anything confidential. A small reproduction is
             always more useful than a large real one.
           </p>
 

@@ -202,7 +202,7 @@ export default function WatermarkPdf() {
           </div>
 
           <Note>
-            Watermarks people complain about are usually too opaque — 15% is a good starting point.
+            Watermarks people complain about are usually too opaque: 15% is a good starting point.
             The mark is drawn on top of the page, so it will cover content beneath it.
           </Note>
 
@@ -240,7 +240,7 @@ export default function WatermarkPdf() {
           ) : null}
 
           <Note tone="warn">
-            A watermark is a visible marking, not a security control — anyone can remove it with the
+            A watermark is a visible marking, not a security control. Anyone can remove it with the
             right tool. Use encryption and permissions if you need actual protection.
           </Note>
         </>

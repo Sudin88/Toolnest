@@ -44,7 +44,7 @@ export default function UrlParser() {
         <Empty
           action={<TryExample onClick={() => setInput(SAMPLE)} />}
         >
-          Paste a full URL — including the https:// — to break it into its parts.
+          Paste a full URL, including the https://, to break it into its parts.
         </Empty>
       ) : !parsed.ok ? (
         <p

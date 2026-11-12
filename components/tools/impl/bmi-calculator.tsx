@@ -157,8 +157,8 @@ export default function BmiCalculator() {
 
       <Note tone="warn">
         BMI is one screening number, not a diagnosis. It cannot distinguish muscle from fat, and the
-        standard bands were derived from population data that did not represent everyone equally —
-        risk rises at a lower BMI for some groups. Treat this as a rough reference and talk to a
+        standard bands were derived from population data that did not represent everyone equally.
+        Risk rises at a lower BMI for some groups. Treat this as a rough reference and talk to a
         clinician about your own health. Children and teenagers need age-specific percentile charts
         instead, so this calculator is for adults.
       </Note>

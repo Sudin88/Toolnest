@@ -67,7 +67,7 @@ export default function Base64EncoderDecoder() {
       />
 
       {mode === "encode" ? (
-        <Check checked={urlSafe} onChange={setUrlSafe} label="URL-safe output" hint="Uses - and _ instead of + and /, and drops padding — the form to put in a query string." />
+        <Check checked={urlSafe} onChange={setUrlSafe} label="URL-safe output" hint="Uses - and _ instead of + and /, and drops padding: the form to put in a query string." />
       ) : (
         <Check checked={tolerant} onChange={setTolerant} label="Tolerate missing padding" hint="Repairs the length if the string came from a system that strips the = characters." />
       )}
@@ -88,7 +88,7 @@ export default function Base64EncoderDecoder() {
           value={
             mode === "encode" && inputBytes > 0
               ? `${Math.round(((outputBytes - inputBytes) / inputBytes) * 100)}%`
-              : "—"
+              : "-"
           }
           hint={mode === "encode" ? "Base64 adds about a third" : undefined}
         />
@@ -124,7 +124,7 @@ export default function Base64EncoderDecoder() {
 
       <Note tone="warn">
         Base64 is a transport encoding, not encryption. Anyone can reverse it, so never use it to
-        hide a secret — only to carry bytes safely through a text-only channel.
+        hide a secret, only to carry bytes safely through a text-only channel.
       </Note>
     </div>
   );

@@ -17,11 +17,11 @@ import { cn, formatNumber } from "@/lib/utils";
 
 const LIMITS = [
   { value: "none", label: "No limit", max: 0 },
-  { value: "title", label: "SEO page title — 60", max: 60 },
-  { value: "meta", label: "Meta description — 155", max: 155 },
-  { value: "tweet", label: "X post — 280", max: 280 },
-  { value: "sms", label: "SMS segment — 160", max: 160 },
-  { value: "instagram", label: "Instagram caption — 2200", max: 2200 },
+  { value: "title", label: "SEO page title (60)", max: 60 },
+  { value: "meta", label: "Meta description (155)", max: 155 },
+  { value: "tweet", label: "X post (280)", max: 280 },
+  { value: "sms", label: "SMS segment (160)", max: 160 },
+  { value: "instagram", label: "Instagram caption (2200)", max: 2200 },
 ];
 
 export default function CharacterCounter() {
@@ -110,7 +110,7 @@ export default function CharacterCounter() {
                   role="status"
                 >
                   <span className="num font-semibold text-fg">{formatNumber(stats.withSpaces)}</span> of{" "}
-                  <span className="num">{formatNumber(limit.max)}</span> characters —{" "}
+                  <span className="num">{formatNumber(limit.max)}</span> characters,{" "}
                   {over
                     ? `${formatNumber(stats.withSpaces - limit.max)} over the limit`
                     : `${formatNumber(limit.max - stats.withSpaces)} to spare`}
@@ -124,7 +124,7 @@ export default function CharacterCounter() {
 
       <Note>
         Characters with and without spaces differ by the number of spaces, and that count is
-        significant — many editors and social platforms include them. The byte figure matters when a
+        significant. Many editors and social platforms include them. The byte figure matters when a
         system measures bytes rather than characters, such as an SMS or a database column.
       </Note>
     </div>

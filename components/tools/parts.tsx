@@ -66,7 +66,7 @@ export function LimitNote({ length, limit }: { length: number; limit: number }) 
   return (
     <Note tone="warn">
       At {formatNumber(length)} characters this paste is past the {formatNumber(limit)}-character
-      limit for one run. Nothing has been sent anywhere — trim it down and the result appears again.
+      limit for one run. Nothing has been sent anywhere. Trim it down and the result appears again.
     </Note>
   );
 }

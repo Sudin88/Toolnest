@@ -9,7 +9,7 @@ import { countByCategory, liveTools, plannedTools, tools } from "@/lib/tools/reg
 export const metadata: Metadata = pageMetadata({
   title: "About AllTools",
   description:
-    "AllTools is a free collection of browser-based utilities. No account, no upload, no queue — the work happens on your device.",
+    "AllTools is a free collection of browser-based utilities. No account, no upload, no queue. The work happens on your device.",
   path: "/about",
 });
 
@@ -22,14 +22,14 @@ export default function AboutPage() {
     <>
       <PageHeader
         title="About AllTools"
-        intro="AllTools is one place to get a small job done. Convert a file, count some words, work out a repayment, generate a QR code — and then close the tab. It exists because most single-purpose tool sites make you wait, sign up, or wonder what happens to the file you just handed them."
+        intro="AllTools is one place to get a small job done. Convert a file, count some words, work out a repayment, generate a QR code, and then close the tab. It exists because most single-purpose tool sites make you wait, sign up, or wonder what happens to the file you just handed them."
       />
 
       <div className="container-page pb-20 pt-12">
         <div className="prose-tool measure">
           <h2>What it is</h2>
           <p>
-            A directory of free utilities organised into six categories — PDF, image, text,
+            A directory of free utilities organised into six categories: PDF, image, text,
             calculators, developer and everyday tools. There are {total} tools in the directory and{" "}
             {live} of them work today.{" "}
             {planned > 0
@@ -46,7 +46,7 @@ export default function AboutPage() {
           </p>
           <p>
             Where that promise cannot be kept, the tool says so on its own page rather than relying on
-            you to assume the best. Being specific about what is local is the whole point — a vague
+            you to assume the best. Being specific about what is local is the whole point; a vague
             claim of privacy is worth nothing.
           </p>
 
@@ -82,7 +82,7 @@ export default function AboutPage() {
                       <Link href={`/categories/${category.slug}`} className="link">
                         {category.name}
                       </Link>{" "}
-                      — {counts.live} of {counts.total} ready
+                      ({counts.live} of {counts.total} ready)
                     </li>
                   );
                 })}

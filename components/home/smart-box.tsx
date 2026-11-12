@@ -56,7 +56,7 @@ export function SmartBox({ entries }: { entries: SearchEntry[] }) {
   const { label, suggestions } = useMemo<{ label: string; suggestions: Suggestion[] }>(() => {
     if (dropped) {
       return {
-        label: "Image file — pick a tool",
+        label: "Image file: pick a tool",
         suggestions: imageTools.map((entry) => ({
           slug: entry.slug,
           name: entry.name,
@@ -194,7 +194,7 @@ export function SmartBox({ entries }: { entries: SearchEntry[] }) {
             onKeyDown={onKeyDown}
             onPaste={onPaste}
             autoComplete="off"
-            placeholder={`Search ${entries.length} tools, or paste text — try “${example}”`}
+            placeholder={`Search ${entries.length} tools, or paste text: try “${example}”`}
             className="h-full w-full rounded-md bg-transparent pl-12 pr-4 text-base text-fg outline-none placeholder:text-muted"
           />
           {dropped ? (

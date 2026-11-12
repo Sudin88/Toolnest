@@ -32,7 +32,7 @@ const homeFaqs: Faq[] = [
   },
   {
     q: "Are my files uploaded to a server?",
-    a: "Most of these tools process your file inside the browser tab, using the capabilities your device already has. Those tools are marked as running on your device. For anything that genuinely needs a server, the tool page says so before you start — we do not call something private when it is not.",
+    a: "Most of these tools process your file inside the browser tab, using the capabilities your device already has. Those tools are marked as running on your device. For anything that genuinely needs a server, the tool page says so before you start. We do not call something private when it is not.",
   },
   {
     q: "How does AllTools make money if the tools are free?",
@@ -89,7 +89,7 @@ export default function HomePage() {
         <SectionHeading
           id="home-facts"
           title="Three things, stated plainly"
-          description="Not a promise about a future release — each of these is true of the site as it stands today."
+          description="Not a promise about a future release. Each of these is true of the site as it stands today."
         />
         <ul className="mt-8 grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-3">
           <Fact
@@ -100,7 +100,7 @@ export default function HomePage() {
           <Fact
             icon={UserX}
             title="No account, no email, no dashboard"
-            body="There is nothing to sign up for and nothing to sign in to. Open a tool, use it, and close the tab — no address, no password, no profile left behind."
+            body="There is nothing to sign up for and nothing to sign in to. Open a tool, use it, and close the tab: no address, no password, no profile left behind."
           />
           <Fact
             icon={BadgeCheck}
@@ -115,7 +115,7 @@ export default function HomePage() {
           <SectionHeading
             id="home-faq"
             title="Questions, answered plainly"
-            description="The things people ask before they start — including how the site is paid for."
+            description="The things people ask before they start, including how the site is paid for."
           />
           <FaqAccordion faqs={homeFaqs} className="mt-8" />
         </div>

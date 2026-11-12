@@ -50,7 +50,7 @@ export function decodeBase64(input: string, tolerant: boolean): Base64DecodeResu
     return {
       ok: false,
       error:
-        "That does not look like base64 — it uses characters outside A–Z, a–z, 0–9, + and /, or its length is not a multiple of four. Padding-tolerant mode fixes the length.",
+        "That does not look like base64. It uses characters outside A–Z, a–z, 0–9, + and /, or its length is not a multiple of four. Padding-tolerant mode fixes the length.",
     };
   }
 

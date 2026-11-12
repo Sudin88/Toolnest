@@ -17,7 +17,7 @@ export const categories: ToolCategory[] = [
     navLabel: "PDF",
     tagline: "Merge, split, rotate and stamp documents",
     description:
-      "Everyday PDF surgery — combine files, pull out page ranges, rotate scans, add a watermark and count pages. Your document never leaves the browser tab.",
+      "Everyday PDF surgery: combine files, pull out page ranges, rotate scans, add a watermark and count pages. Your document never leaves the browser tab.",
     icon: FaFilePdf,
     color: "#d93025",
     intro:
@@ -34,7 +34,7 @@ export const categories: ToolCategory[] = [
     icon: FaFileImage,
     color: "#2563eb",
     intro:
-      "Photos and screenshots are the files people actually move around, and they are usually far bigger than they need to be. These tools decode your image with the Canvas API, do the work locally, and hand back a smaller or differently shaped file — plus the before and after byte counts so you can see what changed.",
+      "Photos and screenshots are the files people actually move around, and they are usually far bigger than they need to be. These tools decode your image with the Canvas API, do the work locally, and hand back a smaller or differently shaped file, plus the before and after byte counts so you can see what changed.",
   },
   {
     id: "text",
@@ -73,7 +73,7 @@ export const categories: ToolCategory[] = [
     icon: FaCode,
     color: "#0f766e",
     intro:
-      "The utilities you reach for twenty times a week. They are built for pasted real-world input, give you an actual error message with a position when something is malformed, and keep secrets — especially generated passwords — on the device.",
+      "The utilities you reach for twenty times a week. They are built for pasted real-world input, give you an actual error message with a position when something is malformed, and keep secrets, especially generated passwords, on the device.",
   },
   {
     id: "daily",
@@ -86,7 +86,7 @@ export const categories: ToolCategory[] = [
     icon: FaClock,
     color: "#15803d",
     intro:
-      "Not everything fits a category. These are the odds and ends — a QR code for a menu, a fair way to pick who goes first, a tip split that does the awkward division for you, and a stopwatch that keeps running while you switch tabs.",
+      "Not everything fits a category. These are the odds and ends: a QR code for a menu, a fair way to pick who goes first, a tip split that does the awkward division for you, and a stopwatch that keeps running while you switch tabs.",
   },
 ];
 

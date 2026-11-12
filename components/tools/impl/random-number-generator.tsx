@@ -177,7 +177,7 @@ export default function RandomNumberGenerator() {
         Values come from the browser&rsquo;s cryptographic random source and are mapped into the range
         with rejection sampling, which avoids the small bias a plain modulo introduces. That is more
         than good enough for picking who goes first. For anything with money or legal weight, use a
-        draw process a third party can audit — no web page can prove it was fair.
+        draw process a third party can audit. No web page can prove it was fair.
       </Note>
     </div>
   );

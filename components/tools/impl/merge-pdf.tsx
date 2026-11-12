@@ -68,7 +68,7 @@ export default function MergePdf() {
           </StatGrid>
 
           {entries.length === 1 ? (
-            <Note tone="warn">Add a second document to merge — one file on its own is already a complete PDF.</Note>
+            <Note tone="warn">Add a second document to merge: one file on its own is already a complete PDF.</Note>
           ) : null}
 
           {buildError ? <Note tone="warn">{buildError}</Note> : null}

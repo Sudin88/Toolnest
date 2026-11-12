@@ -38,7 +38,7 @@ export async function generateMetadata({
   if (!tool || tool.status !== "live") return {};
 
   return pageMetadata({
-    title: `${tool.name} — Free Online Tool`,
+    title: `${tool.name}: Free Online Tool`,
     description: tool.description,
     path: `/tools/${tool.slug}`,
   });

@@ -137,7 +137,7 @@ export async function loadImageFile(file: File): Promise<LoadedImage> {
   const sniffed = sniffImageType(head);
   if (!sniffed) {
     throw new Error(
-      "That file is not an image the browser can open — its contents do not match a supported format.",
+      "That file is not an image the browser can open. Its contents do not match a supported format.",
     );
   }
 

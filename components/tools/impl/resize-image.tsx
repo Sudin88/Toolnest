@@ -177,7 +177,7 @@ export default function ResizeImage() {
             <Stat
               label="Scale"
               value={`${Math.round((target.width / image.width) * 100)}%`}
-              hint={target.width > image.width ? "Enlarging — detail will not be invented" : "Reducing"}
+              hint={target.width > image.width ? "Enlarging: detail will not be invented" : "Reducing"}
             />
           </StatGrid>
 
@@ -225,7 +225,7 @@ export default function ResizeImage() {
 
           <Note>
             Re-encoding through the Canvas API drops the EXIF block, so camera details and GPS
-            coordinates are removed. Enlarging cannot add detail — smooth resampling avoids the worst
+            coordinates are removed. Enlarging cannot add detail: smooth resampling avoids the worst
             jaggedness but the result will look softer than a native image at that size.
           </Note>
         </>

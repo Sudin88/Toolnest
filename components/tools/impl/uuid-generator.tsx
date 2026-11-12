@@ -86,7 +86,7 @@ export default function UuidGenerator() {
       )}
 
       <Note>
-        These come from the browser&apos;s cryptographically secure random generator — the same
+        These come from the browser&apos;s cryptographically secure random generator: the same
         source used for encryption keys. Version 7 begins with a millisecond timestamp, so later
         identifiers sort after earlier ones, which keeps a database index dense.
       </Note>

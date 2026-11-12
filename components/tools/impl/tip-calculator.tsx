@@ -113,7 +113,7 @@ export default function TipCalculator() {
         />
         <Stat
           label="Rounded up"
-          value={roundedTotal === null ? "—" : money(roundedTotal)}
+          value={roundedTotal === null ? "-" : money(roundedTotal)}
           hint={
             roundedTotal === null
               ? "Choose a rounding rule to see this"
@@ -156,7 +156,7 @@ export default function TipCalculator() {
 
       <Note>
         The traditional percentage refers to the pre-tax amount, so enter the bill before tax. Every
-        figure here is a guide — the split is even, and tipping conventions vary by country, so
+        figure here is a guide. The split is even, and tipping conventions vary by country, so
         checking local etiquette is worth more than any calculator.
       </Note>
     </div>

@@ -10,7 +10,7 @@ import { draftNumber, draftOneOf, draftString, useToolDraft } from "@/lib/tool-d
 const fmt = (value: number) =>
   Number.isFinite(value)
     ? new Intl.NumberFormat("en-US", { maximumSignificantDigits: 6, maximumFractionDigits: 6 }).format(value)
-    : "—";
+    : "-";
 
 const CATEGORY_ORDER: UnitCategory[] = ["length", "weight", "volume", "temperature"];
 
@@ -127,7 +127,7 @@ export default function UnitConverter() {
       <Note>
         Length, weight and volume scale by multiplying, so zero stays zero. Temperature has an
         offset, which is why Celsius to Fahrenheit needs a multiplication and an addition. US and
-        imperial gallons are listed separately — they differ by about 20%.
+        imperial gallons are listed separately: they differ by about 20%.
       </Note>
     </div>
   );

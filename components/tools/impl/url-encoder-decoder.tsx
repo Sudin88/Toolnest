@@ -36,7 +36,7 @@ export default function UrlEncoderDecoder() {
       return {
         output: "",
         error:
-          "That input is not valid percent-encoding. A percent sign must be followed by two hexadecimal digits — a stray “%” is the usual cause.",
+          "That input is not valid percent-encoding. A percent sign must be followed by two hexadecimal digits: a stray “%” is the usual cause.",
       };
     }
   }, [input, mode, scope]);

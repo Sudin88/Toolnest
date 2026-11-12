@@ -319,7 +319,7 @@ export function imagePageGeometry({
 /** The one friendly-error wrapper every tool loads a document through. */
 export async function loadPdfDocument(bytes: Uint8Array): Promise<PDFDocument> {
   if (!looksLikePdf(bytes)) {
-    throw new Error("That file does not look like a PDF — the %PDF- header is missing.");
+    throw new Error("That file does not look like a PDF. The %PDF- header is missing.");
   }
 
   let doc: PDFDocument;
@@ -337,7 +337,7 @@ export async function loadPdfDocument(bytes: Uint8Array): Promise<PDFDocument> {
 
   if (doc.isEncrypted) {
     throw new Error(
-      "That PDF is password-protected. Remove the password first — an encrypted file cannot be opened here.",
+      "That PDF is password-protected. Remove the password first: an encrypted file cannot be opened here.",
     );
   }
 

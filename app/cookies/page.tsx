@@ -44,12 +44,12 @@ export default function CookiesPage() {
           <p>The site stores two keys in your browser&rsquo;s local storage:</p>
           <ul>
             <li>
-              <code>toolnest-recents</code> — a list of the tool identifiers you opened most recently,
+              <code>toolnest-recents</code>: a list of the tool identifiers you opened most recently,
               so the home page and the search palette can offer them back. It holds slugs only, never
               anything you typed or opened, and clearing your browser&rsquo;s site data removes it.
             </li>
             <li>
-              <code>toolnest-favourites</code> — the tool identifiers you marked as favourites, so
+              <code>toolnest-favourites</code>: the tool identifiers you marked as favourites, so
               they can be offered first. Like the recents list it holds slugs only, and clearing your
               browser&rsquo;s site data removes it.
             </li>
@@ -66,12 +66,12 @@ export default function CookiesPage() {
           </p>
           <ul>
             <li>
-              <code>toolnest-draft</code> — a short draft of the small inputs in a calculator or a
+              <code>toolnest-draft</code>: a short draft of the small inputs in a calculator or a
               text tool, so a reload does not lose a number you were part-way through. It is scoped to
               the tab, and tools that handle files, passwords or tokens never use it.
             </li>
             <li>
-              <code>toolnest-handover</code> — the text you dropped into the home box, held just long
+              <code>toolnest-handover</code>: the text you dropped into the home box, held just long
               enough for the tool it opens to read it once. It is deleted the moment it is read, so
               the next visit starts clean.
             </li>
@@ -83,8 +83,8 @@ export default function CookiesPage() {
               <p>
                 This deployment has advertising enabled. Google AdSense and its partners may set
                 cookies or read advertising identifiers to serve, cap and measure ads. Typical
-                purposes include frequency capping, measuring how many people saw an ad, and — where
-                consent has been given — selecting ads based on interests.
+                purposes include frequency capping, measuring how many people saw an ad, and, where
+                consent has been given, selecting ads based on interests.
               </p>
               <p>
                 Those cookies are set by Google, not by AllTools, and they are not set inside any tool
@@ -93,7 +93,7 @@ export default function CookiesPage() {
                 affecting any tool.
               </p>
               <p>
-                In regions where consent is required — the EEA and the UK, for example — this
+                In regions where consent is required, such as the EEA and the UK, this
                 deployment must show a consent prompt before personalised advertising cookies are used.
               </p>
             </>

@@ -34,7 +34,7 @@ export default function AgeCalculator() {
           type="date"
           value={birth}
           onChange={setBirth}
-          hint="Stored nowhere — the calculation happens in this tab."
+          hint="Stored nowhere. The calculation happens in this tab."
         />
         <TextInput label="Age at date" type="date" value={asOf} onChange={setAsOf} />
       </div>

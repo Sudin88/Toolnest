@@ -22,8 +22,8 @@ describe("formatBytes", () => {
 
   it("handles the edges", () => {
     expect(formatBytes(0)).toBe("0 B");
-    expect(formatBytes(-1)).toBe("—");
-    expect(formatBytes(Number.NaN)).toBe("—");
+    expect(formatBytes(-1)).toBe("-");
+    expect(formatBytes(Number.NaN)).toBe("-");
   });
 });
 

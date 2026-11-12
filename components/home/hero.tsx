@@ -32,7 +32,7 @@ export function Hero() {
 
         <p className="measure mt-4 text-base leading-relaxed text-muted sm:text-lg">
           A search box, a paste area and a drop zone in one field. Type what you need, paste the text
-          you have, or drop a file — the tools all run on your device, so your file or your words never
+          you have, or drop a file. The tools all run on your device, so your file or your words never
           leave this tab.
         </p>
 

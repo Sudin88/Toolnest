@@ -13,7 +13,7 @@ export const CURRENCIES = [
 ] as const;
 
 export function formatMoney(value: number, currency: string, maximumFractionDigits = 2) {
-  if (!Number.isFinite(value)) return "—";
+  if (!Number.isFinite(value)) return "-";
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -23,6 +23,6 @@ export function formatMoney(value: number, currency: string, maximumFractionDigi
   } catch {
     // An unknown currency code makes `Intl` throw a RangeError. Money is
     // presentation only, so an unrecognised code shows a dash, not a crash.
-    return "—";
+    return "-";
   }
 }

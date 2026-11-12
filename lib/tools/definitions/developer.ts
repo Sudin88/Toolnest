@@ -15,7 +15,7 @@ export const developerTools: ToolDefinition[] = [
     category: "developer",
     tagline: "Format, validate and minify JSON",
     description:
-      "Paste JSON to reformat it with indentation, minify it for transport, or find out exactly where it is invalid — with the line and column reported.",
+      "Paste JSON to reformat it with indentation, minify it for transport, or find out exactly where it is invalid, with the line and column reported.",
     icon: FaCode,
     keywords: ["json formatter", "json validator", "pretty print json", "minify json", "json beautifier"],
     local: true,
@@ -36,7 +36,7 @@ export const developerTools: ToolDefinition[] = [
       },
       {
         q: "What does the error position refer to?",
-        a: "The line and column of the first character the parser could not accept, which is usually either just before or just after the actual mistake — a missing comma, an unquoted key, or a trailing comma in an array.",
+        a: "The line and column of the first character the parser could not accept, which is usually either just before or just after the actual mistake: a missing comma, an unquoted key, or a trailing comma in an array.",
       },
       {
         q: "Does formatting preserve my key order?",
@@ -63,14 +63,14 @@ export const developerTools: ToolDefinition[] = [
     howTo: [
       "Paste your text or base64 string.",
       "Choose Encode or Decode.",
-      "Inspect the live preview — decoding is validated as you type, so a truncated string is reported straight away.",
+      "Inspect the live preview. Decoding is validated as you type, so a truncated string is reported straight away.",
       "Turn on URL-safe output when the value will travel in a query string, or padding-tolerant input when you are pasting from a system that strips it.",
       "Copy or download the result.",
     ],
     faqs: [
       {
         q: "Does base64 encrypt my data?",
-        a: "No. Base64 is a transport encoding, not encryption — anyone can decode it. Use it to move bytes safely through text-only channels, never to protect a secret.",
+        a: "No. Base64 is a transport encoding, not encryption. Anyone can decode it. Use it to move bytes safely through text-only channels, never to protect a secret.",
       },
       {
         q: "Why does decoded output look like mojibake?",
@@ -100,7 +100,7 @@ export const developerTools: ToolDefinition[] = [
     faqs: [
       {
         q: "What is the difference between UUID v4 and v7?",
-        a: "Version 4 is entirely random. Version 7 begins with a millisecond timestamp, so identifiers generated later sort after earlier ones — which keeps database indexes dense instead of scattered.",
+        a: "Version 4 is entirely random. Version 7 begins with a millisecond timestamp, so identifiers generated later sort after earlier ones, which keeps database indexes dense instead of scattered.",
       },
       {
         q: "How random are these identifiers?",
@@ -126,10 +126,10 @@ export const developerTools: ToolDefinition[] = [
     rank: 94,
     added: "2026-08-09",
     howTo: [
-      "Set the length — 16 characters or more is a sensible default for anything you care about.",
+      "Set the length: 16 characters or more is a sensible default for anything you care about.",
       "Pick the character sets you need. Numbers and symbols are usually required; ambiguity-free mode removes characters that are easily misread.",
       "Read the strength estimate, which is based on the real size of the character pool you selected.",
-      "Copy the password into your password manager before you navigate away — it is not stored here.",
+      "Copy the password into your password manager before you navigate away. It is not stored here.",
     ],
     faqs: [
       {
@@ -142,11 +142,11 @@ export const developerTools: ToolDefinition[] = [
       },
       {
         q: "What does excluding ambiguous characters do?",
-        a: "It removes letters and digits that are easy to confuse when read aloud or copied by hand, such as l, I, 1, O and 0 — useful when a human has to retype the password.",
+        a: "It removes letters and digits that are easy to confuse when read aloud or copied by hand, such as l, I, 1, O and 0, useful when a human has to retype the password.",
       },
     ],
     limits: [
-      "Nothing is stored — the password is gone as soon as you navigate away or reload, so copy it before you do.",
+      "Nothing is stored. The password is gone as soon as you navigate away or reload, so copy it before you do.",
       "It does not check passwords against breach lists or rate strength against a specific attacker model.",
       "Values are generated locally, so there is no vault, sync or history.",
     ],
@@ -157,7 +157,7 @@ export const developerTools: ToolDefinition[] = [
     category: "developer",
     tagline: "Break a URL into protocol, host, path and query",
     description:
-      "Split any URL into its components — protocol, host, port, path, query parameters and fragment — and read query values as a clean table.",
+      "Split any URL into its components (protocol, host, port, path, query parameters and fragment) and read query values as a clean table.",
     icon: FaLink,
     keywords: ["url parser", "query string parser", "url components", "parse url online"],
     local: true,

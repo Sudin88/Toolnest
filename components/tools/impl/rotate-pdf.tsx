@@ -163,7 +163,7 @@ export default function RotatePdf() {
           <Note>
             Rotation is applied to the page&rsquo;s display transform, so the content turns while the page
             box keeps its dimensions and a mixed-orientation document stays mixed. A few readers cache
-            rendering aggressively — reopen the file if a change does not show at once.
+            rendering aggressively. Reopen the file if a change does not show at once.
           </Note>
         </>
       ) : (

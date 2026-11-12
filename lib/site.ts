@@ -18,7 +18,7 @@ export const siteConfig = {
   name: "AllTools",
   tagline: "One destination. Every tool you need.",
   description:
-    "Free online tools that run in your browser. Convert, compress, calculate and create — no account, no upload, no waiting.",
+    "Free online tools that run in your browser. Convert, compress, calculate and create: no account, no upload, no waiting.",
   url: (process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://alltools.example.com"),
   locale: "en_US",
   localeShort: "en",

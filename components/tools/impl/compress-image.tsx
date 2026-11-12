@@ -72,7 +72,7 @@ export default function CompressImage() {
     <div className="flex flex-col gap-6">
       <FileDrop
         label="Drop an image here"
-        hint="JPEG, PNG, WebP, GIF or AVIF — up to whatever your browser can decode."
+        hint="JPEG, PNG, WebP, GIF or AVIF: up to whatever your browser can decode."
         accept="image/*"
         onFile={(files) => {
           clear();
@@ -204,7 +204,7 @@ export default function CompressImage() {
           {output ? (
             <Note>
               The image was decoded and re-encoded by your browser. Nothing was uploaded, and no
-              EXIF block survives the round trip — camera details and location data are gone.
+              EXIF block survives the round trip. Camera details and location data are gone.
             </Note>
           ) : null}
         </>

@@ -17,7 +17,7 @@ export const dailyTools: ToolDefinition[] = [
     rank: 92,
     added: "2026-08-16",
     howTo: [
-      "Choose what you are encoding — a URL, plain text, or Wi-Fi credentials, which need a specific format to work.",
+      "Choose what you are encoding: a URL, plain text, or Wi-Fi credentials, which need a specific format to work.",
       "Type the content and watch the preview regenerate as you go.",
       "Set the output size and quiet-zone margin. Scanners need that clear border, so do not remove it.",
       "Download the PNG. It is generated in the browser and never expires, because no redirect service sits behind it.",
@@ -25,7 +25,7 @@ export const dailyTools: ToolDefinition[] = [
     faqs: [
       {
         q: "Will the QR code expire?",
-        a: "No. The code encodes your content directly rather than pointing at a shortener, so it keeps working for as long as the destination does — and if you print it, nothing can switch it off.",
+        a: "No. The code encodes your content directly rather than pointing at a shortener, so it keeps working for as long as the destination does, and if you print it, nothing can switch it off.",
       },
       {
         q: "What error-correction level should I use?",
@@ -37,7 +37,7 @@ export const dailyTools: ToolDefinition[] = [
       },
     ],
     limits: [
-      "There is a capacity ceiling — a few thousand characters at the lowest error-correction level, much less at the highest.",
+      "There is a capacity ceiling: a few thousand characters at the lowest error-correction level, much less at the highest.",
       "The output is a flat PNG with no vector or SVG export, and no logo or colour artwork baked in.",
       "Link, plain-text, Wi-Fi and contact-card codes are supported; payment formats and other specialised types are not.",
     ],
@@ -63,7 +63,7 @@ export const dailyTools: ToolDefinition[] = [
     faqs: [
       {
         q: "Is this suitable for a lottery or a draw?",
-        a: "For picking who goes first, yes. For anything with money or legal weight, use a draw process you can audit — no web page can prove to a third party that it was fair.",
+        a: "For picking who goes first, yes. For anything with money or legal weight, use a draw process you can audit; no web page can prove to a third party that it was fair.",
       },
       {
         q: "How is the randomness produced?",
@@ -105,7 +105,7 @@ export const dailyTools: ToolDefinition[] = [
       },
       {
         q: "Does it handle unequal splits?",
-        a: "No — it divides evenly. For an unequal split, work out each person's share separately and add their tip to it.",
+        a: "No. It divides evenly. For an unequal split, work out each person's share separately and add their tip to it.",
       },
     ],
   },
@@ -126,7 +126,7 @@ export const dailyTools: ToolDefinition[] = [
       "Start the timer with the button or the space bar.",
       "Record a lap with L, or reset with R.",
       "Read the split column to see how each lap compared with the fastest one so far.",
-      "Leave the tab in the background if you need to — the timer measures real elapsed time rather than counting animation frames.",
+      "Leave the tab in the background if you need to; the timer measures real elapsed time rather than counting animation frames.",
     ],
     faqs: [
       {
@@ -144,7 +144,7 @@ export const dailyTools: ToolDefinition[] = [
     ],
     limits: [
       "Browsers deliberately coarsen timer precision, so this is not a certified chronometer.",
-      "Laps live in memory only — reloading or closing the tab discards them, and nothing is saved between visits.",
+      "Laps live in memory only. Reloading or closing the tab discards them, and nothing is saved between visits.",
       "Only the 200 most recent laps are kept.",
     ],
   },

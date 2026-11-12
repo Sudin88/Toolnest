@@ -8,7 +8,7 @@ import { adsEnabled, contactEmailHref, siteConfig } from "@/lib/site";
 export const metadata: Metadata = pageMetadata({
   title: "Privacy Policy",
   description:
-    "What AllTools collects, what it does not, and what happens to the files you process — in plain English.",
+    "What AllTools collects, what it does not, and what happens to the files you process, in plain English.",
   path: "/privacy",
 });
 
@@ -39,8 +39,8 @@ export default function PrivacyPage() {
 
           <h2>Files you process</h2>
           <p>
-            Every tool that accepts a file — image compression, resizing, format conversion, image to
-            PDF, colour picking, base64 inlining and the PDF tools — works on the file inside your
+            Every tool that accepts a file, including image compression, resizing, format conversion, image to
+            PDF, colour picking, base64 inlining and the PDF tools, works on the file inside your
             browser. The image is decoded by the Canvas API, the PDF is assembled by pdf-lib, and the
             result is written back to your device. Nothing in that path sends the file anywhere,
             because there is no server-side endpoint to send it to.
@@ -67,7 +67,7 @@ export default function PrivacyPage() {
 
           <h2>Cookies and local storage</h2>
           <p>
-            The site itself sets no cookies for the tools to work — there is no session to maintain. It
+            The site itself sets no cookies for the tools to work. There is no session to maintain. It
             writes the tools you opened recently and the tools you marked as favourites to your
             browser&rsquo;s local storage, and a tab-scoped draft of small inputs plus any text handed
             over from the home box to session storage, so a reload does not lose your place. The{" "}
@@ -87,7 +87,7 @@ export default function PrivacyPage() {
                 review or change your advertising preferences through Google&rsquo;s ad settings.
               </p>
               <p>
-                Where the law requires it — in the EEA and the UK, for example — personalised
+                Where the law requires it (in the EEA and the UK, for example), personalised
                 advertising must be preceded by a consent prompt, and this deployment is responsible
                 for showing one before ads that rely on it are served.
               </p>

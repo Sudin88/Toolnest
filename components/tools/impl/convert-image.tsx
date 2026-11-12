@@ -16,9 +16,9 @@ import { baseName, canvasToBlob, drawToCanvas, formatLabel, mayHaveAlpha } from 
 import { formatBytes } from "@/lib/utils";
 
 const TARGETS = [
-  { value: "image/jpeg", label: "JPEG — photographs" },
-  { value: "image/png", label: "PNG — transparency and lossless detail" },
-  { value: "image/webp", label: "WebP — smallest for the web" },
+  { value: "image/jpeg", label: "JPEG: photographs" },
+  { value: "image/png", label: "PNG: transparency and lossless detail" },
+  { value: "image/webp", label: "WebP: smallest for the web" },
 ];
 
 const EXT: Record<string, string> = {
@@ -157,7 +157,7 @@ export default function ConvertImage() {
 
           {transparencyAtRisk ? (
             <Note tone="warn">
-              This image may contain transparent areas, and JPEG has no alpha channel — they will be
+              This image may contain transparent areas, and JPEG has no alpha channel. They will be
               filled with the matte colour above. Choose PNG or WebP if you need to keep transparency.
             </Note>
           ) : null}

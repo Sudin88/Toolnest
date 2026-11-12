@@ -50,7 +50,7 @@ const READ_TIMEOUT_MS = 20_000;
 function withTimeout<T>(work: Promise<T>): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => {
-      reject(new Error("That document is taking too long to read. It may be very large or unusually complex — try a smaller file."));
+      reject(new Error("That document is taking too long to read. It may be very large or unusually complex: try a smaller file."));
     }, READ_TIMEOUT_MS);
     work.then(
       (value) => {
@@ -79,7 +79,7 @@ async function readPdfFile(file: File): Promise<{
 
   const bytes = new Uint8Array(await file.arrayBuffer());
   if (!looksLikePdf(bytes)) {
-    throw new Error(`“${file.name}” is not a PDF — the %PDF- header is missing, whatever the name says.`);
+    throw new Error(`“${file.name}” is not a PDF. The %PDF- header is missing, whatever the name says.`);
   }
 
   const doc = await withTimeout(loadPdfDocument(bytes));

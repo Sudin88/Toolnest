@@ -124,13 +124,13 @@ export default function PdfPageCounter() {
               <StatGrid className="sm:grid-cols-3">
                 <Stat
                   label="Page size"
-                  value={`${latest.summary.sizes[0]?.width.toFixed(0) ?? "—"} × ${latest.summary.sizes[0]?.height.toFixed(0) ?? "—"} pt`}
+                  value={`${latest.summary.sizes[0]?.width.toFixed(0) ?? "-"} × ${latest.summary.sizes[0]?.height.toFixed(0) ?? "-"} pt`}
                   hint={latest.summary.mixedSizes ? "Pages differ in size" : "All pages match"}
                 />
-                <Stat label="Orientation" value={ORIENTATION_LABEL[latest.summary.orientation] ?? "—"} />
+                <Stat label="Orientation" value={ORIENTATION_LABEL[latest.summary.orientation] ?? "-"} />
                 <Stat
                   label="Created"
-                  value={latest.summary.creationDate ? latest.summary.creationDate.toISOString().slice(0, 10) : "—"}
+                  value={latest.summary.creationDate ? latest.summary.creationDate.toISOString().slice(0, 10) : "-"}
                   hint={latest.summary.creationDate ? undefined : "Not recorded in the file"}
                 />
               </StatGrid>

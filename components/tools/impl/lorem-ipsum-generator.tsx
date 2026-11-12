@@ -86,7 +86,7 @@ export default function LoremIpsumGenerator() {
 
       <Note>
         The output is drawn at random from the standard lorem ipsum vocabulary, so repeated runs
-        differ while the shape of the text stays consistent — which is the point when you are
+        differ while the shape of the text stays consistent, which is the point when you are
         filling a layout.
       </Note>
     </div>

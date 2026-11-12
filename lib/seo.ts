@@ -92,7 +92,7 @@ export function toolJsonLd(tool: ToolDefinition) {
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: `${tool.name} — ${siteConfig.name}`,
+    name: `${tool.name} | ${siteConfig.name}`,
     applicationCategory: "UtilitiesApplication",
     applicationSubCategory: category.name,
     operatingSystem: "Any modern web browser",

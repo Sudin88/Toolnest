@@ -160,7 +160,7 @@ export default function JsonFormatter() {
           >
             {hasInput
               ? "Fix the error above and the formatted output will appear here."
-              : "Paste some JSON to format it — nothing is uploaded."}
+              : "Paste some JSON to format it: nothing is uploaded."}
           </Empty>
         )}
       </div>

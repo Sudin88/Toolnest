@@ -159,7 +159,7 @@ export default function QrCodeGenerator() {
 
         <Note>
           The code encodes your content directly rather than pointing at a redirect service, so it
-          never expires and cannot be switched off. Leave the quiet-zone margin in place — scanners
+          never expires and cannot be switched off. Leave the quiet-zone margin in place: scanners
           need that clear border.
         </Note>
       </div>

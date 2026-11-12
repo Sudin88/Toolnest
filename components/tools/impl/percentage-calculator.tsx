@@ -32,11 +32,11 @@ export default function PercentageCalculator() {
     if (mode === "isPercent") {
       const percent = isWhatPercent(a, b);
       return percent === null
-        ? { value: "—", formula: "Cannot divide by zero", error: true }
+        ? { value: "-", formula: "Cannot divide by zero", error: true }
         : { value: `${fmt(percent)}%`, formula: `${fmt(a)} ÷ ${fmt(b)} × 100` };
     }
     const change = percentChange(a, b);
-    if (change.change === null) return { value: "—", formula: "A change from zero has no percentage", error: true };
+    if (change.change === null) return { value: "-", formula: "A change from zero has no percentage", error: true };
     const sign = change.change > 0 ? "+" : "";
     const article = change.direction === "increase" ? "an" : "a";
     return {

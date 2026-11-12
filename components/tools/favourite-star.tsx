@@ -36,7 +36,7 @@ export function FavouriteStar({
     >
       <Star className={cn("size-4", active && "fill-current")} aria-hidden="true" />
       {active ? "Favourited" : "Favourite"}
-      <span className="sr-only"> — {name}</span>
+      <span className="sr-only">, {name}</span>
     </button>
   );
 }

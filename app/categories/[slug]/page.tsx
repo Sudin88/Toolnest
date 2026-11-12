@@ -74,7 +74,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
           <ToolIndexFilter groups={[group]} showGroupHeadings={false} />
         ) : (
           <p className="measure text-[0.9375rem] leading-relaxed text-muted">
-            Nothing in this category is finished yet. The tools are being built — they will appear here
+            Nothing in this category is finished yet. The tools are being built and will appear here
             as working links when they are ready.
           </p>
         )}

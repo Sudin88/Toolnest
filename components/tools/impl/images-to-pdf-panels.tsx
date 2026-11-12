@@ -134,7 +134,7 @@ export function PageSetupPreview({
         </dl>
       </div>
       <Note tone="info">
-        At 300 pixels per inch — the usual target for print — this image covers about{" "}
+        At 300 pixels per inch, the usual target for print, this image covers about{" "}
         {(entry.width / 300).toFixed(1)} in across. It will still display correctly on screen at any
         size.
       </Note>
