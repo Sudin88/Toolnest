@@ -37,6 +37,8 @@ const ADS_IMG = [
   "https://*.doubleclick.net",
   "https://*.gstatic.com",
   "https://*.googleusercontent.com",
+  // The traffic-quality check reports its result as an image pixel.
+  "https://*.adtrafficquality.google",
 ];
 const ADS_CONNECT = [
   "https://*.googlesyndication.com",
