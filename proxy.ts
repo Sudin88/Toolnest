@@ -27,6 +27,10 @@ const ADS_SCRIPT = [
   "https://*.googlesyndication.com",
   "https://*.gstatic.com",
   "https://fundingchoicesmessages.google.com",
+  // AdSense checks its traffic for invalid clicks from this family, and it
+  // fetches a script as well as a beacon. Blocking the script tells Google the
+  // traffic could not be verified, which is the wrong answer to give a reviewer.
+  "https://*.adtrafficquality.google",
 ];
 const ADS_IMG = [
   "https://*.googlesyndication.com",
@@ -38,7 +42,7 @@ const ADS_CONNECT = [
   "https://*.googlesyndication.com",
   "https://*.doubleclick.net",
   "https://*.gstatic.com",
-  "https://ep1.adtrafficquality.google",
+  "https://*.adtrafficquality.google",
   "https://fundingchoicesmessages.google.com",
 ];
 const ADS_FRAME = [
