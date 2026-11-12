@@ -32,6 +32,10 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
+  // Deliberately hand-tuned rather than derived from `lib/tools/categories.ts`:
+  // these are terms for the root document, so the wording is the target ("online
+  // calculators", not the category name "Calculators"), and the list is short
+  // enough to keep in step by hand.
   keywords: [
     "free online tools",
     "pdf tools",

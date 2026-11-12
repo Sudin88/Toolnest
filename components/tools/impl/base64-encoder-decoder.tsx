@@ -116,7 +116,7 @@ export default function Base64EncoderDecoder() {
             {result.error}
           </p>
         ) : hasInput ? (
-          <OutputBox>{result.output.length > 0 ? result.output : "(empty result)"}</OutputBox>
+          <OutputBox>{result.output.length > 0 ? result.output : "Decoded to no text."}</OutputBox>
         ) : (
           <Empty>Paste {mode === "encode" ? "some text" : "a base64 string"} to convert it.</Empty>
         )}

@@ -12,7 +12,7 @@ import {
 import { FileDrop, NumberInput, RangeInput, Select } from "@/components/tools/interactive";
 import { Empty, Note } from "@/components/tools/parts";
 import { downloadBlob } from "@/lib/download";
-import { baseName, canvasToBlob, drawToCanvas, savingsRatio } from "@/lib/image";
+import { baseName, canvasToBlob, drawToCanvas, formatLabel, savingsRatio } from "@/lib/image";
 
 const FORMATS = [
   { value: "auto", label: "Same as the original" },
@@ -43,6 +43,9 @@ export default function CompressImage() {
         ? (image?.type as string)
         : "image/jpeg";
   const lossy = targetType !== "image/png";
+  // Auto keeps an original the browser can re-encode. Anything else (GIF, BMP,
+  // AVIF, SVG) has no encoder here, so it silently becomes a JPEG.
+  const autoToJpeg = format === "auto" && targetType === "image/jpeg" && image?.type !== "image/jpeg";
 
   const { result: output, working, run, clear } = useImageResult(
     settings,
@@ -168,6 +171,13 @@ export default function CompressImage() {
               PNG is lossless, so the quality slider does nothing and re-encoding often makes the
               file <em>larger</em>. Switch to JPEG or WebP for photographs, or rely on the resize
               control alone.
+            </Note>
+          ) : null}
+
+          {autoToJpeg ? (
+            <Note>
+              The browser cannot re-encode {formatLabel(image.type)}, so Auto saves it as JPEG.
+              Choose PNG or WebP if you need transparency.
             </Note>
           ) : null}
 

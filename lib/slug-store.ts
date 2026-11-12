@@ -2,13 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
-import {
-  createJsonReader,
-  emitKey,
-  removeKey,
-  subscribeToKey,
-  writeJson,
-} from "@/lib/browser-store";
+import { createJsonReader, emitKey, subscribeToKey, writeJson } from "@/lib/browser-store";
 
 /**
  * A browser-local, newest-first list of tool slugs — the shape behind both
@@ -22,16 +16,12 @@ import {
 export interface SlugListStore {
   /** Slugs, newest first. Empty before hydration, so the server always agrees. */
   useSlugs(): string[];
-  /** The current list, for non-React callers. */
-  read(): string[];
   /** Put a slug at the front. A slug already at the head is left untouched. */
   add(slug: string): void;
   /** Drop a slug. */
   remove(slug: string): void;
   /** Add a slug when it is absent, drop it when it is present. */
   toggle(slug: string): void;
-  /** Forget the whole list. */
-  clear(): void;
 }
 
 export function createSlugListStore({
@@ -83,16 +73,11 @@ export function createSlugListStore({
 
   return {
     useSlugs,
-    read: current,
     add,
     remove,
     toggle: (slug: string) => {
       if (current().includes(slug)) remove(slug);
       else add(slug);
-    },
-    clear: () => {
-      removeKey(window.localStorage, key);
-      emitKey(event);
     },
   };
 }
