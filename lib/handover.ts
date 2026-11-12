@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import { readJson, writeJson } from "@/lib/browser-store";
+import { MAX_TEXT_LENGTH } from "@/lib/text";
 
 /**
  * One-shot hand-over from the home box into a tool.
@@ -30,9 +31,16 @@ function write(store: Store): void {
   writeJson(window.sessionStorage, KEY, store);
 }
 
-/** Stage text for a tool to pick up once, keyed by its slug. */
+/**
+ * Stage text for a tool to pick up once, keyed by its slug.
+ *
+ * Text past `MAX_TEXT_LENGTH` is not staged: no tool processes that much, so it
+ * would only buy a synchronous multi-megabyte write that storage is free to
+ * refuse. The cap is the same one the tools apply to their own input, so nothing
+ * a tool would have used is lost.
+ */
 export function setHandover(slug: string, text: string): void {
-  if (!text) return;
+  if (!text || text.length > MAX_TEXT_LENGTH) return;
   const store = read();
   store[slug] = text;
   write(store);
