@@ -16,18 +16,22 @@ import { adsEnabled } from "@/lib/site";
  *   They are named individually — never `*.google.com`, which would also allow
  *   every user-content subdomain.
  * - Fonts are self-hosted and there is no server endpoint, so `connect-src` stays
- *   `'self'` apart from the two third parties below.
+ *   `'self'` apart from the AdSense hosts below.
  * - Cloudflare injects its own Web Analytics beacon into the HTML at the edge,
  *   so it is not a script the app can choose to include or leave out. It is
  *   cookieless and aggregate, which is why allowing it does not change what the
- *   site can honestly say about how it handles files.
+ *   site can honestly say about how it handles files. Only the script needs
+ *   allowing: it sends its report to the same-origin `/cdn-cgi/rum`, which
+ *   `'self'` already covers. Its other documented endpoint,
+ *   `https://cloudflareinsights.com/cdn-cgi/rum`, is used only when the injected
+ *   config omits `version`, and the live config sets it, so it stays out until a
+ *   request for it is actually observed.
  *
  * The other security headers (nosniff, frame options, referrer policy,
  * permissions policy, HSTS) apply to static assets as well, so they are emitted
  * from `next.config.ts` where they cover every route.
  */
 const ZONE_SCRIPT = ["https://static.cloudflareinsights.com"];
-const ZONE_CONNECT = ["https://cloudflareinsights.com"];
 const ADS_SCRIPT = [
   "https://pagead2.googlesyndication.com",
   "https://*.googlesyndication.com",
@@ -75,7 +79,7 @@ function contentSecurityPolicy(): string {
     ...(adsEnabled ? ADS_SCRIPT : []),
   ];
   const imgSrc = ["'self'", "data:", "blob:", ...(adsEnabled ? ADS_IMG : [])];
-  const connectSrc = ["'self'", ...ZONE_CONNECT, ...(adsEnabled ? ADS_CONNECT : [])];
+  const connectSrc = ["'self'", ...(adsEnabled ? ADS_CONNECT : [])];
 
   return [
     "default-src 'self'",
