@@ -177,6 +177,14 @@ export function draftOneOf<T extends string>(allowed: readonly T[]): DraftDecode
  * State that behaves like `useState` but survives a reload within the session.
  * Before hydration it renders `initial`, so the server and the first client
  * render agree.
+ *
+ * `initial` and `decode` are both compared by identity inside the snapshot, so
+ * both must be stable. Pass a primitive or a module-level constant for
+ * `initial` — a fresh object or array built during render makes `getSnapshot`
+ * return a new value on every call, which React reports as an uncached
+ * snapshot — and build `decode` once rather than inside the component. Every
+ * caller passes a primitive today; a non-primitive would need a hoisted
+ * constant or a `useRef`.
  */
 export function useToolDraft<T>(
   tool: string,

@@ -13,6 +13,12 @@ import { categories, getCategory } from "@/lib/tools/categories";
  * from the primary strip because it is a secondary destination, listed under the
  * footer's "Daily tools" link instead — and that link is derived here too, so no
  * category slug is written down twice.
+ *
+ * The six glyphs knowingly travel to the client bundle this way, because the
+ * mobile menu is a client component and this module is what it imports.
+ * Measured, the nav chunk is ~9 KB on the wire against a ~200 KB first load;
+ * inlining hand-drawn copies would save about a kilobyte and buy six glyphs free
+ * to drift from the icon set they were copied from. Not worth the trade.
  */
 export const primaryNav = categories
   .filter((category) => category.id !== "daily")

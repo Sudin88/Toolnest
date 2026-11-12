@@ -2,7 +2,7 @@
 
 import { ChevronDown, ShieldCheck, Star } from "lucide-react";
 import Link from "next/link";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 
 import type { ToolIndexGroup, ToolIndexItem } from "@/lib/tools/index-view";
 import { toggleFavourite, useFavouriteSlugs } from "@/lib/favourites";
@@ -24,10 +24,12 @@ import { cn } from "@/lib/utils";
  * `expandAll` and every match is shown at once.
  */
 
-function StarButton({ item }: { item: ToolIndexItem }) {
-  const favourites = useFavouriteSlugs();
-  const active = favourites.includes(item.slug);
-
+/**
+ * The star is a leaf that reads one boolean. The subscription lives once in
+ * `ToolIndex` rather than here, so a favourites change cannot re-render a row it
+ * does not concern — the previous shape subscribed once per row.
+ */
+function StarButton({ item, active }: { item: ToolIndexItem; active: boolean }) {
   return (
     <button
       type="button"
@@ -53,10 +55,13 @@ const IndexRow = memo(function IndexRow({
   item,
   number,
   showCategoryTag,
+  starred,
 }: {
   item: ToolIndexItem;
   number: number;
   showCategoryTag: boolean;
+  /** Whether this row's tool is starred. A primitive, so `memo` can compare it. */
+  starred: boolean;
 }) {
   return (
     <li className="group flex items-stretch border-b border-line">
@@ -92,7 +97,7 @@ const IndexRow = memo(function IndexRow({
         </span>
       </Link>
       <span className="flex items-center pr-1">
-        <StarButton item={item} />
+        <StarButton item={item} active={starred} />
       </span>
     </li>
   );
@@ -124,6 +129,12 @@ export function ToolIndex({
   expandAll?: boolean;
   className?: string;
 }) {
+  // One subscription for the whole index, rather than one per row. The hook
+  // returns a stable array while storage is unchanged, so the set is rebuilt
+  // only when a favourite actually changes.
+  const favouriteSlugs = useFavouriteSlugs();
+  const favourites = useMemo(() => new Set(favouriteSlugs), [favouriteSlugs]);
+
   let counter = startAt;
 
   return (
@@ -172,6 +183,7 @@ export function ToolIndex({
                   item={item}
                   number={counter++}
                   showCategoryTag={showCategoryTag}
+                  starred={favourites.has(item.slug)}
                 />
               ))}
             </ol>
@@ -189,6 +201,7 @@ export function ToolIndex({
                       item={item}
                       number={counter++}
                       showCategoryTag={showCategoryTag}
+                      starred={favourites.has(item.slug)}
                     />
                   ))}
                 </ol>

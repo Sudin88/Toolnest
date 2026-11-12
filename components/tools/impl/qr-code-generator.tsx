@@ -1,6 +1,5 @@
 "use client";
 
-import QRCode from "qrcode";
 import { useEffect, useRef, useState } from "react";
 
 import { QrCodeForm, type QrFormState } from "@/components/tools/impl/qr-code-generator-form";
@@ -74,28 +73,44 @@ export default function QrCodeGenerator() {
     }
 
     let cancelled = false;
-    QRCode.toCanvas(canvas, payload, {
-      width: typeof size === "number" && size > 0 ? Math.round(size) : 320,
-      margin: typeof margin === "number" ? Math.min(Math.max(margin, 0), 8) : 4,
-      errorCorrectionLevel: level,
-      color: { dark: fg, light: transparent ? "#0000" : bg },
-    })
-      .then(() => {
+
+    // Loaded on demand, the same way the home mini-task loads it, so `qrcode`
+    // has one loading strategy and stays out of this tool's initial chunk.
+    //
+    // The two failures are kept apart: a draw that rejects is almost always
+    // content that will not fit at this error-correction level, while a script
+    // that fails to load says nothing about the payload and must not be reported
+    // as if it did.
+    void import("qrcode").then(
+      async ({ default: QRCode }) => {
+        try {
+          await QRCode.toCanvas(canvas, payload, {
+            width: typeof size === "number" && size > 0 ? Math.round(size) : 320,
+            margin: typeof margin === "number" ? Math.min(Math.max(margin, 0), 8) : 4,
+            errorCorrectionLevel: level,
+            color: { dark: fg, light: transparent ? "#0000" : bg },
+          });
+        } catch {
+          if (!cancelled) {
+            setRendered(null);
+            setFailure({
+              payload,
+              message:
+                "This content is too long for a QR code at the chosen error-correction level. Shorten it, or lower the level to L.",
+            });
+          }
+          return;
+        }
+
         if (!cancelled) {
           setFailure(null);
           setRendered(renderKey);
         }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setRendered(null);
-          setFailure({
-            payload,
-            message:
-              "This content is too long for a QR code at the chosen error-correction level. Shorten it, or lower the level to L.",
-          });
-        }
-      });
+      },
+      () => {
+        if (!cancelled) setRendered(null);
+      },
+    );
 
     return () => {
       cancelled = true;
