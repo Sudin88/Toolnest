@@ -26,6 +26,7 @@ const ADS_SCRIPT = [
   "https://pagead2.googlesyndication.com",
   "https://*.googlesyndication.com",
   "https://*.gstatic.com",
+  "https://fundingchoicesmessages.google.com",
 ];
 const ADS_IMG = [
   "https://*.googlesyndication.com",
@@ -38,12 +39,14 @@ const ADS_CONNECT = [
   "https://*.doubleclick.net",
   "https://*.gstatic.com",
   "https://ep1.adtrafficquality.google",
+  "https://fundingchoicesmessages.google.com",
 ];
 const ADS_FRAME = [
   "https://googleads.g.doubleclick.net",
   "https://tpc.googlesyndication.com",
   "https://*.googlesyndication.com",
   "https://*.doubleclick.net",
+  "https://fundingchoicesmessages.google.com",
 ];
 
 function contentSecurityPolicy(): string {
