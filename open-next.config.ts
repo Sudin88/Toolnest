@@ -2,7 +2,7 @@ import { defineCloudflareConfig } from "@opennextjs/cloudflare";
 import staticAssetsIncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/static-assets-incremental-cache";
 
 /**
- * Every page on ToolNest is prerendered at build time and nothing revalidates:
+ * Every page on AllTools is prerendered at build time and nothing revalidates:
  * the tools run in the browser, the registry is static, and the sitemap carries
  * a hand-written date rather than `new Date()`. That means the incremental cache
  * can be the Workers static asset store — no R2 bucket, no KV namespace, no

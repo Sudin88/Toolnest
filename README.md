@@ -1,4 +1,4 @@
-# ToolNest
+# AllTools
 
 A directory of **35 browser tools** — PDF, image, text, calculator, developer
 and daily utilities — built on one promise: **the file never leaves your tab**.
@@ -143,7 +143,7 @@ The worker is named `toolnest` (see `wrangler.jsonc`) and is served at
 Add the route to `wrangler.jsonc`:
 
 ```jsonc
-"routes": [{ "pattern": "toolnest.example.com", "custom_domain": true }]
+"routes": [{ "pattern": "alltools.example.com", "custom_domain": true }]
 ```
 
 Cloudflare provisions the certificate and redirects HTTP to HTTPS automatically.

@@ -24,7 +24,7 @@ export function SiteFooter() {
             <p className="flex items-center gap-3">
               <LogoMark size={30} />
               <span className="text-3xl font-bold leading-none tracking-[-0.03em] text-fg">
-                ToolNest
+                AllTools
               </span>
             </p>
             <p className="measure mt-4 text-sm leading-relaxed text-muted">

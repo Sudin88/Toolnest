@@ -8,7 +8,7 @@ import { contactEmailHref, siteConfig } from "@/lib/site";
 export const metadata: Metadata = pageMetadata({
   title: "Terms of Use",
   description:
-    "The terms you agree to by using ToolNest: free to use, provided as-is, and you keep ownership of everything you process.",
+    "The terms you agree to by using AllTools: free to use, provided as-is, and you keep ownership of everything you process.",
   path: "/terms",
 });
 
@@ -17,14 +17,14 @@ export default function TermsPage() {
     <>
       <PageHeader
         title="Terms of Use"
-        intro="Plain terms for a free tool site. By using ToolNest you agree to what follows, so it is worth the two minutes it takes to read."
+        intro="Plain terms for a free tool site. By using AllTools you agree to what follows, so it is worth the two minutes it takes to read."
       />
 
       <div className="container-page pb-20 pt-12">
         <div className="prose-tool measure">
           <h2>Using the site</h2>
           <p>
-            ToolNest is free to use for personal and commercial work. You do not need to register, and
+            AllTools is free to use for personal and commercial work. You do not need to register, and
             there is no usage limit other than not deliberately trying to break the service — bulk
             automated requests that degrade it for everyone else, attempts to bypass security, or
             anything that would put the site in legal jeopardy are not permitted.
@@ -72,13 +72,13 @@ export default function TermsPage() {
             <Link href="/privacy" className="link">
               privacy policy
             </Link>{" "}
-            explains what that involves. ToolNest does not endorse advertised products and is not
+            explains what that involves. AllTools does not endorse advertised products and is not
             responsible for them.
           </p>
 
           <h2>Limitation of liability</h2>
           <p>
-            To the fullest extent permitted by law, ToolNest is not liable for any loss arising from use
+            To the fullest extent permitted by law, AllTools is not liable for any loss arising from use
             of the site, including lost or corrupted files, lost time, or a decision taken on the basis
             of a calculated result. Nothing here excludes liability that cannot lawfully be excluded.
           </p>

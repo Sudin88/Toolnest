@@ -8,7 +8,7 @@ import { adsEnabled, contactEmailHref, siteConfig } from "@/lib/site";
 export const metadata: Metadata = pageMetadata({
   title: "Privacy Policy",
   description:
-    "What ToolNest collects, what it does not, and what happens to the files you process — in plain English.",
+    "What AllTools collects, what it does not, and what happens to the files you process — in plain English.",
   path: "/privacy",
 });
 
@@ -83,7 +83,7 @@ export default function PrivacyPage() {
               <p>
                 This deployment shows advertising through Google AdSense to keep the tools free. Google
                 and its partners may set cookies or read advertising identifiers in order to serve and
-                measure ads. That processing is controlled by Google, not by ToolNest, and you can
+                measure ads. That processing is controlled by Google, not by AllTools, and you can
                 review or change your advertising preferences through Google&rsquo;s ad settings.
               </p>
               <p>

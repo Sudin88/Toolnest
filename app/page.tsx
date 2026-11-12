@@ -23,7 +23,7 @@ import type { Faq } from "@/lib/tools/types";
 
 const homeFaqs: Faq[] = [
   {
-    q: "Is ToolNest really free?",
+    q: "Is AllTools really free?",
     a: "Yes. Every tool is free to use, with no account, no trial period and no paid tier. The site is supported by clearly labelled advertising, which is why you may see an ad slot between sections.",
   },
   {
@@ -35,7 +35,7 @@ const homeFaqs: Faq[] = [
     a: "Most of these tools process your file inside the browser tab, using the capabilities your device already has. Those tools are marked as running on your device. For anything that genuinely needs a server, the tool page says so before you start — we do not call something private when it is not.",
   },
   {
-    q: "How does ToolNest make money if the tools are free?",
+    q: "How does AllTools make money if the tools are free?",
     a: "Advertising. Ad slots are reserved, labelled as advertisements and kept away from the controls you are using, so they cannot be mistaken for a button or a download.",
   },
   {

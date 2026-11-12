@@ -15,7 +15,7 @@ export default function QrCodeGenerator() {
   const [form, setForm] = useState<QrFormState>({
     mode: "link",
     link: siteConfig.url,
-    text: "Hello from ToolNest",
+    text: "Hello from AllTools",
     wifi: { ssid: "", password: "", encryption: "WPA", hidden: false },
     contact: { name: "", org: "", phone: "", email: "", website: "" },
     size: 320,

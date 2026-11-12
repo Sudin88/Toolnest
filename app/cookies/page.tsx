@@ -8,7 +8,7 @@ import { adsEnabled } from "@/lib/site";
 export const metadata: Metadata = pageMetadata({
   title: "Cookies",
   description:
-    "ToolNest sets no cookies for its tools to work. Here are the four values it keeps in your browser, and what advertising does when it is enabled.",
+    "AllTools sets no cookies for its tools to work. Here are the four values it keeps in your browser, and what advertising does when it is enabled.",
   path: "/cookies",
 });
 
@@ -17,7 +17,7 @@ export default function CookiesPage() {
     <>
       <PageHeader
         title="Cookies"
-        intro="Most sites need a long cookie page because they track a lot. This one is short because ToolNest does not: no session, no sign-in, no analytics running by default."
+        intro="Most sites need a long cookie page because they track a lot. This one is short because AllTools does not: no session, no sign-in, no analytics running by default."
       />
 
       <div className="container-page pb-20 pt-12">
@@ -87,7 +87,7 @@ export default function CookiesPage() {
                 consent has been given — selecting ads based on interests.
               </p>
               <p>
-                Those cookies are set by Google, not by ToolNest, and they are not set inside any tool
+                Those cookies are set by Google, not by AllTools, and they are not set inside any tool
                 or around its controls. You can review or change what Google uses by visiting
                 Google&rsquo;s ad settings, and you can block third-party cookies in your browser without
                 affecting any tool.
@@ -101,7 +101,7 @@ export default function CookiesPage() {
             <p>
               Advertising is not enabled on this deployment, so no advertising cookies are set. When a
               publisher ID is configured, Google AdSense may set cookies or read advertising
-              identifiers to serve and measure ads, set by Google rather than by ToolNest. In regions
+              identifiers to serve and measure ads, set by Google rather than by AllTools. In regions
               where consent is required, a prompt must appear before personalised advertising cookies
               are used.
             </p>
@@ -117,7 +117,7 @@ export default function CookiesPage() {
           <p>
             Every major browser lets you block or delete cookies and clear site data, usually from the
             privacy section of its settings. Blocking third-party cookies is the single most effective
-            step for limiting advertising trackers, and it will not stop any ToolNest tool from
+            step for limiting advertising trackers, and it will not stop any AllTools tool from
             working.
           </p>
 

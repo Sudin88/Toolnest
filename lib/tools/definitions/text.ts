@@ -38,7 +38,7 @@ export const textTools: ToolDefinition[] = [
       },
       {
         q: "Is my text uploaded anywhere?",
-        a: "No. Counting happens in your browser and the text is discarded when you close the tab. Nothing is sent to ToolNest.",
+        a: "No. Counting happens in your browser and the text is discarded when you close the tab. Nothing is sent to AllTools.",
       },
       {
         q: "How is reading time estimated?",

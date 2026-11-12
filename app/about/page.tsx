@@ -7,9 +7,9 @@ import { categories } from "@/lib/tools/categories";
 import { countByCategory, liveTools, plannedTools, tools } from "@/lib/tools/registry";
 
 export const metadata: Metadata = pageMetadata({
-  title: "About ToolNest",
+  title: "About AllTools",
   description:
-    "ToolNest is a free collection of browser-based utilities. No account, no upload, no queue — the work happens on your device.",
+    "AllTools is a free collection of browser-based utilities. No account, no upload, no queue — the work happens on your device.",
   path: "/about",
 });
 
@@ -21,8 +21,8 @@ export default function AboutPage() {
   return (
     <>
       <PageHeader
-        title="About ToolNest"
-        intro="ToolNest is one place to get a small job done. Convert a file, count some words, work out a repayment, generate a QR code — and then close the tab. It exists because most single-purpose tool sites make you wait, sign up, or wonder what happens to the file you just handed them."
+        title="About AllTools"
+        intro="AllTools is one place to get a small job done. Convert a file, count some words, work out a repayment, generate a QR code — and then close the tab. It exists because most single-purpose tool sites make you wait, sign up, or wonder what happens to the file you just handed them."
       />
 
       <div className="container-page pb-20 pt-12">
@@ -61,7 +61,7 @@ export default function AboutPage() {
 
           <h2>How it is paid for</h2>
           <p>
-            ToolNest is free, and it stays free because of advertising. Ads are deliberately kept out
+            AllTools is free, and it stays free because of advertising. Ads are deliberately kept out
             of the working area: never inside a tool, never beside a download button, never between a
             file picker and its result. You will see a clearly labelled slot below the tool, in the
             place a magazine would put a page’s advertisement.

@@ -11,7 +11,7 @@ import { useToolInput } from "@/lib/tool-input";
 import { formatBytes, formatNumber } from "@/lib/utils";
 
 const SAMPLE = `{
-  "name": "ToolNest",
+  "name": "AllTools",
   "categories": ["image", "text", "calculators"],
   "free": true,
   "creator": { "private": false, "note": "no account needed" }

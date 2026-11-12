@@ -15,11 +15,11 @@ const RAW_ADSENSE = process.env.NEXT_PUBLIC_ADSENSE_CLIENT?.trim() ?? "";
 const RAW_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() ?? "";
 
 export const siteConfig = {
-  name: "ToolNest",
+  name: "AllTools",
   tagline: "One destination. Every tool you need.",
   description:
     "Free online tools that run in your browser. Convert, compress, calculate and create — no account, no upload, no waiting.",
-  url: (process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://toolnest.example.com"),
+  url: (process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://alltools.example.com"),
   locale: "en_US",
   localeShort: "en",
   /**

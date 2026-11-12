@@ -8,7 +8,7 @@ import { contactEmailHref, siteConfig } from "@/lib/site";
 export const metadata: Metadata = pageMetadata({
   title: "Contact",
   description:
-    "Report a broken tool, request something new, or ask about how ToolNest handles your data.",
+    "Report a broken tool, request something new, or ask about how AllTools handles your data.",
   path: "/contact",
 });
 
@@ -19,7 +19,7 @@ export default function ContactPage() {
     <>
       <PageHeader
         title="Contact"
-        intro="ToolNest is a small project. If something is broken or missing, saying so is genuinely useful — the reports that help most describe what you expected, what happened instead, and which browser you were using."
+        intro="AllTools is a small project. If something is broken or missing, saying so is genuinely useful — the reports that help most describe what you expected, what happened instead, and which browser you were using."
       />
 
       <div className="container-page pb-20 pt-12">

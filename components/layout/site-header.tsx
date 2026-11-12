@@ -20,7 +20,7 @@ export function SiteHeader() {
         <Link
           href="/"
           className="rounded-sm no-underline transition-opacity duration-150 ease-out hover:opacity-90"
-          aria-label="ToolNest home"
+          aria-label="AllTools home"
         >
           <Logo size={30} />
         </Link>

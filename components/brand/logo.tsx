@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * The ToolNest mark: a tray holding a tool head — a nest, drawn from two
+ * The AllTools mark: a tray holding a tool head — a nest, drawn from two
  * strokes. It is a masked span so the symbol is a single colour that follows
  * the theme (see `.logo-symbol` in globals.css), and it stays legible at 16px
  * as the favicon.
@@ -43,7 +43,7 @@ export function Logo({
             wordmarkClassName,
           )}
         >
-          ToolNest
+          AllTools
         </span>
       ) : null}
     </span>
