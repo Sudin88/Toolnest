@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { AdSlot } from "@/components/ads/ad-slot";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { JsonLd } from "@/components/seo/json-ld";
 import { FavouriteStar } from "@/components/tools/favourite-star";
@@ -12,7 +11,6 @@ import { ToolHost } from "@/components/tools/tool-host";
 import { ToolRow } from "@/components/tools/tool-row";
 import { FaqAccordion } from "@/components/ui/faq-accordion";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata, toolJsonLd } from "@/lib/seo";
-import { adsEnabled } from "@/lib/site";
 import { getCategory } from "@/lib/tools/categories";
 import { getTool, liveTools, relatedTools } from "@/lib/tools/registry";
 
@@ -136,14 +134,6 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
                   </h2>
                   <FaqAccordion faqs={faqs} className="mt-5" />
                 </section>
-              ) : null}
-
-              {/* The ad band only takes up rhythm when there is an ad to put in
-                  it, and it is set well below the controls, never beside them. */}
-              {adsEnabled ? (
-                <div className="pt-4">
-                  <AdSlot slot={`tool-${tool.slug}`} minHeight={120} />
-                </div>
               ) : null}
             </div>
 

@@ -1,6 +1,5 @@
 import { BadgeCheck, Cpu, UserX } from "lucide-react";
 
-import { AdSlot } from "@/components/ads/ad-slot";
 import { GoalsBlock } from "@/components/home/goals-block";
 import { Hero } from "@/components/home/hero";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -9,7 +8,6 @@ import { FaqAccordion } from "@/components/ui/faq-accordion";
 import { Section, SectionHeading } from "@/components/ui/section";
 import { assertContent } from "@/lib/content-check";
 import { faqJsonLd, websiteJsonLd } from "@/lib/seo";
-import { adsEnabled } from "@/lib/site";
 import { indexGroups } from "@/lib/tools/index-view";
 import { liveTools } from "@/lib/tools/registry";
 import type { Faq } from "@/lib/tools/types";
@@ -76,14 +74,6 @@ export default function HomePage() {
           <ToolIndexFilter groups={groups} showCategoryFilter headingLevel="h3" />
         </div>
       </Section>
-
-      {/* The ad band only takes up rhythm when there is an ad to put in it;
-          AdSlot itself renders nothing until a publisher id is configured. */}
-      {adsEnabled ? (
-        <div className="container-page pt-4">
-          <AdSlot slot="home-mid" minHeight={120} />
-        </div>
-      ) : null}
 
       <Section labelId="home-facts">
         <SectionHeading

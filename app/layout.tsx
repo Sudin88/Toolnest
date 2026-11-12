@@ -60,6 +60,9 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
   },
+  // Proves domain ownership to AdSense without a separate verification file,
+  // and only when a real publisher id is configured.
+  ...(adsEnabled ? { other: { "google-adsense-account": siteConfig.adsenseClient } } : {}),
   formatDetection: { telephone: false, address: false, email: false },
 };
 

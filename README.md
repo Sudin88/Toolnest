@@ -115,7 +115,7 @@ cp .env.example .env.local
 | Variable | Purpose |
 | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Public origin. Drives canonical URLs, the sitemap and social previews. Falls back to an RFC 2606 reserved domain, so an unconfigured deploy can never emit someone else's URL. |
-| `NEXT_PUBLIC_ADSENSE_CLIENT` | AdSense publisher id (`ca-pub-…`). Ads are off everywhere until this is a real id. |
+| `NEXT_PUBLIC_ADSENSE_CLIENT` | AdSense publisher id (`ca-pub-…`). Ads are off everywhere until this is a real id. Once set, the loader and the ownership meta tag are emitted and `/ads.txt` starts serving. |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | Address shown on the contact page. The mailto link is hidden until it is set. |
 
 ### 2. Preview the real worker
@@ -149,6 +149,27 @@ Add the route to `wrangler.jsonc`:
 Cloudflare provisions the certificate and redirects HTTP to HTTPS automatically.
 Then set `NEXT_PUBLIC_SITE_URL` to that origin and redeploy so canonical URLs and
 the sitemap match.
+
+### 5. Enabling ads (AdSense)
+
+The site ships with **Auto ads**. There are no hand-placed ad units to maintain;
+the only integration is the loader, which is emitted only when a real publisher
+id is configured.
+
+1. Create the AdSense account and add `alltools.indevs.in` as a site. Approval is
+   Google's, and a newly launched site normally waits days or weeks for it.
+2. Copy the publisher id into `NEXT_PUBLIC_ADSENSE_CLIENT`, then rebuild and
+   redeploy. That one value switches on the loader, the
+   `google-adsense-account` ownership meta tag, the AdSense hosts in the CSP
+   (`proxy.ts`) and `/ads.txt`.
+3. In AdSense, turn on **Auto ads** for the site.
+4. Under **Privacy & messaging**, enable the certified consent messages — the
+   GDPR message for the EEA/UK and the US-states message. Ads to those regions
+   are not served without one, and the privacy and cookie pages are written to
+   promise it.
+
+Until step 2 the deployment makes no third-party request at all: no loader, no
+meta tag, and `/ads.txt` answers `404`.
 
 ### Caching and cost
 
