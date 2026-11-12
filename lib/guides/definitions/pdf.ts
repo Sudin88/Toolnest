@@ -260,4 +260,202 @@ export const pdfGuides: Guide[] = [
       },
     ],
   },
+  {
+    slug: "how-many-pages-in-a-pdf",
+    title: "How to count the pages in a PDF without opening a reader",
+    metaTitle: "How to Count Pages in a PDF Without a Reader",
+    description:
+      "Read a PDF's page count, page sizes and stored metadata in seconds in the browser, with no reader to open and nothing uploaded anywhere.",
+    updated: "2026-11-12",
+    topic: "PDF",
+    tools: ["pdf-page-counter", "split-pdf"],
+    intro: [
+      "A page count sounds like the least interesting fact about a document until the moment you need it: a printer quoting a job, a form that asks how long an attachment runs, a submission rule that caps an upload at twenty pages, or a scan batch you want to check arrived complete.",
+      "Opening a reader to count pages is fine when the file is on your own machine and you trust it. When the document is a draft, a scan of something personal or a file you were sent with no context, a three-second question should not turn into handing the whole document to a service. A PDF carries its own structure, so the count can be read in the browser without drawing a single page.",
+    ],
+    sections: [
+      {
+        id: "counting-without-rendering",
+        heading: "Counting pages without drawing them",
+        body: [
+          "A page count is a property of the file rather than something an app works out by rendering every page. The document holds a list of page objects, sometimes nested, and the count is the length of that list once it is flattened.",
+          "That is why a counter can answer in well under a second on a file a reader would take several seconds to scroll, and why it can answer at all on a file the reader refuses to open.",
+        ],
+        tool: "pdf-page-counter",
+      },
+      {
+        id: "counting-step-by-step",
+        heading: "Getting the count in three steps",
+        steps: [
+          "Drop the PDF onto the tool, or choose it from your device. The file is read from your disk into the tab and nothing is sent anywhere.",
+          "Read the count. It appears without a second click, which is the whole point of the tool.",
+          "Glance at the page sizes and the orientation summary underneath, because an unexpected mix there is the usual explanation for a print job that comes out wrong.",
+        ],
+        tool: "pdf-page-counter",
+      },
+      {
+        id: "when-the-count-disagrees",
+        heading: "When the count disagrees with what you see",
+        body: [
+          "The number a counter reports is the count of page objects in the file. A reader can show you a different figure for reasons that have nothing to do with the document being damaged.",
+        ],
+        bullets: [
+          "The reader may be showing a page range rather than the whole file, which is easy to leave set from last time.",
+          "A spread view puts two pages side by side and renumbers the corners, so the last label you see is not the last page.",
+          "A PDF portfolio can hold other files inside it, and a straightforward reader counts only the pages of the wrapper.",
+          "A file shortened by an edit can still carry the old count in a comment or the target of a bookmark.",
+          "An encrypted file cannot be counted at all until it is unlocked, and a tool worth using says so rather than guessing.",
+        ],
+      },
+      {
+        id: "page-sizes-and-orientation",
+        heading: "What the page sizes and orientations tell you",
+        body: [
+          "A document that mixes A4 and Letter, or portrait and landscape, is the most common cause of a print run that has to be redone. A counter surfaces that as a short summary, so you can catch it before it costs you paper.",
+          "Mixed orientation is normal in a scanned bundle: a signed form taped in sideways, a wide table, a photograph of a whiteboard. Mixed size is more often an export fault, where one chapter was printed from a different application.",
+          "The proportions also confirm that the pages you expect are really in the file. An A3 sheet reduced onto A4 has different margins from a page designed at A4 in the first place, and the file records which one it is.",
+        ],
+        tool: "pdf-page-counter",
+      },
+      {
+        id: "metadata-you-did-not-write",
+        heading: "The metadata you did not write",
+        body: [
+          "Most PDFs carry a small block of information next to the pages: a title, an author, the application that produced the file, and the dates it was created and last changed. Some of that is written by the software, and the author field is filled in from whoever was signed in at the time.",
+          "That block is read by anything that opens the document, and it is the part people forget when they share a file under a new name. A document renamed to final-v3.pdf can still announce its original title and the name of the machine's owner inside.",
+        ],
+        bullets: [
+          "The title usually comes from the source document rather than the name you saved the file under.",
+          "The author is often the account that exported it, which may be a colleague rather than you.",
+          "The producer names the application and its version, which can date a document.",
+          "Reading it here shows you what you would be sharing, without sharing the file to find out.",
+        ],
+        tool: "pdf-page-counter",
+      },
+      {
+        id: "cutting-it-down",
+        heading: "If you need fewer pages, not just a count",
+        body: [
+          "The job after counting is often to do something about the number: pull one range out for a form, or break a bundle into the documents it was assembled from. That is the same local operation as the count, and it does not need the file to change hands either.",
+        ],
+        tool: "split-pdf",
+      },
+    ],
+    faqs: [
+      {
+        q: "Can I count the pages in a password-protected PDF?",
+        a: "Not while it is locked. The count sits behind the same encryption as the pages, so a tool that gives you a figure for a locked file is guessing. Open it with its password in a reader and save an unlocked copy first.",
+      },
+      {
+        q: "Does checking the count change my file?",
+        a: "No. The file is read into memory and never written back or uploaded, so your original is untouched and there is nothing left to clean up afterwards.",
+      },
+      {
+        q: "Can I count several files at once?",
+        a: "Yes. Each file you add stays in the list with its own count and details, so a batch of scans can be checked against an expected total in a single pass.",
+      },
+      {
+        q: "Is the count exact for a scanned PDF?",
+        a: "Yes. A scan is still a PDF with a normal page tree, so the count is exact. What varies between scans is the content of each page, not how many pages there are.",
+      },
+      {
+        q: "What if the PDF will not load at all?",
+        a: "A truncated download or a file already repaired by another tool is the usual reason. Open it in a reader to confirm it is intact, then try the count again.",
+      },
+    ],
+  },
+  {
+    slug: "add-a-watermark-to-a-pdf",
+    title: "How to add a watermark to a PDF and keep it readable",
+    metaTitle: "Add a Watermark to a PDF Without Uploading",
+    description:
+      "Stamp a word such as DRAFT or CONFIDENTIAL across a PDF, on one page or every page, with the opacity and angle set so it stays readable.",
+    updated: "2026-11-12",
+    topic: "PDF",
+    tools: ["watermark-pdf", "pdf-page-counter", "split-pdf"],
+    intro: [
+      "A watermark says something about a document's status rather than its content: that it is a draft, that it is confidential, that it is a review copy which should not be forwarded. It was never a lock, but it does the one thing a lock cannot, which is tell an honest reader what they are holding.",
+      "Most people give up on watermarks because they are applied badly. A dark mark across the middle of a contract makes it hard to read, so the practice gets abandoned, or the mark covers the one clause that mattered. A little restraint on opacity and size gives you a mark that is unmistakable in a photograph of the page and quiet enough to read straight through.",
+    ],
+    sections: [
+      {
+        id: "what-a-watermark-is-for",
+        heading: "What a watermark is actually for",
+        body: [
+          "Treat it as a caption rather than a defence. Its job is to travel with the page into places you do not control: onto a printer, into a screenshot, through a mailing list that forwards things on.",
+        ],
+        bullets: [
+          "Marking a document still being written, so nobody mistakes an early version for the final one.",
+          "Marking a copy that is confidential to one recipient, so a later leak is at least attributable to the copy rather than the original.",
+          "Marking a working file with a client name or a reference, so a printed stack can be sorted without reading it.",
+          "Marking a proof with a date, which quietly answers the question of which version is on the table.",
+        ],
+      },
+      {
+        id: "adding-a-watermark",
+        heading: "Adding one, step by step",
+        steps: [
+          "Load the PDF and type the text you want. Short is better, because a single word reads at a glance while a sentence turns into a grey smear.",
+          "Set the opacity low to begin with. Around fifteen percent is the usual landing point, since the mark has to survive a screenshot without fighting the text underneath.",
+          "Choose the angle. Diagonal across the middle is the common choice for a whole document, and vertical down one edge is lighter where the pages are dense.",
+          "Limit it to a page range if only part of the document carries the restriction, then download the stamped copy.",
+        ],
+        tool: "watermark-pdf",
+      },
+      {
+        id: "getting-the-balance-right",
+        heading: "Getting the balance right",
+        body: [
+          "Opacity is the setting almost everyone gets wrong the first time. Too high and the reader has to work around the mark, too low and it disappears under a photocopier or a phone camera. Fifteen percent in a mid grey is a reasonable start, and you can nudge it once you see it on a real page rather than a preview.",
+        ],
+        bullets: [
+          "Lower the opacity before you lower the size, since a large faint mark is easier to read past than a small dark one.",
+          "Keep the mark centred, where it overlaps the most text yet sits behind the reader's attention rather than over a margin.",
+          "Choose a quiet colour. Grey reads well on white paper, while a saturated colour pulls the eye to the mark instead of the content.",
+          "Check one dense page and one nearly empty page, because the same setting reads very differently on each.",
+        ],
+        tool: "watermark-pdf",
+      },
+      {
+        id: "stamping-part-of-a-document",
+        heading: "Stamping part of a document",
+        body: [
+          "A restriction often applies to an appendix rather than the whole file, or to a set of signed pages inside a longer bundle. Restricting the range keeps the front matter clean and spares the recipient a mark they do not need.",
+          "Work the boundaries out before you stamp. Printed page numbers drift as soon as a document has a cover or an unnumbered contents page, and a watermark that starts one page early looks careless.",
+        ],
+        tool: "pdf-page-counter",
+      },
+      {
+        id: "what-a-watermark-cannot-do",
+        heading: "What a watermark cannot do",
+        body: [
+          "Anyone with the right tool can remove a watermark, and anyone at all can crop it out of a screenshot. It adds no protection, so it should never be the only thing standing between a document and someone who should not have it.",
+          "If a document genuinely cannot be shared, the answer is to encrypt it with a password and set permissions, or to send fewer pages of it. A watermark is the polite label, not the lock.",
+        ],
+        tool: "split-pdf",
+      },
+    ],
+    faqs: [
+      {
+        q: "Does a watermark stop someone copying the text?",
+        a: "No. The text underneath is untouched and stays selectable. A watermark marks a document rather than restricting it, so treat it as a statement and not as a control.",
+      },
+      {
+        q: "Can I use a logo or an image as the watermark?",
+        a: "Not with this tool, which stamps text in the fonts the app already has. A picture watermark needs a desktop publishing application instead.",
+      },
+      {
+        q: "Will the watermark show up when the PDF is printed?",
+        a: "Yes. The mark is drawn into the page rather than laid over the screen, so it prints on paper and appears in a screenshot like any other part of the page.",
+      },
+      {
+        q: "Does the watermark sit behind the text?",
+        a: "It is drawn on top, so at low opacity you read through it. That is why the setting matters so much: at fifteen percent the page is easy to read, at fifty it is not.",
+      },
+      {
+        q: "Can I take the watermark off again later?",
+        a: "Not reliably, which is the point of adding one. Keep a clean copy of the original before you stamp it, in case you need the unmarked version for something else.",
+      },
+    ],
+  },
 ];

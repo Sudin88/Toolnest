@@ -7,7 +7,7 @@ import { guides, guidesInTopic, guideTopics } from "@/lib/guides/registry";
 export const metadata = pageMetadata({
   title: "Guides",
   description:
-    "Short, practical guides to the jobs the tools are built for: merging and splitting PDFs without uploading them, compressing images for email, picking a colour from a picture.",
+    "Practical guides to the jobs these tools are built for: merging and splitting PDFs, counting pages, watermarking, and compressing images, all in the browser.",
   path: "/guides",
 });
 

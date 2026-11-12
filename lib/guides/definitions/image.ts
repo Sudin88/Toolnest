@@ -281,4 +281,106 @@ export const imageGuides: Guide[] = [
       },
     ],
   },
+  {
+    slug: "turn-an-image-into-a-pdf-page",
+    title: "How to turn one image into a PDF page that prints correctly",
+    metaTitle: "How to Turn an Image Into a PDF Page",
+    description:
+      "Convert one photo or scan into a clean PDF page with the right paper size, fit mode and margin, and know when the multi-page tool fits better.",
+    updated: "2026-11-12",
+    topic: "Images",
+    tools: ["image-to-pdf", "images-to-pdf"],
+    intro: [
+      "Turning a picture into a PDF is the job nobody plans for: a photographed receipt for an expenses claim, a scan of a signed form, a whiteboard someone wants in the minutes, a page of a book that had to be photographed rather than scanned. All of them want the same thing, which is a single well-proportioned page rather than a picture floating in the middle of a default sheet.",
+      "The gap between a good result and a careless one is almost entirely in the page setup. Two choices do most of the work: the page size, and whether the image fits inside the page or fills it.",
+    ],
+    sections: [
+      {
+        id: "one-image-or-several",
+        heading: "One image or several?",
+        body: [
+          "There are two jobs here and it is worth naming them plainly. A single image on a page is a cover sheet or a scanned form. Several images, one per page, is a photo album or a batch of receipts, and it wants a tool that takes a list and keeps the order you set.",
+        ],
+        bullets: [
+          "One image: choose the page it lands on, and set a margin so it looks deliberate rather than pasted on.",
+          "Many images: order is everything, because the pages come out in the sequence you arrange and there is no going back afterwards.",
+          "A mixed batch: convert the odd one on its own first, then build the rest as one multi-page document.",
+        ],
+        tool: "images-to-pdf",
+      },
+      {
+        id: "step-by-step",
+        heading: "Turning one image into a page",
+        steps: [
+          "Load the image and look at the preview. It is the only way to judge the fit before you commit to it.",
+          "Choose a page. Take A4 or Letter if the result will be printed, or a page that matches the image exactly if it will only be read on screen.",
+          "Set the fit. Fitting inside keeps the whole image and leaves an even margin, while filling the page covers it and crops whatever does not reach the edges.",
+          "Set the margin and download. Allow a little more margin than feels right, because an image running to the very edge looks like a mistake on a printer.",
+        ],
+        tool: "image-to-pdf",
+      },
+      {
+        id: "page-size-and-fit",
+        heading: "Page size and fit, and why both matter",
+        body: [
+          "A page that matches the image has no margins to get wrong and nothing letterboxed, which makes it the safest choice for something read only on a screen. It is the wrong choice for anything printed, because paper comes in fixed sizes and a page slightly off those sizes gets scaled to fit, usually with a white border and a softer image.",
+          "Standard paper is the right answer whenever the result is printed or filed with other documents. Once you have picked A4 or Letter, the fit mode decides the rest.",
+        ],
+        bullets: [
+          "Fit inside: the whole image is visible, with a margin that varies with the shape of the image.",
+          "Fill the page: the page is covered edge to edge, and whatever does not match its shape is cropped.",
+          "Match the image: the page takes the image's proportions, so nothing is cropped and nothing is letterboxed.",
+          "A few millimetres of margin keeps the image clear of a printer's unprintable border, which is often wider than people expect.",
+        ],
+      },
+      {
+        id: "enough-pixels",
+        heading: "Enough pixels for the page you chose",
+        body: [
+          "A page is a physical size and an image is a pixel count, so the two only agree at a particular resolution. Print work is judged at about three hundred pixels per inch, which means an A4 page wants roughly two thousand five hundred pixels across its width to look sharp.",
+          "A phone photograph clears that comfortably. A screenshot, a small download or a picture lifted from a website often does not, and the result looks soft on paper. Enlarging the image before converting does not help, because pixels that were never captured cannot be invented by stretching what is there.",
+        ],
+        tool: "image-to-pdf",
+      },
+      {
+        id: "not-searchable",
+        heading: "The page is a picture, not text",
+        body: [
+          "A PDF built from an image contains that image. It has no text layer, so nothing in it can be selected, searched or read aloud by a screen reader, and a search for a word on the page finds nothing. That is not a fault in the conversion, it is what a picture is.",
+          "If the words need to be searchable, the image has to go through optical character recognition first. That is a different job, and it is usually done better by a scanner app than by a converter.",
+        ],
+      },
+      {
+        id: "stays-on-your-device",
+        heading: "Why the file stays on your device",
+        body: [
+          "Of all the documents people convert, the ones most worth keeping to yourself are the least glamorous: an identity document photographed for a form, a payslip, a bank statement, a medical letter, a signed contract page. Ordinary converter sites ask for exactly these files and receive them as a matter of course.",
+          "A converter that runs in the browser reads the image into the tab, builds the PDF there and hands it back to your downloads folder. Nothing in that sequence needs a server, which you can prove by loading the page, disconnecting, and converting anyway.",
+        ],
+        tool: "image-to-pdf",
+      },
+    ],
+    faqs: [
+      {
+        q: "Can I put several images into one PDF?",
+        a: "Yes, with the multi-page tool. It takes a list and produces one page per image in the order you arrange, which is the usual way to turn a batch of receipt photos into something a finance team will accept.",
+      },
+      {
+        q: "Why does my image look blurry in the PDF?",
+        a: "Almost always because the page is larger than the image can fill. Printing wants about three hundred pixels per inch, so a small screenshot stretched across an A4 page has too few pixels to look sharp.",
+      },
+      {
+        q: "Can I add a caption under the image?",
+        a: "Not in the converter. Add the caption to the image before converting, or stamp the finished PDF afterwards if the text is a label rather than part of the page.",
+      },
+      {
+        q: "Is the text in my scan searchable?",
+        a: "No. The page holds a picture of the words rather than the words themselves, so there is nothing to search until the image has been through optical character recognition.",
+      },
+      {
+        q: "Does converting a photo to PDF reduce its quality?",
+        a: "No. A JPEG is embedded exactly as it is, and other formats are redrawn as PNG, which is lossless. Any softness comes from the page being bigger than the image can fill, not from the conversion.",
+      },
+    ],
+  },
 ];

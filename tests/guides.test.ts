@@ -143,5 +143,18 @@ describe("guides", () => {
       // Nothing is written about the calculator shelf, so its section must not render.
       expect(guidesForCategory("calculators")).toEqual([]);
     });
+
+    /**
+     * PDF and images are the two shelves the SEO work is aimed at, so every live
+     * tool there is reachable from a guide. A new tool on those shelves with no
+     * guide beside it should fail here rather than ship as a quiet orphan.
+     */
+    it("leaves no tool on the priority shelves without a guide", () => {
+      for (const category of ["pdf", "image"] as const) {
+        for (const tool of liveToolsInCategory(category)) {
+          expect(guidesForTool(tool.slug), `${tool.slug} has no inbound guide`).not.toEqual([]);
+        }
+      }
+    });
   });
 });
