@@ -4,9 +4,14 @@ import type { NextConfig } from "next";
 
 /**
  * Security headers that do not depend on configuration. They live here, rather
- * than in the middleware, so they cover static assets — JS/CSS chunks, fonts and
- * icons — as well as pages. The Content Security Policy stays in `proxy.ts`
- * because it changes with the deployment's AdSense configuration.
+ * than in the middleware, so they cover every response the worker generates,
+ * pages included. On the Cloudflare target the static assets in
+ * `.open-next/assets` are answered by Cloudflare's asset layer before the worker
+ * runs, so these `headers()` never see them; `public/_headers` carries the same
+ * list for those responses. Keep the two files in step.
+ *
+ * The Content Security Policy stays in `proxy.ts` because it changes with the
+ * deployment's AdSense configuration.
  *
  * `clipboard-write` is deliberately **not** denied: the copy buttons use the
  * async Clipboard API and denying it would push every copy onto the deprecated

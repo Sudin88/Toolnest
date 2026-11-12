@@ -1,0 +1,18 @@
+# Cloudflare Workers Static Assets headers.
+#
+# Next.js applies the headers in `next.config.ts` (`SECURITY_HEADERS`) to every
+# response its worker generates. The files in `.open-next/assets` are answered by
+# Cloudflare's asset layer *before* the worker runs (`assets.run_worker_first` is
+# not set), so those responses never pass through Next and the config headers do
+# not reach them. Cloudflare reads this file and applies the same rules to the
+# static-asset responses it serves directly. Keep the two lists in step.
+#
+# https://developers.cloudflare.com/workers/static-assets/headers/
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), hid=(), fullscreen=(), clipboard-read=(), display-capture=(), idle-detection=(), magnetometer=(), gyroscope=(), accelerometer=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains
+  Cross-Origin-Opener-Policy: same-origin-allow-popups

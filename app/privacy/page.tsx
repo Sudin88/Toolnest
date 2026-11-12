@@ -27,9 +27,12 @@ export default function PrivacyPage() {
             <li>No account, no sign-in, no profile.</li>
             <li>Files you open in a tool are processed in your browser and are not transmitted.</li>
             <li>
-              The only things stored in your browser are the tools you opened recently, under the key{" "}
-              <code>toolnest-recents</code>, and a tab-scoped draft of small inputs under{" "}
-              <code>toolnest-draft</code>.
+              The only things stored in your browser are four small values. Two are held in local
+              storage: the tools you opened recently, under <code>toolnest-recents</code>, and the
+              tools you marked as favourites, under <code>toolnest-favourites</code>. Two are held in
+              session storage, which is discarded when the tab closes: a draft of small inputs, under{" "}
+              <code>toolnest-draft</code>, and the text handed over from the home box, under{" "}
+              <code>toolnest-handover</code>.
             </li>
             <li>No analytics or tracking scripts run unless this deployment has turned them on.</li>
           </ul>
@@ -65,9 +68,9 @@ export default function PrivacyPage() {
           <h2>Cookies and local storage</h2>
           <p>
             The site itself sets no cookies for the tools to work — there is no session to maintain. It
-            writes a list of recently opened tools to your browser&rsquo;s local storage, and a
-            tab-scoped draft of small inputs to session storage, so a reload does not lose your place.
-            The{" "}
+            writes the tools you opened recently and the tools you marked as favourites to your
+            browser&rsquo;s local storage, and a tab-scoped draft of small inputs plus any text handed
+            over from the home box to session storage, so a reload does not lose your place. The{" "}
             <Link href="/cookies" className="link">
               cookies page
             </Link>{" "}
@@ -107,7 +110,7 @@ export default function PrivacyPage() {
 
           <h2>Your choices</h2>
           <ul>
-            <li>Clearing site data in your browser removes the stored list of recent tools.</li>
+            <li>Clearing site data in your browser removes the stored list of recent tools and your favourites.</li>
             <li>Blocking or clearing cookies does not break any tool.</li>
             <li>
               You can opt out of personalised advertising through Google&rsquo;s ad settings or your

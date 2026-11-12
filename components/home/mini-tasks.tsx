@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { MINI_TASK_SLUGS } from "@/lib/mini-tasks";
 import { siteConfig } from "@/lib/site";
 import { countWords, dedupeLines } from "@/lib/text";
 import { formatNumber } from "@/lib/utils";
@@ -68,7 +69,7 @@ function CountWords() {
   const words = countWords(text);
 
   return (
-    <MiniCard title="Count words" blurb="Live word count as you type." href="/tools/word-counter">
+    <MiniCard title="Count words" blurb="Live word count as you type." href={`/tools/${MINI_TASK_SLUGS.countWords}`}>
       <textarea
         className="field field-mono"
         rows={3}
@@ -94,7 +95,7 @@ function CollapseList() {
     <MiniCard
       title="Remove duplicate lines"
       blurb="Collapse a repeated list down to its unique lines."
-      href="/tools/remove-duplicate-lines"
+      href={`/tools/${MINI_TASK_SLUGS.collapseList}`}
     >
       <textarea
         className="field field-mono"
@@ -154,7 +155,7 @@ function MakeQr() {
   }, [text]);
 
   return (
-    <MiniCard title="Make a QR code" blurb="For a link or a short line of text." href="/tools/qr-code-generator">
+    <MiniCard title="Make a QR code" blurb="For a link or a short line of text." href={`/tools/${MINI_TASK_SLUGS.makeQr}`}>
       <div className="flex items-center gap-4">
         <canvas
           ref={canvasRef}

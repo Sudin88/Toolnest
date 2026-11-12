@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Note, Empty, SubHeading } from "@/components/tools/parts";
 
@@ -17,6 +17,89 @@ function formatDuration(ms: number) {
   const base = `${pad(minutes)}:${pad(seconds)}.${pad(centis)}`;
   return hours > 0 ? `${hours}:${base}` : base;
 }
+
+/**
+ * The lap table, memoised on `laps`. The timer above it re-renders twenty times
+ * a second while running; without this boundary every one of those ticks would
+ * reconcile up to `MAX_LAPS` rows and allocate a fresh reversed array for a list
+ * that only changes when a lap is taken.
+ */
+const LapsTable = memo(function LapsTable({ laps }: { laps: number[] }) {
+  // Splits need the chronological order, so reverse the newest-first list and
+  // read the previous total by index rather than folding a mutable cursor.
+  const chrono = useMemo(() => [...laps].reverse(), [laps]);
+  const rows = useMemo(
+    () =>
+      chrono.map((total, index) => ({
+        lap: index + 1,
+        total,
+        split: total - (chrono[index - 1] ?? 0),
+      })),
+    [chrono],
+  );
+
+  const splits = rows.map((row) => row.split);
+  const best = splits.length > 0 ? Math.min(...splits) : 0;
+  const worst = splits.length > 0 ? Math.max(...splits) : 0;
+
+  return (
+    <section aria-labelledby="stopwatch-laps">
+      <SubHeading id="stopwatch-laps">
+        {laps.length > 0 ? `Laps (${laps.length})` : "Laps"}
+      </SubHeading>
+      <div className="mt-3">
+        {rows.length === 0 ? (
+          <Empty>Record a lap while the timer runs and the splits will appear here.</Empty>
+        ) : (
+          <div className="scroll-region max-h-96 overflow-auto rounded-md border border-line">
+            <table className="w-full text-sm">
+              <caption className="sr-only">Each recorded lap with its split and comparison.</caption>
+              <thead className="sticky top-0 bg-surface-2 text-xs uppercase tracking-wide text-muted">
+                <tr>
+                  <th scope="col" className="px-3.5 py-2.5 text-left font-medium">Lap</th>
+                  <th scope="col" className="px-3.5 py-2.5 text-right font-medium">Split</th>
+                  <th scope="col" className="px-3.5 py-2.5 text-right font-medium">Total</th>
+                  <th scope="col" className="px-3.5 py-2.5 text-right font-medium">vs fastest</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {[...rows].reverse().map((row) => {
+                  const diff = row.split - best;
+                  return (
+                    <tr key={row.lap}>
+                      <th scope="row" className="num px-3.5 py-2.5 text-left font-medium text-muted">
+                        {row.lap}
+                      </th>
+                      <td
+                        className={`num px-3.5 py-2.5 text-right font-semibold ${
+                          row.split === best && splits.length > 1 ? "text-accent-text" : "text-fg"
+                        }`}
+                      >
+                        {formatDuration(row.split)}
+                      </td>
+                      <td className="num px-3.5 py-2.5 text-right text-muted">
+                        {formatDuration(row.total)}
+                      </td>
+                      <td className="num px-3.5 py-2.5 text-right text-muted">
+                        {row.split === best ? "fastest" : `+${formatDuration(diff)}`}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      {rows.length > 0 ? (
+        <p className="mt-2 text-xs text-muted">
+          Fastest split {formatDuration(best)} · slowest {formatDuration(worst)} · the list keeps the
+          most recent {MAX_LAPS} laps.
+        </p>
+      ) : null}
+    </section>
+  );
+});
 
 export default function Stopwatch() {
   const [running, setRunning] = useState(false);
@@ -95,22 +178,6 @@ export default function Stopwatch() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [toggle, lap, reset]);
 
-  // Splits need the chronological order, so reverse the newest-first list and
-  // read the previous total by index rather than folding a mutable cursor.
-  const chrono = useMemo(() => [...laps].reverse(), [laps]);
-  const rows = useMemo(
-    () =>
-      chrono.map((total, index) => ({
-        lap: index + 1,
-        total,
-        split: total - (chrono[index - 1] ?? 0),
-      })),
-    [chrono],
-  );
-
-  const splits = rows.map((row) => row.split);
-  const best = splits.length > 0 ? Math.min(...splits) : 0;
-  const worst = splits.length > 0 ? Math.max(...splits) : 0;
   const currentLap = elapsed - (laps[0] ?? 0);
 
   return (
@@ -153,61 +220,7 @@ export default function Stopwatch() {
         </p>
       </div>
 
-      <section aria-labelledby="stopwatch-laps">
-        <SubHeading id="stopwatch-laps">
-          {laps.length > 0 ? `Laps (${laps.length})` : "Laps"}
-        </SubHeading>
-        <div className="mt-3">
-          {rows.length === 0 ? (
-            <Empty>Record a lap while the timer runs and the splits will appear here.</Empty>
-          ) : (
-            <div className="scroll-region max-h-96 overflow-auto rounded-md border border-line">
-              <table className="w-full text-sm">
-                <caption className="sr-only">Each recorded lap with its split and comparison.</caption>
-                <thead className="sticky top-0 bg-surface-2 text-xs uppercase tracking-wide text-muted">
-                  <tr>
-                    <th scope="col" className="px-3.5 py-2.5 text-left font-medium">Lap</th>
-                    <th scope="col" className="px-3.5 py-2.5 text-right font-medium">Split</th>
-                    <th scope="col" className="px-3.5 py-2.5 text-right font-medium">Total</th>
-                    <th scope="col" className="px-3.5 py-2.5 text-right font-medium">vs fastest</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {[...rows].reverse().map((row) => {
-                    const diff = row.split - best;
-                    return (
-                      <tr key={row.lap}>
-                        <th scope="row" className="num px-3.5 py-2.5 text-left font-medium text-muted">
-                          {row.lap}
-                        </th>
-                        <td
-                          className={`num px-3.5 py-2.5 text-right font-semibold ${
-                            row.split === best && splits.length > 1 ? "text-accent-text" : "text-fg"
-                          }`}
-                        >
-                          {formatDuration(row.split)}
-                        </td>
-                        <td className="num px-3.5 py-2.5 text-right text-muted">
-                          {formatDuration(row.total)}
-                        </td>
-                        <td className="num px-3.5 py-2.5 text-right text-muted">
-                          {row.split === best ? "fastest" : `+${formatDuration(diff)}`}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-        {rows.length > 0 ? (
-          <p className="mt-2 text-xs text-muted">
-            Fastest split {formatDuration(best)} · slowest {formatDuration(worst)} · the list keeps the
-            most recent {MAX_LAPS} laps.
-          </p>
-        ) : null}
-      </section>
+      <LapsTable laps={laps} />
 
       <Note>
         Time is measured from timestamps rather than by counting animation frames, so switching tabs

@@ -8,7 +8,7 @@ import { adsEnabled } from "@/lib/site";
 export const metadata: Metadata = pageMetadata({
   title: "Cookies",
   description:
-    "ToolNest sets no cookies for its tools to work. Here are the two values it keeps in your browser, and what advertising does when it is enabled.",
+    "ToolNest sets no cookies for its tools to work. Here are the four values it keeps in your browser, and what advertising does when it is enabled.",
   path: "/cookies",
 });
 
@@ -26,8 +26,9 @@ export default function CookiesPage() {
           <ul>
             <li>The tools work with cookies blocked entirely.</li>
             <li>
-              Two values are held in your browser, and neither is a cookie: the tools you opened
-              recently, and a short-lived draft of the inputs in the tab you are using.
+              Four values are held in your browser, and none is a cookie: the tools you opened
+              recently, the tools you marked as favourites, a short-lived draft of the inputs in the
+              tab you are using, and the text handed over from the home box.
             </li>
             <li>Advertising cookies only appear if this deployment has enabled ads.</li>
           </ul>
@@ -40,12 +41,17 @@ export default function CookiesPage() {
           </p>
 
           <h2>Local storage</h2>
-          <p>The site stores one key in your browser&rsquo;s local storage:</p>
+          <p>The site stores two keys in your browser&rsquo;s local storage:</p>
           <ul>
             <li>
               <code>toolnest-recents</code> — a list of the tool identifiers you opened most recently,
               so the home page and the search palette can offer them back. It holds slugs only, never
               anything you typed or opened, and clearing your browser&rsquo;s site data removes it.
+            </li>
+            <li>
+              <code>toolnest-favourites</code> — the tool identifiers you marked as favourites, so
+              they can be offered first. Like the recents list it holds slugs only, and clearing your
+              browser&rsquo;s site data removes it.
             </li>
           </ul>
           <p>
@@ -55,14 +61,19 @@ export default function CookiesPage() {
 
           <h2>Session storage</h2>
           <p>
-            The site also keeps one key in <code>sessionStorage</code>, which is discarded the moment
-            the tab closes:
+            The site also keeps two keys in <code>sessionStorage</code>, which are discarded the
+            moment the tab closes:
           </p>
           <ul>
             <li>
               <code>toolnest-draft</code> — a short draft of the small inputs in a calculator or a
               text tool, so a reload does not lose a number you were part-way through. It is scoped to
               the tab, and tools that handle files, passwords or tokens never use it.
+            </li>
+            <li>
+              <code>toolnest-handover</code> — the text you dropped into the home box, held just long
+              enough for the tool it opens to read it once. It is deleted the moment it is read, so
+              the next visit starts clean.
             </li>
           </ul>
 

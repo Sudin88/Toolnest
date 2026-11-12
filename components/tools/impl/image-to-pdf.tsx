@@ -3,27 +3,34 @@
 import { PDFDocument } from "pdf-lib";
 import { useMemo, useState } from "react";
 
-import { ImagePreview, useImageFile } from "@/components/tools/image-workbench";
-import { FileDrop, NumberInput, Select } from "@/components/tools/interactive";
-import { Note, Stat, StatGrid, SubHeading } from "@/components/tools/parts";
+import { useImageFile } from "@/components/tools/image-workbench";
+import { PageSetupControls, PageSetupPreview, type PageSetup } from "@/components/tools/impl/images-to-pdf-panels";
+import { FileDrop } from "@/components/tools/interactive";
+import { Note, Stat, StatGrid } from "@/components/tools/parts";
 import { downloadBlob } from "@/lib/download";
 import { baseName, canvasToBlob, drawToCanvas } from "@/lib/image";
-import {
-  imagePageGeometry,
-  type ImageFit,
-  type ImageOrientation,
-  type ImagePageSize,
-} from "@/lib/pdf";
+import { imagePageGeometry } from "@/lib/pdf";
 import { formatBytes } from "@/lib/utils";
 
 export default function ImageToPdf() {
   const { image, file, url, error, busy, load, setError } = useImageFile();
-  const [pageSize, setPageSize] = useState<ImagePageSize>("a4");
-  const [orientation, setOrientation] = useState<ImageOrientation>("portrait");
-  const [fit, setFit] = useState<ImageFit>("contain");
-  const [margin, setMargin] = useState<number | "">(10);
+  const [setup, setSetup] = useState<PageSetup>({
+    pageSize: "a4",
+    orientation: "portrait",
+    fit: "contain",
+    margin: 10,
+  });
   const [blob, setBlob] = useState<Blob | null>(null);
   const [working, setWorking] = useState(false);
+
+  const { pageSize, orientation, fit, margin } = setup;
+
+  // Any change to the page setup drops a document built from the old one, so a
+  // download can never save a page that no longer matches the controls on screen.
+  function applySetup(patch: Partial<PageSetup>) {
+    setSetup((current) => ({ ...current, ...patch }));
+    setBlob(null);
+  }
 
   // A new source invalidates any previous result. Adjusting state during render
   // is React's documented pattern for resetting on an input change, and it avoids
@@ -110,84 +117,14 @@ export default function ImageToPdf() {
 
       {image && geometry ? (
         <>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Select
-              label="Page size"
-              value={pageSize}
-              onChange={(value) => {
-                setPageSize(value as ImagePageSize);
-                setBlob(null);
-              }}
-              options={[
-                { value: "a4", label: "A4 (210 × 297 mm)" },
-                { value: "letter", label: "Letter (8.5 × 11 in)" },
-                { value: "match", label: "Match the image exactly" },
-              ]}
-            />
-            <Select
-              label="Orientation"
-              value={orientation}
-              onChange={(value) => {
-                setOrientation(value as ImageOrientation);
-                setBlob(null);
-              }}
-              options={[
-                { value: "portrait", label: "Portrait" },
-                { value: "landscape", label: "Landscape" },
-                { value: "auto", label: "Auto from the image" },
-              ]}
-              disabled={pageSize === "match"}
-              hint={pageSize === "match" ? "The page follows the image." : undefined}
-            />
-            <Select
-              label="Fit"
-              value={fit}
-              onChange={(value) => {
-                setFit(value as ImageFit);
-                setBlob(null);
-              }}
-              options={[
-                { value: "contain", label: "Fit inside the page (no cropping)" },
-                { value: "fill", label: "Fill the page (may crop edges)" },
-              ]}
-            />
-            <NumberInput
-              label="Margin (mm)"
-              value={margin}
-              onChange={(value) => {
-                setMargin(value);
-                setBlob(null);
-              }}
-              min={0}
-              max={60}
-              hint="Ignored when the page matches the image."
-            />
-          </div>
+          <PageSetupControls value={setup} onChange={applySetup} />
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
-            <div className="panel p-4">
-              <SubHeading>Page preview</SubHeading>
-              <div
-                className="relative mx-auto mt-3 w-full max-w-[16rem] overflow-hidden rounded-sm border border-line bg-white"
-                style={{ aspectRatio: `${geometry.pageW} / ${geometry.pageH}` }}
-              >
-                <div
-                  className="absolute overflow-hidden"
-                  style={{
-                    left: `${(geometry.x / geometry.pageW) * 100}%`,
-                    bottom: `${(geometry.y / geometry.pageH) * 100}%`,
-                    width: `${(geometry.drawW / geometry.pageW) * 100}%`,
-                    height: `${(geometry.drawH / geometry.pageH) * 100}%`,
-                  }}
-                >
-                  <ImagePreview src={url} alt="Where the image sits on the page" className="size-full object-cover" />
-                </div>
-                {geometry.cropped ? (
-                  <span className="absolute inset-0 border border-dashed border-highlight/60" aria-hidden="true" />
-                ) : null}
-              </div>
-              <p className="mt-3 text-center text-xs text-muted">{pageLabel}</p>
-            </div>
+            <PageSetupPreview
+              entry={{ name: image.name, url: url ?? "", width: image.width }}
+              geometry={geometry}
+              pageLabel={pageLabel}
+            />
 
             <div className="flex flex-col gap-4">
               <StatGrid className="lg:grid-cols-2">

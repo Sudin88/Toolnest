@@ -29,9 +29,13 @@ const KEY = "toolnest-draft";
 const EVENT = "toolnest:draft";
 const VERSION = 1;
 
-/** Above this many characters the store is not worth persisting; the tool's own
- * input limit is what keeps drafts small, this is only a backstop. */
+/** The store is trimmed to fit this when it is written: an oversized field or a
+ * tool that would push it past the ceiling is dropped rather than the whole
+ * write being abandoned. */
 const MAX_STORE_CHARS = 64 * 1024;
+/** A single drafted string longer than this is tool input, not a small draft, so
+ * it is not persisted. This bounds the payload before it is ever serialised. */
+const MAX_FIELD_CHARS = 8 * 1024;
 /** Keep the record from growing to one entry per tool ever opened. */
 const MAX_TOOLS = 40;
 /** Trailing delay for the storage write, in the house 150–200 ms band. */
@@ -77,14 +81,44 @@ function ensureLoaded(): Store {
   return cache;
 }
 
+/**
+ * Reduce the store to what can actually be persisted: drop any string field
+ * larger than `MAX_FIELD_CHARS`, then evict the oldest tools until the
+ * serialised record fits `MAX_STORE_CHARS`.
+ *
+ * Eviction rather than abort, because one oversized draft must not silently stop
+ * every other tool from persisting — the previous behaviour did exactly that.
+ * The per-field cap comes first so a multi-megabyte paste is never stringified
+ * just to be measured.
+ */
+function persistable(store: Store): Store {
+  const trimmed: Store = {};
+  for (const [tool, draft] of Object.entries(store)) {
+    const fields: ToolDraft = {};
+    for (const [field, value] of Object.entries(draft)) {
+      if (typeof value === "string" && value.length > MAX_FIELD_CHARS) continue;
+      fields[field] = value;
+    }
+    trimmed[tool] = fields;
+  }
+
+  // `write` re-inserts the touched tool last, so the entries are oldest-first:
+  // dropping from the front evicts the least recently used tools.
+  const entries = Object.entries(trimmed);
+  for (let start = 0; start < entries.length; start += 1) {
+    const candidate = Object.fromEntries(entries.slice(start));
+    if (JSON.stringify({ version: VERSION, tools: candidate }).length <= MAX_STORE_CHARS) {
+      return candidate;
+    }
+  }
+  return EMPTY;
+}
+
 function scheduleWrite(): void {
   if (writeTimer !== null) clearTimeout(writeTimer);
   writeTimer = setTimeout(() => {
     writeTimer = null;
-    const payload = { version: VERSION, tools: cache };
-    // Refuse a store past the ceiling rather than persist a huge blob.
-    if (JSON.stringify(payload).length > MAX_STORE_CHARS) return;
-    writeJson(window.sessionStorage, KEY, payload);
+    writeJson(window.sessionStorage, KEY, { version: VERSION, tools: persistable(cache) });
   }, WRITE_DELAY_MS);
 }
 

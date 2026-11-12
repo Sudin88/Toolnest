@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react";
 
 import { Check, CopyButton, Segmented, Select, TextArea } from "@/components/tools/interactive";
-import { Empty, Note, OutputBox, ResultFooter, Stat, StatGrid } from "@/components/tools/parts";
+import { Empty, LimitNote, Note, OutputBox, ResultFooter, Stat, StatGrid } from "@/components/tools/parts";
 import { downloadText } from "@/lib/download";
 import { countKeys, minifyJson, parseJson, stringifyJson } from "@/lib/json-tool";
+import { MAX_TEXT_LENGTH } from "@/lib/text";
 import { useToolInput } from "@/lib/tool-input";
 import { formatBytes, formatNumber } from "@/lib/utils";
 
@@ -24,20 +25,23 @@ export default function JsonFormatter() {
   const [indent, setIndent] = useState("2");
   const [sortKeys, setSortKeys] = useState(false);
 
-  const parsed = useMemo(() => parseJson(input), [input]);
+  // Past the cap the parse, the key walk and the re-serialise are all skipped —
+  // run on every keystroke over a multi-megabyte paste, that is what stalls the
+  // tab. The text stays in its box; only the pass stops.
+  const tooLong = input.length > MAX_TEXT_LENGTH;
+  const parsed = useMemo(() => (tooLong ? null : parseJson(input)), [input, tooLong]);
 
   const output = useMemo(() => {
-    if (!parsed.ok) return "";
+    if (!parsed?.ok) return "";
     if (layout === "minified") return minifyJson(parsed.value);
     return stringifyJson(parsed.value, indent === "tab" ? "\t" : Number(indent), sortKeys);
   }, [parsed, layout, indent, sortKeys]);
 
-  const stats = useMemo(
-    () => (parsed.ok ? countKeys(parsed.value) : null),
-    [parsed],
-  );
+  const stats = useMemo(() => (parsed?.ok ? countKeys(parsed.value) : null), [parsed]);
 
   const hasInput = input.trim().length > 0;
+  const valid = parsed?.ok === true;
+  const invalid = hasInput && !tooLong && parsed?.ok === false;
   const indentValue = indent === "tab" ? "\t" : " ".repeat(Number(indent));
 
   return (
@@ -48,8 +52,8 @@ export default function JsonFormatter() {
         onChange={setInput}
         rows={10}
         mono
-        invalid={hasInput && !parsed.ok}
-        describedBy={hasInput && !parsed.ok ? "json-error" : undefined}
+        invalid={invalid}
+        describedBy={invalid ? "json-error" : undefined}
         placeholder='{ "hello": "world" }'
       />
 
@@ -89,17 +93,17 @@ export default function JsonFormatter() {
 
       <Check checked={sortKeys} onChange={setSortKeys} label="Sort object keys alphabetically" hint="Useful for comparing two payloads. Insertion order is kept otherwise." />
 
-      {hasInput ? (
+      {hasInput && !tooLong ? (
         <p
           id="json-error"
-          role={parsed.ok ? "status" : "alert"}
+          role={valid ? "status" : "alert"}
           className={
-            parsed.ok
+            valid
               ? "text-sm text-muted"
               : "rounded-md border border-highlight/45 bg-highlight/5 px-3.5 py-3 text-sm text-highlight-strong"
           }
         >
-          {parsed.ok ? (
+          {valid ? (
             <>
               Valid JSON. {" "}
               <span className="num">
@@ -110,14 +114,14 @@ export default function JsonFormatter() {
             </>
           ) : (
             <>
-              {parsed.message} Line <span className="num">{parsed.line}</span>, column{" "}
-              <span className="num">{parsed.column}</span>.
+              {parsed?.message} Line <span className="num">{parsed?.line}</span>, column{" "}
+              <span className="num">{parsed?.column}</span>.
             </>
           )}
         </p>
       ) : null}
 
-      {parsed.ok && stats ? (
+      {stats ? (
         <StatGrid className="lg:grid-cols-4">
           <Stat label="Objects" value={formatNumber(stats.objects)} />
           <Stat label="Arrays" value={formatNumber(stats.arrays)} />
@@ -128,17 +132,19 @@ export default function JsonFormatter() {
 
       <div>
         <ResultFooter>
-          <CopyButton value={output} disabled={!parsed.ok} />
+          <CopyButton value={output} disabled={!valid} />
           <button
             type="button"
             className="btn btn-secondary btn-sm"
-            disabled={!parsed.ok}
+            disabled={!valid}
             onClick={() => downloadText(output, "formatted.json", "application/json")}
           >
             Download
           </button>
         </ResultFooter>
-        {parsed.ok ? (
+        {tooLong ? (
+          <LimitNote length={input.length} limit={MAX_TEXT_LENGTH} />
+        ) : valid ? (
           <OutputBox as="pre">
             {output.length > 0 ? output : "{}"}
           </OutputBox>
