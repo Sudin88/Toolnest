@@ -98,6 +98,16 @@ export const categoryBySlug = new Map<string, ToolCategory>(
   categories.map((category) => [category.slug, category]),
 );
 
+// Fail loudly at load rather than silently keeping the last of a duplicated id or
+// slug. The registry asserts the same thing for tool slugs; this is the category
+// half of that guard.
+if (categoryById.size !== categories.length) {
+  throw new Error("Duplicate category id in lib/tools/categories.ts");
+}
+if (categoryBySlug.size !== categories.length) {
+  throw new Error("Duplicate category slug in lib/tools/categories.ts");
+}
+
 export function getCategory(id: ToolCategoryId): ToolCategory {
   const category = categoryById.get(id);
   if (!category) throw new Error(`Unknown tool category: ${id}`);

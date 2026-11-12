@@ -50,7 +50,7 @@ export function useImageFile() {
 /** A produced image: its bytes, the preview URL, and whatever the tool needs to
  * describe it (dimensions, format). The metadata is flattened onto the result so
  * callers read `result.width` rather than `result.meta.width`. */
-export type ImageResult<TMeta> = TMeta & { blob: Blob; url: string };
+type ImageResult<TMeta> = TMeta & { blob: Blob; url: string };
 
 /**
  * The build half of the image tools: run one async producer over a snapshot of

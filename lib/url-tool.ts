@@ -3,7 +3,7 @@
  * so URLs containing tokens or signed parameters never leave the device.
  */
 
-export interface QueryParam {
+interface QueryParam {
   key: string;
   /** Percent-decoded value. */
   value: string;
@@ -11,7 +11,7 @@ export interface QueryParam {
   raw: string;
 }
 
-export interface ParsedUrl {
+interface ParsedUrl {
   ok: true;
   protocol: string;
   username: string;
@@ -26,7 +26,7 @@ export interface ParsedUrl {
   reconstructed: string;
 }
 
-export type UrlParseResult = ParsedUrl | { ok: false; error: string };
+type UrlParseResult = ParsedUrl | { ok: false; error: string };
 
 function safeDecode(value: string): string {
   try {

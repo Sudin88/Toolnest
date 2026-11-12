@@ -123,10 +123,10 @@ function scheduleWrite(): void {
 }
 
 function subscribe(onChange: () => void) {
-  return subscribeToKey(KEY, EVENT, onChange, () => {
-    loaded = false; // another tab changed it; re-read on the next snapshot
-    onChange();
-  });
+  // Three arguments on purpose: `sessionStorage` is per-tab, so the cross-tab
+  // `storage` branch can never fire for this store. Only the same-tab custom
+  // event matters here, and it leaves the in-memory copy authoritative.
+  return subscribeToKey(KEY, EVENT, onChange);
 }
 
 function write(tool: string, field: string, value: unknown): void {
@@ -149,7 +149,7 @@ function write(tool: string, field: string, value: unknown): void {
 }
 
 /** Reject a stored value that no longer matches the field's type. */
-export type DraftDecoder<T> = (value: unknown) => T | undefined;
+type DraftDecoder<T> = (value: unknown) => T | undefined;
 
 export interface DraftOptions<T> {
   /**

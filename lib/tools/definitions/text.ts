@@ -17,7 +17,7 @@ export const textTools: ToolDefinition[] = [
     category: "text",
     tagline: "Words, sentences, paragraphs and reading time",
     description:
-      "Count words, characters, sentences and paragraphs as you type, with estimated reading time and keyword density. Nothing is uploaded; the count runs in your browser.",
+      "Count words, characters, sentences and paragraphs as you type, with reading time and keyword density. Nothing is uploaded; it all runs in your browser.",
     icon: FaFont,
     keywords: ["word count", "count words online", "reading time", "essay length", "keyword density"],
     local: true,

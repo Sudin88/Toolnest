@@ -18,7 +18,7 @@ import { formatBytes } from "@/lib/utils";
  * says or when a page count is trustworthy.
  */
 
-export interface LoadedPdf {
+interface LoadedPdf {
   file: File;
   bytes: Uint8Array;
   pageCount: number;
@@ -28,7 +28,7 @@ export interface LoadedPdf {
   sizes: { width: number; height: number }[];
 }
 
-export interface PdfFileEntry {
+interface PdfFileEntry {
   id: string;
   name: string;
   size: number;
@@ -232,7 +232,7 @@ export function usePdfFiles() {
   return { entries, error, busy, add, move, remove, clear, setError };
 }
 
-export interface PdfBuild<TResult> {
+interface PdfBuild<TResult> {
   /** True while a build is in flight. */
   working: boolean;
   /** The last build's failure, or `null`. */

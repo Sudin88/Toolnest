@@ -7,7 +7,7 @@ import { MAX_BATCH_BYTES, MAX_IMAGES_TO_PDF } from "@/lib/pdf";
 import { formatBytes } from "@/lib/utils";
 
 /** One image in a batch, kept together with the object URL that previews it. */
-export interface ImageEntry {
+interface ImageEntry {
   id: string;
   file: File;
   image: LoadedImage;

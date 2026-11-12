@@ -41,7 +41,7 @@ export interface PasteDetection {
   kind: PasteKind;
   /** A short human label for the detected kind, or "" when there is nothing to say. */
   label: string;
-  suggestions: PasteSuggestion[];
+  suggestions: readonly PasteSuggestion[];
 }
 
 const JSON_START = /^[[{]/;
@@ -90,6 +90,27 @@ function looksLikeProse(text: string): boolean {
   return text.split(/\s+/).filter(Boolean).length >= 4 && /[.!?](\s|$)/.test(text);
 }
 
+/**
+ * The suggestion sets, keyed by the detection kind that produces them.
+ *
+ * `detectInput` returns these arrays directly and `PASTE_DETECT_SLUGS` below is
+ * built from them, so a suggestion added here cannot leave the build-time
+ * liveness check stale. The list was previously a hand-copied duplicate.
+ */
+const SUGGESTIONS = {
+  json: [{ slug: "json-formatter", reason: "Validate, format or minify it" }],
+  url: [
+    { slug: "url-parser", reason: "See what the link is made of" },
+    { slug: "url-encoder-decoder", reason: "Encode or decode it" },
+  ],
+  base64: [{ slug: "base64-encoder-decoder", reason: "Decode it back to text" }],
+  prose: [
+    { slug: "word-counter", reason: "Count words and reading time" },
+    { slug: "case-converter", reason: "Change the letter case" },
+    { slug: "remove-duplicate-lines", reason: "Collapse repeated lines" },
+  ],
+};
+
 export function detectInput(raw: string): PasteDetection {
   const text = raw.trim();
 
@@ -101,7 +122,7 @@ export function detectInput(raw: string): PasteDetection {
     return {
       kind: "json",
       label: "Looks like JSON",
-      suggestions: [{ slug: "json-formatter", reason: "Validate, format or minify it" }],
+      suggestions: SUGGESTIONS.json,
     };
   }
 
@@ -109,10 +130,7 @@ export function detectInput(raw: string): PasteDetection {
     return {
       kind: "url",
       label: "Looks like a link",
-      suggestions: [
-        { slug: "url-parser", reason: "See what the link is made of" },
-        { slug: "url-encoder-decoder", reason: "Encode or decode it" },
-      ],
+      suggestions: SUGGESTIONS.url,
     };
   }
 
@@ -120,7 +138,7 @@ export function detectInput(raw: string): PasteDetection {
     return {
       kind: "base64",
       label: "Looks like base64",
-      suggestions: [{ slug: "base64-encoder-decoder", reason: "Decode it back to text" }],
+      suggestions: SUGGESTIONS.base64,
     };
   }
 
@@ -137,24 +155,21 @@ export function detectInput(raw: string): PasteDetection {
     return {
       kind: "prose",
       label: "Looks like text",
-      suggestions: [
-        { slug: "word-counter", reason: "Count words and reading time" },
-        { slug: "case-converter", reason: "Change the letter case" },
-        { slug: "remove-duplicate-lines", reason: "Collapse repeated lines" },
-      ],
+      suggestions: SUGGESTIONS.prose,
     };
   }
 
   return { kind: "query", label: "", suggestions: [] };
 }
 
-/** Every slug `detectInput` can name. Asserted live at build time. */
+/**
+ * Every slug `detectInput` can name, derived from `SUGGESTIONS` so it cannot go
+ * stale. Asserted live at build time by `lib/content-check.ts`.
+ */
 export const PASTE_DETECT_SLUGS: readonly string[] = [
-  "json-formatter",
-  "url-parser",
-  "url-encoder-decoder",
-  "base64-encoder-decoder",
-  "word-counter",
-  "case-converter",
-  "remove-duplicate-lines",
+  ...new Set(
+    Object.values(SUGGESTIONS)
+      .flat()
+      .map((suggestion) => suggestion.slug),
+  ),
 ];

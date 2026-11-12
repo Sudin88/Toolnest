@@ -46,6 +46,13 @@ describe("registry", () => {
     }
   });
 
+  it("keeps every tool description within the documented length", () => {
+    // `types.ts` documents 120–160 chars. Only the ceiling is asserted: a short
+    // description is a copy decision, but an over-long one is a contract break.
+    const tooLong = tools.filter((tool) => tool.description.length > 160).map((tool) => tool.slug);
+    expect(tooLong).toEqual([]);
+  });
+
   it("resolves an unknown slug as neither present nor live", () => {
     expect(getTool("definitely-not-a-tool")).toBeUndefined();
     expect(isLive("definitely-not-a-tool")).toBe(false);

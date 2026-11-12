@@ -22,30 +22,6 @@ import { cn, formatBytes } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ fields */
 
-export function Field({
-  label,
-  hint,
-  children,
-  className,
-  htmlFor,
-}: {
-  label: ReactNode;
-  hint?: ReactNode;
-  children: ReactNode;
-  className?: string;
-  htmlFor?: string;
-}) {
-  return (
-    <div className={className}>
-      <label className="label" htmlFor={htmlFor}>
-        {label}
-      </label>
-      {children}
-      {hint ? <p className="hint mt-1.5">{hint}</p> : null}
-    </div>
-  );
-}
-
 export function TextArea({
   label,
   hint,

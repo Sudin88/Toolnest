@@ -1,4 +1,5 @@
 import { getCategory } from "@/lib/tools/categories";
+import { toolMatchText } from "@/lib/tools/match-text";
 import { liveTools } from "@/lib/tools/registry";
 import type { ToolCategoryId } from "@/lib/tools/types";
 
@@ -25,6 +26,6 @@ export function buildSearchIndex(): SearchEntry[] {
     tagline: tool.tagline,
     category: tool.category,
     group: getCategory(tool.category).navLabel,
-    haystack: [tool.name, tool.tagline, ...tool.keywords].join(" ").toLowerCase(),
+    haystack: toolMatchText(tool).toLowerCase(),
   }));
 }

@@ -1,4 +1,5 @@
 import { categories, getCategory } from "@/lib/tools/categories";
+import { toolMatchText } from "@/lib/tools/match-text";
 import { liveToolsInCategory } from "@/lib/tools/registry";
 import type { ToolDefinition } from "@/lib/tools/types";
 
@@ -37,7 +38,7 @@ function toItem(tool: ToolDefinition): ToolIndexItem {
     tagline: tool.tagline,
     local: tool.local,
     categoryLabel: category.navLabel,
-    haystack: `${tool.name} ${tool.tagline} ${category.navLabel}`.toLowerCase(),
+    haystack: `${toolMatchText(tool)} ${category.navLabel}`.toLowerCase(),
   };
 }
 

@@ -118,7 +118,7 @@ export const developerTools: ToolDefinition[] = [
     category: "developer",
     tagline: "Strong random passwords, generated on your device",
     description:
-      "Generate strong passwords with cryptographic randomness. Choose the length and character sets, exclude ambiguous characters, and copy without the value ever leaving your browser.",
+      "Generate strong passwords with cryptographic randomness. Pick the length and character sets, then copy the result without the value ever leaving your browser.",
     icon: FaKey,
     keywords: ["password generator", "strong password", "random password", "secure password online"],
     local: true,

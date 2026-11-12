@@ -5,7 +5,7 @@
  * `serializeJsonLd` escapes `<` so a value containing markup cannot close the
  * script element early.
  */
-export function serializeJsonLd(data: unknown): string {
+function serializeJsonLd(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 

@@ -59,3 +59,14 @@ export const componentSlugs = [
 ] as const;
 
 export type ComponentSlug = (typeof componentSlugs)[number];
+
+const SLUGS: ReadonlySet<string> = new Set(componentSlugs);
+
+/**
+ * Narrows an arbitrary route slug to one that has a screen, so the loader map in
+ * `tool-host.tsx` can be indexed without a cast. The runtime `notFound()` guard
+ * stays: this only tells the compiler what the registry already guarantees.
+ */
+export function isComponentSlug(slug: string): slug is ComponentSlug {
+  return SLUGS.has(slug);
+}

@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import type { ComponentType } from "react";
 
 import { recordRecent } from "@/lib/recents";
-import type { ComponentSlug } from "@/lib/tools/component-slugs";
+import { isComponentSlug, type ComponentSlug } from "@/lib/tools/component-slugs";
 
 /**
  * The tools are client-side, interactive and only ever needed one at a time, so
@@ -85,11 +85,13 @@ export function ToolHost({ slug }: { slug: string }) {
     recordRecent(slug);
   }, [slug]);
 
-  const Component = COMPONENTS[slug as ComponentSlug];
+  // The registry only routes `live` tools and asserts every live slug has a
+  // screen here, so `isComponentSlug` restates what the build already guarantees
+  // — it replaces a cast. The guard after it still catches a mapping that
+  // drifted, rendering the 404 rather than a placeholder.
+  if (!isComponentSlug(slug)) notFound();
 
-  // The registry only routes `live` tools, and the build asserts every live slug
-  // has a screen here, so a miss means the mapping drifted. Render the 404 rather
-  // than a placeholder that hides it.
+  const Component = COMPONENTS[slug];
   if (!Component) notFound();
 
   return <Component />;

@@ -6,7 +6,7 @@
  * paste cannot lock up the tab.
  */
 
-export type DiffKind = "same" | "added" | "removed";
+type DiffKind = "same" | "added" | "removed";
 
 export interface DiffPart {
   kind: DiffKind;
