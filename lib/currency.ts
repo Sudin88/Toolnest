@@ -14,9 +14,15 @@ export const CURRENCIES = [
 
 export function formatMoney(value: number, currency: string, maximumFractionDigits = 2) {
   if (!Number.isFinite(value)) return "—";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    maximumFractionDigits,
-  }).format(value);
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      maximumFractionDigits,
+    }).format(value);
+  } catch {
+    // An unknown currency code makes `Intl` throw a RangeError. Money is
+    // presentation only, so an unrecognised code shows a dash, not a crash.
+    return "—";
+  }
 }

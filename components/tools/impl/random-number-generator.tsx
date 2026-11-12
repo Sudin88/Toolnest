@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Check, CopyButton, NumberInput, Segmented } from "@/components/tools/interactive";
 import { Empty, Note, OutputBox, SubHeading } from "@/components/tools/parts";
@@ -22,6 +22,21 @@ export default function RandomNumberGenerator() {
   const [allowDuplicates, setAllowDuplicates] = useState(true);
   const [results, setResults] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  // Results belong to the settings that produced them, so any change to a
+  // setting clears them: Copy and Download then disappear until Generate is
+  // pressed again, and the file can never hold a number outside the visible
+  // range. The memoised snapshot makes that one identity check.
+  const settings = useMemo(
+    () => ({ kind, min, max, decimals, count, includeEndpoints, allowDuplicates }),
+    [kind, min, max, decimals, count, includeEndpoints, allowDuplicates],
+  );
+  const [built, setBuilt] = useState(settings);
+  if (built !== settings) {
+    setBuilt(settings);
+    setResults([]);
+    setError(null);
+  }
 
   function generate() {
     setError(null);
@@ -82,11 +97,7 @@ export default function RandomNumberGenerator() {
       <Segmented<Kind>
         label="What kind of numbers?"
         value={kind}
-        onChange={(next) => {
-          setKind(next);
-          setResults([]);
-          setError(null);
-        }}
+        onChange={setKind}
         options={[
           { value: "integer", label: "Whole numbers" },
           { value: "decimal", label: "Decimals" },
@@ -107,12 +118,14 @@ export default function RandomNumberGenerator() {
         <NumberInput label="How many" value={count} onChange={setCount} min={1} max={MAX_COUNT} />
       ) : null}
 
-      <Check
-        label="The minimum and maximum may be picked"
-        checked={includeEndpoints}
-        onChange={setIncludeEndpoints}
-        hint="Turn off to treat them as boundaries that are never returned."
-      />
+      {kind === "integer" ? (
+        <Check
+          label="The minimum and maximum may be picked"
+          checked={includeEndpoints}
+          onChange={setIncludeEndpoints}
+          hint="Turn off to treat them as boundaries that are never returned."
+        />
+      ) : null}
 
       {kind === "integer" ? (
         <Check

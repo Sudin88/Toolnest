@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
-
 import { FileDrop, FileList } from "@/components/tools/interactive";
 import { ResultFooter, Note, Stat, StatGrid } from "@/components/tools/parts";
-import { usePdfFiles } from "@/components/tools/pdf-workbench";
+import { usePdfBuild, usePdfFiles } from "@/components/tools/pdf-workbench";
 import { downloadBlob } from "@/lib/download";
 import { fileStem, mergePdfs } from "@/lib/pdf";
 import { formatBytes } from "@/lib/utils";
@@ -16,38 +14,22 @@ import { formatBytes } from "@/lib/utils";
  */
 export default function MergePdf() {
   const { entries, error, busy, add, move, remove, clear } = usePdfFiles();
-  const [working, setWorking] = useState(false);
-  const [buildError, setBuildError] = useState<string | null>(null);
-  const [blob, setBlob] = useState<Blob | null>(null);
 
-  // Any change to the list invalidates a previous result. Resetting during
-  // render is React's documented pattern for deriving state from a changed input.
-  const [blobFor, setBlobFor] = useState(entries);
-  if (blobFor !== entries) {
-    setBlobFor(entries);
-    setBlob(null);
-    setBuildError(null);
-  }
+  // The list *is* the input: any add, move or removal gives it a new identity,
+  // which is what drops a previous result.
+  const { working, error: buildError, result: blob, run } = usePdfBuild(
+    entries,
+    async (list) => {
+      const bytes = await mergePdfs(list.map((entry) => ({ name: entry.name, bytes: entry.bytes })));
+      const copy = new Uint8Array(bytes.length);
+      copy.set(bytes);
+      return new Blob([copy], { type: "application/pdf" });
+    },
+    "The files could not be merged.",
+  );
 
   const totalPages = entries.reduce((sum, entry) => sum + entry.pageCount, 0);
   const totalBytes = entries.reduce((sum, entry) => sum + entry.size, 0);
-
-  async function merge() {
-    if (entries.length < 2) return;
-    setWorking(true);
-    setBuildError(null);
-    setBlob(null);
-    try {
-      const bytes = await mergePdfs(entries.map((entry) => ({ name: entry.name, bytes: entry.bytes })));
-      const copy = new Uint8Array(bytes.length);
-      copy.set(bytes);
-      setBlob(new Blob([copy], { type: "application/pdf" }));
-    } catch (cause) {
-      setBuildError(cause instanceof Error ? cause.message : "The files could not be merged.");
-    } finally {
-      setWorking(false);
-    }
-  }
 
   const filename = entries[0] ? `${fileStem(entries[0].name)}-merged.pdf` : "merged.pdf";
 
@@ -95,7 +77,7 @@ export default function MergePdf() {
             <button
               type="button"
               className="btn btn-primary"
-              onClick={() => void merge()}
+              onClick={() => void run()}
               disabled={working || entries.length < 2}
             >
               {working ? "Merging…" : "Merge PDFs"}

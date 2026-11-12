@@ -2,6 +2,7 @@
 
 import { ChevronDown, ShieldCheck, Star } from "lucide-react";
 import Link from "next/link";
+import { memo } from "react";
 
 import type { ToolIndexGroup, ToolIndexItem } from "@/lib/tools/index-view";
 import { toggleFavourite, useFavouriteSlugs } from "@/lib/favourites";
@@ -44,7 +45,11 @@ function StarButton({ item }: { item: ToolIndexItem }) {
   );
 }
 
-function IndexRow({
+/**
+ * One row. Memoised so a keystroke in the filter — which rebuilds the group
+ * objects around it — does not re-render the rows that did not change.
+ */
+const IndexRow = memo(function IndexRow({
   item,
   number,
   showCategoryTag,
@@ -91,7 +96,7 @@ function IndexRow({
       </span>
     </li>
   );
-}
+});
 
 export function ToolIndex({
   groups,

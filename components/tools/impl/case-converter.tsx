@@ -3,8 +3,8 @@
 import { useMemo } from "react";
 
 import { CopyButton, TextArea } from "@/components/tools/interactive";
-import { Empty, Note, ResultFooter, TryExample } from "@/components/tools/parts";
-import { CASE_IDS, CASE_LABELS, applyCase, countCharacters, type CaseId } from "@/lib/text";
+import { Empty, LimitNote, Note, ResultFooter, TryExample } from "@/components/tools/parts";
+import { CASE_IDS, CASE_LABELS, MAX_TEXT_LENGTH, applyCase, countCharacters, type CaseId } from "@/lib/text";
 import { useToolDraft } from "@/lib/tool-draft";
 import { useToolInput } from "@/lib/tool-input";
 import { cn, formatNumber } from "@/lib/utils";
@@ -15,8 +15,11 @@ export default function CaseConverter() {
   const [text, setText] = useToolInput<string>("case-converter", "text", "", { handover: true });
   const [active, setActive] = useToolDraft<CaseId>("case-converter", "active", "upper");
 
-  const result = useMemo(() => applyCase(text, active), [text, active]);
-  const hasText = text.trim().length > 0;
+  // Past the cap the conversion is skipped rather than run on every keystroke —
+  // the case walk over a multi-megabyte paste is what stalls the tab.
+  const tooLong = text.length > MAX_TEXT_LENGTH;
+  const result = useMemo(() => (tooLong ? "" : applyCase(text, active)), [text, active, tooLong]);
+  const showResult = !tooLong && text.trim().length > 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -52,9 +55,11 @@ export default function CaseConverter() {
 
       <div>
         <ResultFooter label={`Result — ${CASE_LABELS[active]}`}>
-          <CopyButton value={result} disabled={!hasText} />
+          <CopyButton value={result} disabled={!showResult} />
         </ResultFooter>
-        {hasText ? (
+        {tooLong ? (
+          <LimitNote length={text.length} limit={MAX_TEXT_LENGTH} />
+        ) : showResult ? (
           <textarea
             className="field field-mono"
             rows={8}
@@ -67,7 +72,7 @@ export default function CaseConverter() {
             Your converted text will appear here.
           </Empty>
         )}
-        {hasText ? (
+        {showResult ? (
           <p className="hint mt-1.5 num">
             {formatNumber(countCharacters(result, true))} characters
           </p>

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { pageMetadata } from "@/lib/seo";
-import { siteConfig } from "@/lib/site";
+import { contactEmailHref, siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = pageMetadata({
   title: "Terms of Use",
@@ -94,7 +94,7 @@ export default function TermsPage() {
             {siteConfig.contactEmail ? (
               <>
                 Reach out at{" "}
-                <a href={`mailto:${siteConfig.contactEmail}`} className="link">
+                <a href={contactEmailHref ?? undefined} className="link">
                   {siteConfig.contactEmail}
                 </a>
                 .

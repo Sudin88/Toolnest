@@ -5,17 +5,23 @@ import { useMemo } from "react";
 import { NumberInput, Segmented } from "@/components/tools/interactive";
 import { Note } from "@/components/tools/parts";
 import { isWhatPercent, percentChange, percentOf } from "@/lib/calc";
-import { useToolDraft } from "@/lib/tool-draft";
+import { draftNumber, draftOneOf, useToolDraft } from "@/lib/tool-draft";
 
 type Mode = "of" | "isPercent" | "change";
+
+const MODES: Mode[] = ["of", "isPercent", "change"];
+/** Built once: `useToolDraft` compares decoder identity, so it must be stable. */
+const decodeMode = draftOneOf(MODES);
 
 const fmt = (value: number) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 }).format(value);
 
 export default function PercentageCalculator() {
-  const [mode, setMode] = useToolDraft<Mode>("percentage-calculator", "mode", "of");
-  const [a, setA] = useToolDraft<number | "">("percentage-calculator", "a", 25);
-  const [b, setB] = useToolDraft<number | "">("percentage-calculator", "b", 200);
+  // Stored values are validated on read, so a stale or hand-edited draft falls
+  // back to the default instead of reaching a formatter as the wrong type.
+  const [mode, setMode] = useToolDraft<Mode>("percentage-calculator", "mode", "of", { decode: decodeMode });
+  const [a, setA] = useToolDraft<number | "">("percentage-calculator", "a", 25, { decode: draftNumber });
+  const [b, setB] = useToolDraft<number | "">("percentage-calculator", "b", 200, { decode: draftNumber });
 
   const result = useMemo(() => {
     if (a === "" || b === "") return null;

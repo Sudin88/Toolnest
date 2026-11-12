@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 
 import { useHandoverText } from "@/lib/handover";
-import { useToolDraft } from "@/lib/tool-draft";
+import { useToolDraft, type DraftOptions } from "@/lib/tool-draft";
 
 /**
  * The main input of a tool, wired to the two persistence rules in one place.
@@ -21,13 +21,17 @@ import { useToolDraft } from "@/lib/tool-draft";
  * Only tools that accept text pass `handover: true`. Everything else uses the
  * draft half by itself, so a file never travels through either mechanism.
  */
+/**
+ * The optional `decode` validates a stored draft before it reaches the tool; see
+ * `useToolDraft`. A `handover` flag stages pasted text from the home box.
+ */
 export function useToolInput<T>(
   slug: string,
   field: string,
   initial: T,
-  options?: { handover?: boolean },
+  options?: DraftOptions<T> & { handover?: boolean },
 ): [T, (value: T) => void] {
-  const [value, setValue] = useToolDraft<T>(slug, field, initial);
+  const [value, setValue] = useToolDraft<T>(slug, field, initial, options);
 
   const apply = useCallback(
     (text: string) => {

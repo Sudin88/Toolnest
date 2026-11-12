@@ -2,6 +2,14 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 
+import {
+  emitKey,
+  parseJson,
+  readRaw,
+  subscribeToKey,
+  writeJson,
+} from "@/lib/browser-store";
+
 /**
  * A session-scoped draft of the small inputs a tool remembers while the visitor
  * stays in the tab — a loan amount, a unit, a paragraph of text. It is kept in
@@ -11,64 +19,124 @@ import { useCallback, useSyncExternalStore } from "react";
  * What may be drafted: short settings and small typed input.
  * What must never be drafted: files, passwords, secrets, tokens, or a payload
  * the tool itself warns may contain credentials. Those tools keep plain state.
+ *
+ * Two properties make this cheap enough to run on every keystroke: the value in
+ * memory is authoritative (storage is only re-read when another tab changes it),
+ * and the write to storage is deferred, so typing never does a synchronous
+ * stringify-and-store of the whole record.
  */
 const KEY = "toolnest-draft";
 const EVENT = "toolnest:draft";
+const VERSION = 1;
 
-type Store = Record<string, Record<string, unknown>>;
+/** Above this many characters the store is not worth persisting; the tool's own
+ * input limit is what keeps drafts small, this is only a backstop. */
+const MAX_STORE_CHARS = 64 * 1024;
+/** Keep the record from growing to one entry per tool ever opened. */
+const MAX_TOOLS = 40;
+/** Trailing delay for the storage write, in the house 150–200 ms band. */
+const WRITE_DELAY_MS = 200;
+
+type ToolDraft = Record<string, unknown>;
+type Store = Record<string, ToolDraft>;
 
 const EMPTY: Store = {};
 
-let cacheRaw: string | null = null;
-let cacheValue: Store = EMPTY;
+/** The last value written is authoritative; storage is only a backup. */
+let cache: Store = EMPTY;
+let loaded = false;
+let writeTimer: ReturnType<typeof setTimeout> | null = null;
 
-function readRaw(): string | null {
-  try {
-    return window.sessionStorage.getItem(KEY);
-  } catch {
-    return null;
+/**
+ * A payload from an older build, a hand-edited value, or a future schema is read
+ * defensively and never trusted: anything that is not a record of tool records
+ * collapses to empty rather than reaching a component.
+ */
+function normalise(parsed: unknown): Store {
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return EMPTY;
+  const record = parsed as Record<string, unknown>;
+  const tools =
+    typeof record.version === "number" && record.tools && typeof record.tools === "object"
+      ? record.tools
+      : record;
+  if (!tools || typeof tools !== "object" || Array.isArray(tools)) return EMPTY;
+
+  const next: Store = {};
+  for (const [tool, fields] of Object.entries(tools)) {
+    if (fields && typeof fields === "object" && !Array.isArray(fields)) {
+      next[tool] = { ...(fields as ToolDraft) };
+    }
   }
+  return next;
 }
 
-function getSnapshot(): Store {
-  const raw = readRaw();
-  if (raw === cacheRaw) return cacheValue;
-  cacheRaw = raw;
-  cacheValue =
-    raw === null ? EMPTY : ((): Store => {
-      try {
-        const parsed: unknown = JSON.parse(raw);
-        return parsed && typeof parsed === "object" && !Array.isArray(parsed)
-          ? (parsed as Store)
-          : EMPTY;
-      } catch {
-        return EMPTY;
-      }
-    })();
-  return cacheValue;
+function ensureLoaded(): Store {
+  if (loaded) return cache;
+  loaded = true;
+  cache = normalise(parseJson(readRaw(window.sessionStorage, KEY)));
+  return cache;
 }
 
-function getServerSnapshot(): Store {
-  return EMPTY;
+function scheduleWrite(): void {
+  if (writeTimer !== null) clearTimeout(writeTimer);
+  writeTimer = setTimeout(() => {
+    writeTimer = null;
+    const payload = { version: VERSION, tools: cache };
+    // Refuse a store past the ceiling rather than persist a huge blob.
+    if (JSON.stringify(payload).length > MAX_STORE_CHARS) return;
+    writeJson(window.sessionStorage, KEY, payload);
+  }, WRITE_DELAY_MS);
 }
 
 function subscribe(onChange: () => void) {
-  window.addEventListener(EVENT, onChange);
-  return () => window.removeEventListener(EVENT, onChange);
+  return subscribeToKey(KEY, EVENT, onChange, () => {
+    loaded = false; // another tab changed it; re-read on the next snapshot
+    onChange();
+  });
 }
 
 function write(tool: string, field: string, value: unknown): void {
-  try {
-    const current = getSnapshot();
-    const next: Store = { ...current, [tool]: { ...(current[tool] ?? {}), [field]: value } };
-    const raw = JSON.stringify(next);
-    window.sessionStorage.setItem(KEY, raw);
-    cacheRaw = raw;
-    cacheValue = next;
-    window.dispatchEvent(new Event(EVENT));
-  } catch {
-    // Drafting is a convenience. Never let storage break the tool.
-  }
+  const current = ensureLoaded();
+  const toolDraft: ToolDraft = { ...(current[tool] ?? {}) };
+  if (value === undefined) delete toolDraft[field];
+  else toolDraft[field] = value;
+
+  const next: Store = { ...current };
+  // Delete then re-add so the tool moves to the end of the insertion order and
+  // is the last one evicted once the record exceeds `MAX_TOOLS`.
+  delete next[tool];
+  next[tool] = toolDraft;
+
+  const entries = Object.entries(next);
+  cache = entries.length > MAX_TOOLS ? Object.fromEntries(entries.slice(-MAX_TOOLS)) : next;
+
+  emitKey(EVENT);
+  scheduleWrite();
+}
+
+/** Reject a stored value that no longer matches the field's type. */
+export type DraftDecoder<T> = (value: unknown) => T | undefined;
+
+export interface DraftOptions<T> {
+  /**
+   * Turns a stored value back into the field's type, returning `undefined` for
+   * anything that does not fit. A stale or hand-edited payload then falls back
+   * to `initial` instead of reaching the tool as the wrong shape.
+   */
+  decode?: DraftDecoder<T>;
+}
+
+/** The `number | ""` shape most numeric inputs use. */
+export const draftNumber: DraftDecoder<number | ""> = (value) =>
+  typeof value === "number" || value === "" ? value : undefined;
+
+/** A plain string, rejecting anything a hand-edited payload might have put there. */
+export const draftString: DraftDecoder<string> = (value) =>
+  typeof value === "string" ? value : undefined;
+
+/** A decoder for a string restricted to the given set of allowed values. */
+export function draftOneOf<T extends string>(allowed: readonly T[]): DraftDecoder<T> {
+  return (value) => (typeof value === "string" && (allowed as readonly string[]).includes(value) ? (value as T) : undefined);
 }
 
 /**
@@ -76,10 +144,23 @@ function write(tool: string, field: string, value: unknown): void {
  * Before hydration it renders `initial`, so the server and the first client
  * render agree.
  */
-export function useToolDraft<T>(tool: string, field: string, initial: T): [T, (value: T) => void] {
-  const store = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const stored = store[tool]?.[field];
-  const value = (stored === undefined ? initial : stored) as T;
+export function useToolDraft<T>(
+  tool: string,
+  field: string,
+  initial: T,
+  options?: DraftOptions<T>,
+): [T, (value: T) => void] {
+  const decode = options?.decode;
+
+  const getSnapshot = useCallback((): T => {
+    const stored = ensureLoaded()[tool]?.[field];
+    if (stored === undefined) return initial;
+    if (!decode) return stored as T;
+    const decoded = decode(stored);
+    return decoded === undefined ? initial : decoded;
+  }, [tool, field, initial, decode]);
+
+  const value = useSyncExternalStore(subscribe, getSnapshot, () => initial);
   const set = useCallback((next: T) => write(tool, field, next), [tool, field]);
   return [value, set];
 }

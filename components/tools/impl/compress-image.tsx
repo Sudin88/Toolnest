@@ -1,22 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   ImageFacts,
   ImagePreview,
+  ImageStats,
   useImageFile,
+  useImageResult,
 } from "@/components/tools/image-workbench";
 import { FileDrop, NumberInput, RangeInput, Select } from "@/components/tools/interactive";
-import { Empty, Note, Stat, StatGrid } from "@/components/tools/parts";import { downloadBlob } from "@/lib/download";
-import {
-  baseName,
-  canvasToBlob,
-  drawToCanvas,
-  formatLabel,
-  savingsRatio,
-} from "@/lib/image";
-import { formatBytes } from "@/lib/utils";
+import { Empty, Note } from "@/components/tools/parts";
+import { downloadBlob } from "@/lib/download";
+import { baseName, canvasToBlob, drawToCanvas, savingsRatio } from "@/lib/image";
 
 const FORMATS = [
   { value: "auto", label: "Same as the original" },
@@ -25,36 +21,20 @@ const FORMATS = [
   { value: "image/png", label: "PNG" },
 ];
 
-interface Output {
-  blob: Blob;
-  url: string;
-  width: number;
-  height: number;
-  type: string;
-}
-
 export default function CompressImage() {
   const { image, url, error, busy, load, setError } = useImageFile();
   const [format, setFormat] = useState("auto");
   const [quality, setQuality] = useState(80);
   const [maxEdge, setMaxEdge] = useState<number | "">("");
-  const [output, setOutput] = useState<Output | null>(null);
-  const [working, setWorking] = useState(false);
 
-  // A new source invalidates any previous result. Adjusting state during render
-  // is React's documented pattern for resetting on an input change, and it avoids
-  // the extra render pass an effect would cost.
-  const [outputSource, setOutputSource] = useState(image);
-  if (outputSource !== image) {
-    setOutputSource(image);
-    setOutput(null);
-  }
-
-  // Revoke the previous preview URL whenever a new result replaces it.
-  useEffect(() => {
-    if (!output) return;
-    return () => URL.revokeObjectURL(output.url);
-  }, [output]);
+  // A new source *or* a changed setting invalidates any previous result. The
+  // memoised snapshot changes identity whenever an option does, and the result
+  // hook drops the old preview with it, so the preview, the download filename
+  // and the stats can never describe a blob built from older options.
+  const settings = useMemo(
+    () => ({ image, format, quality, maxEdge }),
+    [image, format, quality, maxEdge],
+  );
 
   const targetType =
     format !== "auto"
@@ -64,34 +44,28 @@ export default function CompressImage() {
         : "image/jpeg";
   const lossy = targetType !== "image/png";
 
-  async function compress() {
-    if (!image) return;
-    setWorking(true);
-    setError(null);
-    try {
+  const { result: output, working, run, clear } = useImageResult(
+    settings,
+    async ({ image: source, quality: level, maxEdge: edge }) => {
+      if (!source) throw new Error("The image could not be compressed.");
       const scale =
-        maxEdge === ""
-          ? 1
-          : Math.min(1, Number(maxEdge) / Math.max(image.width, image.height));
-      const width = Math.max(1, Math.round(image.width * scale));
-      const height = Math.max(1, Math.round(image.height * scale));
+        edge === "" ? 1 : Math.min(1, Number(edge) / Math.max(source.width, source.height));
+      const width = Math.max(1, Math.round(source.width * scale));
+      const height = Math.max(1, Math.round(source.height * scale));
       const canvas = drawToCanvas(
-        image.bitmap,
+        source.bitmap,
         width,
         height,
         targetType === "image/jpeg" ? "#ffffff" : undefined,
       );
-      const blob = await canvasToBlob(canvas, targetType, lossy ? quality / 100 : undefined);
-      setOutput({ blob, url: URL.createObjectURL(blob), width, height, type: targetType });
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "The image could not be compressed.");
-    } finally {
-      setWorking(false);
-    }
-  }
+      const blob = await canvasToBlob(canvas, targetType, lossy ? level / 100 : undefined);
+      return { blob, meta: { width, height, type: targetType } };
+    },
+    setError,
+    "The image could not be compressed.",
+  );
 
-  const ratio = output && image ? savingsRatio(image.size, output.blob.size) : null;
-  const saving = ratio === null ? 0 : Math.round((1 - ratio) * 100);
+  const saving = output && image ? Math.round((1 - savingsRatio(image.size, output.blob.size)) * 100) : 0;
   const filename = image ? `${baseName(image.name)}-compressed.${targetType.split("/")[1]}` : "image";
 
   return (
@@ -101,7 +75,7 @@ export default function CompressImage() {
         hint="JPEG, PNG, WebP, GIF or AVIF — up to whatever your browser can decode."
         accept="image/*"
         onFile={(files) => {
-          setOutput(null);
+          clear();
           void load(files);
         }}
       />
@@ -115,7 +89,12 @@ export default function CompressImage() {
             <div className="panel flex flex-col gap-4 p-4">
               <h3 className="font-display text-[0.9375rem] font-bold text-fg">Original</h3>
               <div className="flex max-h-72 items-center justify-center overflow-hidden rounded-md border border-line bg-surface-2">
-                <ImagePreview src={url} alt={`Original: ${image.name}`} />
+                <ImagePreview
+                  src={url}
+                  alt={`Original: ${image.name}`}
+                  width={image.width}
+                  height={image.height}
+                />
               </div>
               <ImageFacts
                 name={image.name}
@@ -133,7 +112,7 @@ export default function CompressImage() {
                   <button
                     type="button"
                     className="btn btn-secondary btn-sm"
-                    onClick={() => setOutput(null)}
+                    onClick={clear}
                   >
                     Clear result
                   </button>
@@ -142,7 +121,12 @@ export default function CompressImage() {
               {output ? (
                 <>
                   <div className="flex max-h-72 items-center justify-center overflow-hidden rounded-md border border-line bg-surface-2">
-                    <ImagePreview src={output.url} alt="Compressed result" />
+                    <ImagePreview
+                      src={output.url}
+                      alt="Compressed result"
+                      width={output.width}
+                      height={output.height}
+                    />
                   </div>
                   <ImageFacts
                     name={filename}
@@ -188,7 +172,7 @@ export default function CompressImage() {
           ) : null}
 
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" className="btn btn-primary" onClick={compress} disabled={working}>
+            <button type="button" className="btn btn-primary" onClick={() => void run()} disabled={working}>
               {working ? "Compressing…" : "Compress image"}
             </button>
             {output && image ? (
@@ -202,21 +186,12 @@ export default function CompressImage() {
             ) : null}
           </div>
 
-          {output && ratio !== null ? (
-            <StatGrid>
-              <Stat label="Before" value={formatBytes(image.size)} hint={formatLabel(image.type)} />
-              <Stat label="After" value={formatBytes(output.blob.size)} hint={formatLabel(output.type)} />
-              <Stat
-                label={saving >= 0 ? "Saved" : "Grew by"}
-                value={`${Math.abs(saving)}%`}
-                hint={saving >= 0 ? "Smaller than the original" : "The original is the better file"}
-              />
-              <Stat
-                label="Dimensions"
-                value={`${output.width} × ${output.height}`}
-                hint={output.width === image.width ? "Unchanged" : "Resized"}
-              />
-            </StatGrid>
+          {output && image ? (
+            <ImageStats
+              before={{ size: image.size, type: image.type }}
+              after={{ size: output.blob.size, type: output.type, width: output.width, height: output.height }}
+              original={{ width: image.width, height: image.height }}
+            />
           ) : null}
 
           {output && saving < 0 ? (

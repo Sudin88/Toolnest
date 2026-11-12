@@ -218,10 +218,6 @@
     max-width: 68ch;
   }
 
-  .measure-tight {
-    max-width: 54ch;
-  }
-
   /* Buttons -------------------------------------------------------------
      Tactile: hairline border, flat fill, hover lifts a single pixel onto a
      hard accent offset, press sinks back down. */
@@ -465,38 +461,6 @@
     text-decoration-color: var(--accent);
   }
 
-  /* Focus + interaction ------------------------------------------------ */
-
-  .card-interactive {
-    transition:
-      border-color 150ms ease-out,
-      background-color 150ms ease-out,
-      box-shadow 150ms ease-out,
-      transform 150ms ease-out;
-  }
-
-  .card-interactive:hover {
-    transform: translateY(-1px);
-    border-color: var(--accent);
-    box-shadow: var(--shadow-card-hover);
-  }
-
-  .card-interactive:active {
-    transform: translateY(1px);
-    box-shadow: none;
-  }
-
-  .card-interactive:focus-visible {
-    border-color: var(--accent);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .card-interactive:hover,
-    .card-interactive:active {
-      transform: none;
-    }
-  }
-
   /* Icon slots ----------------------------------------------------------
      A fixed square that reserves the space an icon occupies, so a tool row and
      a category row line up whether or not the icon is present. The container
@@ -572,10 +536,6 @@
   .chip:hover {
     border-color: var(--accent);
     color: var(--fg);
-  }
-
-  .chip-icon {
-    color: var(--accent-text);
   }
 
   /* A chip that is a control (a filter) reads as on when it is pressed, and a

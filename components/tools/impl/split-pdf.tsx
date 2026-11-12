@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 
 import { FileDrop, NumberInput, Segmented, TextInput } from "@/components/tools/interactive";
 import { ResultFooter, Note, Stat, StatGrid, TryExample } from "@/components/tools/parts";
-import { PdfFacts, usePdfFile } from "@/components/tools/pdf-workbench";
+import { PdfFacts, usePdfBuild, usePdfFile } from "@/components/tools/pdf-workbench";
 import { downloadBlob } from "@/lib/download";
 import {
   chunkEvery,
@@ -28,18 +28,6 @@ export default function SplitPdf() {
   const [mode, setMode] = useState<Mode>("range");
   const [ranges, setRanges] = useState("");
   const [chunkSize, setChunkSize] = useState<number | "">(5);
-  const [working, setWorking] = useState(false);
-  const [buildError, setBuildError] = useState<string | null>(null);
-  const [blob, setBlob] = useState<{ blob: Blob; name: string } | null>(null);
-  const [output, setOutput] = useState<{ name: string; size: number }[]>([]);
-
-  const [signature, setSignature] = useState<unknown>(pdf);
-  if (signature !== pdf) {
-    setSignature(pdf);
-    setBlob(null);
-    setOutput([]);
-    setBuildError(null);
-  }
 
   const prefix = pdf ? `${fileStem(pdf.file.name)}-split` : "split";
 
@@ -54,6 +42,55 @@ export default function SplitPdf() {
     return parseGroupedRanges(ranges, pdf.pageCount);
   }, [pdf, mode, ranges, chunkSize]);
 
+  // Everything the split depends on, in one identity: any change drops a
+  // previous result — and the produced-file list rides along with it, so the
+  // two can never disagree.
+  const source = useMemo(() => ({ pdf, plan, prefix }), [pdf, plan, prefix]);
+  const { working, error: buildError, result, run } = usePdfBuild(
+    source,
+    async (input) => {
+      const { pdf: doc, plan: groups, prefix: stem } = input;
+      if (!doc || groups.groups.length === 0) throw new Error("Choose how to split first.");
+
+      const built = await Promise.all(
+        groups.groups.map(async (pages) => {
+          const bytes = await copyPagesToNewDocument(doc.bytes, pages);
+          // Copy into a plain ArrayBuffer-backed view so Blob and JSZip both take it.
+          const copy = new Uint8Array(bytes.length);
+          copy.set(bytes);
+          return { name: summarise(stem, pages), bytes: copy };
+        }),
+      );
+
+      if (built.length === 1) {
+        const part = built[0];
+        return {
+          blob: new Blob([part.bytes], { type: "application/pdf" }),
+          output: [{ name: part.name, size: part.bytes.byteLength }],
+        };
+      }
+
+      const zip = new JSZip();
+      for (const part of built) zip.file(part.name, part.bytes);
+      const zipped = await zip.generateAsync({ type: "uint8array" });
+      const bytesOut = new Uint8Array(zipped.length);
+      bytesOut.set(zipped);
+      const zipName = `${stem}.zip`;
+      const zipBlob = new Blob([bytesOut], { type: "application/zip" });
+      return {
+        blob: zipBlob,
+        output: [
+          ...built.map((part) => ({ name: part.name, size: part.bytes.byteLength })),
+          { name: zipName, size: zipBlob.size },
+        ],
+      };
+    },
+    "The document could not be split.",
+  );
+
+  const blob = result?.blob ?? null;
+  const output = result?.output ?? [];
+
   const example = pdf
     ? pdf.pageCount >= 4
       ? `1-2; 3; 4-${pdf.pageCount}`
@@ -62,49 +99,12 @@ export default function SplitPdf() {
         : "1"
     : "1; 2";
 
-  async function split() {
-    if (!pdf || plan.groups.length === 0) return;
-    setWorking(true);
-    setBuildError(null);
-    setBlob(null);
-    setOutput([]);
-    try {
-      const built = await Promise.all(
-        plan.groups.map(async (pages) => {
-          const bytes = await copyPagesToNewDocument(pdf.bytes, pages);
-          // Copy into a plain ArrayBuffer-backed view so Blob and JSZip both take it.
-          const copy = new Uint8Array(bytes.length);
-          copy.set(bytes);
-          return { name: summarise(prefix, pages), bytes: copy };
-        }),
-      );
-
-      if (built.length === 1) {
-        const part = built[0];
-        setBlob({ blob: new Blob([part.bytes], { type: "application/pdf" }), name: part.name });
-        setOutput([{ name: part.name, size: part.bytes.byteLength }]);
-      } else {
-        const zip = new JSZip();
-        for (const part of built) zip.file(part.name, part.bytes);
-        const zipped = await zip.generateAsync({ type: "uint8array" });
-        const bytesOut = new Uint8Array(zipped.length);
-        bytesOut.set(zipped);
-        const zipName = `${prefix}.zip`;
-        const zipBlob = new Blob([bytesOut], { type: "application/zip" });
-        setBlob({ blob: zipBlob, name: zipName });
-        setOutput([
-          ...built.map((part) => ({ name: part.name, size: part.bytes.byteLength })),
-          { name: zipName, size: zipBlob.size },
-        ]);
-      }
-    } catch (cause) {
-      setBuildError(cause instanceof Error ? cause.message : "The document could not be split.");
-    } finally {
-      setWorking(false);
-    }
-  }
-
   const fileCount = plan.groups.length;
+  const outputName = blob
+    ? fileCount === 1
+      ? summarise(prefix, plan.groups[0])
+      : `${prefix}.zip`
+    : "";
 
   return (
     <div className="flex flex-col gap-6">
@@ -126,11 +126,7 @@ export default function SplitPdf() {
           <Segmented<Mode>
             label="Split by"
             value={mode}
-            onChange={(value) => {
-              setMode(value);
-              setBlob(null);
-              setOutput([]);
-            }}
+            onChange={(value) => setMode(value)}
             options={[
               { value: "range", label: "Page ranges" },
               { value: "every", label: "Every N pages" },
@@ -143,11 +139,7 @@ export default function SplitPdf() {
               <TextInput
                 label="Ranges — one file per line or per semicolon"
                 value={ranges}
-                onChange={(value) => {
-                  setRanges(value);
-                  setBlob(null);
-                  setOutput([]);
-                }}
+                onChange={(value) => setRanges(value)}
                 placeholder="e.g. 1-3; 4; 5-8"
                 hint="Use 1-based numbers and hyphens. Each group becomes one file."
                 invalid={plan.errors.length > 0}
@@ -160,11 +152,7 @@ export default function SplitPdf() {
             <NumberInput
               label="Pages per file"
               value={chunkSize}
-              onChange={(value) => {
-                setChunkSize(value);
-                setBlob(null);
-                setOutput([]);
-              }}
+              onChange={(value) => setChunkSize(value)}
               min={1}
               max={pdf.pageCount}
             />
@@ -203,7 +191,7 @@ export default function SplitPdf() {
             <button
               type="button"
               className="btn btn-primary"
-              onClick={() => void split()}
+              onClick={() => void run()}
               disabled={working || fileCount === 0}
             >
               {working ? "Splitting…" : "Split PDF"}
@@ -213,14 +201,14 @@ export default function SplitPdf() {
           {blob ? (
             <>
               <ResultFooter label={fileCount === 1 ? "Split document" : "Split archive"}>
-                <button type="button" className="btn btn-primary btn-sm" onClick={() => downloadBlob(blob.blob, blob.name)}>
+                <button type="button" className="btn btn-primary btn-sm" onClick={() => downloadBlob(blob, outputName)}>
                   Download {fileCount === 1 ? "PDF" : "ZIP"}
                 </button>
               </ResultFooter>
               <StatGrid className="sm:grid-cols-3">
                 <Stat label="Files" value={fileCount} />
                 <Stat label="Pages in" value={pdf.pageCount} />
-                <Stat label={fileCount === 1 ? "Size" : "Archive size"} value={formatBytes(blob.blob.size)} hint="Built in this tab" />
+                <Stat label={fileCount === 1 ? "Size" : "Archive size"} value={formatBytes(blob.size)} hint="Built in this tab" />
               </StatGrid>
 
               {fileCount > 1 ? (

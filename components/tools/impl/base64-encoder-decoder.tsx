@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react";
 
 import { Check, CopyButton, Segmented, TextArea } from "@/components/tools/interactive";
-import { Empty, Note, OutputBox, ResultFooter, Stat, StatGrid, TryExample } from "@/components/tools/parts";
+import { Empty, LimitNote, Note, OutputBox, ResultFooter, Stat, StatGrid, TryExample } from "@/components/tools/parts";
 import { decodeBase64, encodeBase64 } from "@/lib/base64";
 import { downloadText } from "@/lib/download";
+import { MAX_TEXT_LENGTH } from "@/lib/text";
 import { useToolInput } from "@/lib/tool-input";
 import { formatNumber } from "@/lib/utils";
 
@@ -22,13 +23,22 @@ export default function Base64EncoderDecoder() {
   const [urlSafe, setUrlSafe] = useState(false);
   const [tolerant, setTolerant] = useState(true);
 
+  // Decode carries its own ceiling and reports it through `error`. Encode has
+  // none of its own, so past the shared text cap it is skipped rather than
+  // allocating several copies of a multi-megabyte string on every keystroke.
+  const tooLong = mode === "encode" && input.length > MAX_TEXT_LENGTH;
+
   const result = useMemo(() => {
-    if (mode === "encode") return { output: encodeBase64(input, urlSafe), error: null as string | null };
+    if (mode === "encode") {
+      return tooLong
+        ? { output: "", error: null as string | null }
+        : { output: encodeBase64(input, urlSafe), error: null as string | null };
+    }
     const decoded = decodeBase64(input, tolerant);
     return decoded.ok
       ? { output: decoded.text, error: null as string | null }
       : { output: "", error: decoded.error };
-  }, [input, mode, urlSafe, tolerant]);
+  }, [input, mode, urlSafe, tolerant, tooLong]);
 
   const hasInput = input.length > 0;
   const inputBytes = useMemo(() => new TextEncoder().encode(input).length, [input]);
@@ -86,17 +96,19 @@ export default function Base64EncoderDecoder() {
 
       <div>
         <ResultFooter>
-          <CopyButton value={result.output} disabled={!hasInput || Boolean(result.error)} />
+          <CopyButton value={result.output} disabled={!hasInput || Boolean(result.error) || tooLong} />
           <button
             type="button"
             className="btn btn-secondary btn-sm"
-            disabled={!hasInput || Boolean(result.error)}
+            disabled={!hasInput || Boolean(result.error) || tooLong}
             onClick={() => downloadText(result.output, mode === "encode" ? "encoded.txt" : "decoded.txt")}
           >
             Download
           </button>
         </ResultFooter>
-        {result.error ? (
+        {tooLong ? (
+          <LimitNote length={input.length} limit={MAX_TEXT_LENGTH} />
+        ) : result.error ? (
           <p
             role="alert"
             className="rounded-md border border-highlight/45 bg-highlight/5 px-3.5 py-3 text-sm text-highlight-strong"

@@ -1,10 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 
 import { Select, TextArea } from "@/components/tools/interactive";
 import { Note, Stat, StatGrid } from "@/components/tools/parts";
-import { countCharacters, countWords, utf16Length, utf8ByteLength } from "@/lib/text";
+import {
+  DEFER_TEXT_LENGTH,
+  countCharacters,
+  countWords,
+  utf16Length,
+  utf8ByteLength,
+} from "@/lib/text";
+import { useToolInput } from "@/lib/tool-input";
 import { cn, formatNumber } from "@/lib/utils";
 
 const LIMITS = [
@@ -17,18 +24,26 @@ const LIMITS = [
 ];
 
 export default function CharacterCounter() {
-  const [text, setText] = useState("");
+  // The same main-input contract as its text siblings: a draft survives a
+  // reload, and pasted text handed over from the home box is applied once.
+  const [text, setText] = useToolInput<string>("character-counter", "text", "", { handover: true });
   const [limitId, setLimitId] = useState("none");
+
+  // The byte count allocates a `Uint8Array` the size of the text on every pass,
+  // so above the defer threshold the metrics run on a value that lags a render
+  // rather than on every keystroke. Below it they stay live.
+  const deferred = useDeferredValue(text);
+  const source = text.length > DEFER_TEXT_LENGTH ? deferred : text;
 
   const stats = useMemo(
     () => ({
-      withSpaces: countCharacters(text, true),
-      withoutSpaces: countCharacters(text, false),
-      utf16: utf16Length(text),
-      bytes: utf8ByteLength(text),
-      words: countWords(text),
+      withSpaces: countCharacters(source, true),
+      withoutSpaces: countCharacters(source, false),
+      utf16: utf16Length(source),
+      bytes: utf8ByteLength(source),
+      words: countWords(source),
     }),
-    [text],
+    [source],
   );
 
   const limit = LIMITS.find((item) => item.value === limitId) ?? LIMITS[0];

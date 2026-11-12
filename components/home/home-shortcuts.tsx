@@ -2,6 +2,7 @@
 
 import { History, Star } from "lucide-react";
 import Link from "next/link";
+import { useMemo } from "react";
 
 import type { ToolIndexItem } from "@/lib/tools/index-view";
 import { useFavouriteSlugs } from "@/lib/favourites";
@@ -19,7 +20,10 @@ export function HomeShortcuts({ catalog }: { catalog: ToolIndexItem[] }) {
   const favouriteSlugs = useFavouriteSlugs();
   const recentSlugs = useRecentSlugs();
 
-  const bySlug = new Map(catalog.map((item) => [item.slug, item]));
+  // Built once per catalogue rather than on every render. The catalogue is plain
+  // data the server already sent, so rebuilding the lookup for it each time the
+  // recents or favourites snapshots change is pure waste.
+  const bySlug = useMemo(() => new Map(catalog.map((item) => [item.slug, item])), [catalog]);
   const resolve = (slugs: string[]) =>
     slugs.map((slug) => bySlug.get(slug)).filter((item): item is ToolIndexItem => Boolean(item));
 

@@ -14,7 +14,7 @@
 
 import { PDFDocument, StandardFonts, degrees, rgb } from "pdf-lib";
 
-import { formatBytes } from "@/lib/utils";
+import { formatBytes, formatNumber } from "@/lib/utils";
 
 /** PDF points are 1/72 inch. */
 export const MM_TO_PT = 72 / 25.4;
@@ -29,6 +29,14 @@ export const MAX_PDF_PAGES = 3_000;
 
 /** Each image becomes a page, so the cap is on pages as much as on files. */
 export const MAX_IMAGES_TO_PDF = 60;
+
+/**
+ * A ceiling on the combined size of one drop, on top of the per-file caps. A
+ * per-file limit alone would let `MAX_PDF_FILES` × `MAX_PDF_BYTES` — or sixty
+ * images — be read and decoded into memory at once. This bounds the whole list,
+ * which is what the bulk tools actually hold.
+ */
+export const MAX_BATCH_BYTES = 200 * 1024 * 1024;
 
 /** A PDF page box may not exceed 14,400 pt (200 in) on either side. */
 export const PDF_PAGE_MAX_PT = 14_400;
@@ -123,10 +131,22 @@ export function parsePageRanges(input: string, total: number): PageRangeResult {
   return { pages, errors };
 }
 
-/** "report.final.pdf" -> "report.final", for building a download name. */
+/**
+ * "report.final.pdf" -> "report.final", for building a download name.
+ *
+ * The result is reused in download names and in ZIP entry names, so it is also
+ * stripped of anything that could be read as a path — separators, `..` and
+ * control characters. A file called `..\..\evil.pdf` can then never produce an
+ * entry that escapes the folder a ZIP is unpacked into.
+ */
 export function fileStem(name: string): string {
   const trimmed = name.replace(/\.[^./\\]+$/, "");
-  return trimmed || "document";
+  const safe = trimmed
+    .replace(/[\u0000-\u001f\u007f]+/g, "")
+    .replace(/[\\/]+/g, "-")
+    .replace(/\.{2,}/g, ".")
+    .replace(/^[.\s-]+|[.\s-]+$/g, "");
+  return safe || "document";
 }
 
 /** Unique page numbers in ascending order, for split groups where order is fixed. */
@@ -301,25 +321,48 @@ export async function loadPdfDocument(bytes: Uint8Array): Promise<PDFDocument> {
   if (!looksLikePdf(bytes)) {
     throw new Error("That file does not look like a PDF — the %PDF- header is missing.");
   }
+
+  let doc: PDFDocument;
   try {
-    const doc = await PDFDocument.load(bytes);
-    // pdf-lib parses a truncated or damaged file leniently and only fails when
-    // the page tree is touched, which would otherwise surface an internal
-    // message to the visitor. Reading the page count here means the failure is
-    // caught and explained in our own words.
-    doc.getPageCount();
-    return doc;
-  } catch (cause) {
-    const message = cause instanceof Error ? cause.message : "";
-    if (/encrypt|password|decrypt/i.test(message)) {
-      throw new Error(
-        "That PDF is password-protected. Remove the password first — an encrypted file cannot be opened here.",
-      );
-    }
+    // `ignoreEncryption` lets the load itself succeed so the document's real
+    // `isEncrypted` flag can be read, instead of guessing from the wording of a
+    // thrown message. `updateMetadata: false` stops pdf-lib stamping its own
+    // producer and modification date on the visitor's document.
+    doc = await PDFDocument.load(bytes, { ignoreEncryption: true, updateMetadata: false });
+  } catch {
     throw new Error(
       "The PDF could not be read. It may be corrupt, or use a feature this tool does not support.",
     );
   }
+
+  if (doc.isEncrypted) {
+    throw new Error(
+      "That PDF is password-protected. Remove the password first — an encrypted file cannot be opened here.",
+    );
+  }
+
+  let pageCount: number;
+  try {
+    // pdf-lib parses a truncated or damaged file leniently and only fails when
+    // the page tree is touched, which would otherwise surface an internal
+    // message to the visitor. Reading the page count here means the failure is
+    // caught and explained in our own words.
+    pageCount = doc.getPageCount();
+  } catch {
+    throw new Error(
+      "The PDF could not be read. It may be corrupt, or use a feature this tool does not support.",
+    );
+  }
+
+  // Every tool builds page arrays proportional to the real page count, so the
+  // ceiling is enforced here, at the single point all seven tools load through.
+  if (pageCount > MAX_PDF_PAGES) {
+    throw new Error(
+      `This document has ${formatNumber(pageCount)} pages, more than the ${formatNumber(MAX_PDF_PAGES)}-page limit for one file. Split it first, or use a smaller document.`,
+    );
+  }
+
+  return doc;
 }
 
 export interface PdfEntry {

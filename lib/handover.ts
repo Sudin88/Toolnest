@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import { readJson, writeJson } from "@/lib/browser-store";
+
 /**
  * One-shot hand-over from the home box into a tool.
  *
@@ -20,22 +22,12 @@ const KEY = "toolnest-handover";
 type Store = Record<string, string>;
 
 function read(): Store {
-  try {
-    const raw = window.sessionStorage.getItem(KEY);
-    if (!raw) return {};
-    const parsed: unknown = JSON.parse(raw);
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Store) : {};
-  } catch {
-    return {};
-  }
+  const parsed = readJson(window.sessionStorage, KEY);
+  return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Store) : {};
 }
 
 function write(store: Store): void {
-  try {
-    window.sessionStorage.setItem(KEY, JSON.stringify(store));
-  } catch {
-    // Hand-over is a nicety. Never let storage break navigation.
-  }
+  writeJson(window.sessionStorage, KEY, store);
 }
 
 /** Stage text for a tool to pick up once, keyed by its slug. */
@@ -46,18 +38,23 @@ export function setHandover(slug: string, text: string): void {
   write(store);
 }
 
-/** Read and clear a staged value. Returns null when there is nothing waiting. */
+/**
+ * Read and clear a staged value. Returns null when there is nothing waiting.
+ *
+ * The slug is **not** validated here, and deliberately so: it comes from a
+ * compile-time literal at each call site (`useToolInput` passes the tool's own
+ * slug), never from a URL parameter or any other visitor-controlled value, so it
+ * can only ever be a real slug. Validating it would pull the whole registry into
+ * the client bundle for no gain. If a future caller ever derives the slug from
+ * the URL, it must validate against `isLive` before calling this.
+ */
 export function takeHandover(slug: string): string | null {
-  try {
-    const store = read();
-    const text = store[slug];
-    if (typeof text !== "string" || text.length === 0) return null;
-    delete store[slug];
-    write(store);
-    return text;
-  } catch {
-    return null;
-  }
+  const store = read();
+  const text = store[slug];
+  if (typeof text !== "string" || text.length === 0) return null;
+  delete store[slug];
+  write(store);
+  return text;
 }
 
 /**

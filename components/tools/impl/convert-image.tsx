@@ -1,19 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 
-import { ImageFacts, ImagePreview, useImageFile } from "@/components/tools/image-workbench";
-import { FileDrop, RangeInput, Select } from "@/components/tools/interactive";
-import { Empty, Note, Stat, StatGrid } from "@/components/tools/parts";
-import { downloadBlob } from "@/lib/download";
 import {
-  baseName,
-  canvasToBlob,
-  drawToCanvas,
-  formatLabel,
-  mayHaveAlpha,
-  savingsRatio,
-} from "@/lib/image";
+  ImageFacts,
+  ImagePreview,
+  ImageStats,
+  useImageFile,
+  useImageResult,
+} from "@/components/tools/image-workbench";
+import { FileDrop, RangeInput, Select } from "@/components/tools/interactive";
+import { Empty, Note } from "@/components/tools/parts";
+import { downloadBlob } from "@/lib/download";
+import { baseName, canvasToBlob, drawToCanvas, formatLabel, mayHaveAlpha } from "@/lib/image";
 import { formatBytes } from "@/lib/utils";
 
 const TARGETS = [
@@ -28,59 +27,39 @@ const EXT: Record<string, string> = {
   "image/webp": "webp",
 };
 
-interface Output {
-  blob: Blob;
-  url: string;
-  type: string;
-}
-
 export default function ConvertImage() {
   const { image, url, error, busy, load, setError } = useImageFile();
   const [target, setTarget] = useState("image/jpeg");
   const [quality, setQuality] = useState(90);
   const [matte, setMatte] = useState("#ffffff");
-  const [output, setOutput] = useState<Output | null>(null);
-  const [working, setWorking] = useState(false);
 
-  // A new source invalidates any previous result. Adjusting state during render
-  // is React's documented pattern for resetting on an input change, and it avoids
-  // the extra render pass an effect would cost.
-  const [outputSource, setOutputSource] = useState(image);
-  if (outputSource !== image) {
-    setOutputSource(image);
-    setOutput(null);
-  }
-
-  useEffect(() => {
-    if (!output) return;
-    return () => URL.revokeObjectURL(output.url);
-  }, [output]);
+  // A new source *or* a changed setting invalidates any previous result. The
+  // memoised snapshot changes identity whenever an option does, and the result
+  // hook drops the old preview with it, so the filename (`EXT[target]`) and the
+  // stats can never describe a blob built from older options.
+  const settings = useMemo(
+    () => ({ image, target, quality, matte }),
+    [image, target, quality, matte],
+  );
+  const { result: output, working, run, clear } = useImageResult(
+    settings,
+    async ({ image: source, target: type, quality: level, matte: fill }) => {
+      if (!source) throw new Error("Load an image first.");
+      const canvas = drawToCanvas(
+        source.bitmap,
+        source.width,
+        source.height,
+        type === "image/jpeg" ? fill : undefined,
+      );
+      const blob = await canvasToBlob(canvas, type, type !== "image/png" ? level / 100 : undefined);
+      return { blob, meta: { type } };
+    },
+    setError,
+    "The image could not be converted.",
+  );
 
   const lossy = target !== "image/png";
   const transparencyAtRisk = target === "image/jpeg" && mayHaveAlpha(image?.type ?? "");
-
-  async function convert() {
-    if (!image) return;
-    setWorking(true);
-    setError(null);
-    try {
-      const canvas = drawToCanvas(
-        image.bitmap,
-        image.width,
-        image.height,
-        target === "image/jpeg" ? matte : undefined,
-      );
-      const blob = await canvasToBlob(canvas, target, lossy ? quality / 100 : undefined);
-      setOutput({ blob, url: URL.createObjectURL(blob), type: target });
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "The image could not be converted.");
-    } finally {
-      setWorking(false);
-    }
-  }
-
-  const ratio = output && image ? savingsRatio(image.size, output.blob.size) : null;
-  const saving = ratio === null ? 0 : Math.round((1 - ratio) * 100);
   const filename = image ? `${baseName(image.name)}.${EXT[target]}` : "image";
 
   return (
@@ -90,7 +69,7 @@ export default function ConvertImage() {
         hint="The format is detected from the file itself, not the extension."
         accept="image/*"
         onFile={(files) => {
-          setOutput(null);
+          clear();
           void load(files);
         }}
       />
@@ -104,7 +83,12 @@ export default function ConvertImage() {
             <div className="panel flex flex-col gap-4 p-4">
               <h3 className="font-display text-[0.9375rem] font-bold text-fg">Original</h3>
               <div className="flex max-h-72 items-center justify-center overflow-hidden rounded-md border border-line bg-surface-2">
-                <ImagePreview src={url} alt={`Original: ${image.name}`} />
+                <ImagePreview
+                  src={url}
+                  alt={`Original: ${image.name}`}
+                  width={image.width}
+                  height={image.height}
+                />
               </div>
               <ImageFacts
                 name={image.name}
@@ -120,7 +104,12 @@ export default function ConvertImage() {
               {output ? (
                 <>
                   <div className="flex max-h-72 items-center justify-center overflow-hidden rounded-md border border-line bg-surface-2">
-                    <ImagePreview src={output.url} alt="Converted result" />
+                    <ImagePreview
+                      src={output.url}
+                      alt="Converted result"
+                      width={image.width}
+                      height={image.height}
+                    />
                   </div>
                   <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
                     <div>
@@ -182,7 +171,7 @@ export default function ConvertImage() {
           ) : null}
 
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" className="btn btn-primary" onClick={convert} disabled={working}>
+            <button type="button" className="btn btn-primary" onClick={() => void run()} disabled={working}>
               {working ? "Converting…" : "Convert image"}
             </button>
             {output ? (
@@ -193,16 +182,11 @@ export default function ConvertImage() {
           </div>
 
           {output ? (
-            <StatGrid>
-              <Stat label="Before" value={formatBytes(image.size)} hint={formatLabel(image.type)} />
-              <Stat label="After" value={formatBytes(output.blob.size)} hint={formatLabel(output.type)} />
-              <Stat
-                label={saving >= 0 ? "Saved" : "Grew by"}
-                value={`${Math.abs(saving)}%`}
-                hint={saving >= 0 ? "Smaller than the original" : "The original is the better file"}
-              />
-              <Stat label="Dimensions" value={`${image.width} × ${image.height}`} hint="Unchanged" />
-            </StatGrid>
+            <ImageStats
+              before={{ size: image.size, type: image.type }}
+              after={{ size: output.blob.size, type: output.type, width: image.width, height: image.height }}
+              original={{ width: image.width, height: image.height }}
+            />
           ) : null}
         </>
       ) : (

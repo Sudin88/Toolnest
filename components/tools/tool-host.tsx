@@ -1,10 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { notFound } from "next/navigation";
 import { useEffect } from "react";
 import type { ComponentType } from "react";
 
 import { recordRecent } from "@/lib/recents";
+import type { ComponentSlug } from "@/lib/tools/component-slugs";
 
 /**
  * The tools are client-side, interactive and only ever needed one at a time, so
@@ -32,7 +34,7 @@ function skeleton() {
 const load = (loader: () => Promise<{ default: ComponentType }>) =>
   dynamic(loader, { loading: () => skeleton() });
 
-const COMPONENTS: Record<string, ComponentType> = {
+const COMPONENTS: Record<ComponentSlug, ComponentType> = {
   // Text
   "word-counter": load(() => import("@/components/tools/impl/word-counter")),
   "character-counter": load(() => import("@/components/tools/impl/character-counter")),
@@ -83,15 +85,12 @@ export function ToolHost({ slug }: { slug: string }) {
     recordRecent(slug);
   }, [slug]);
 
-  const Component = COMPONENTS[slug];
+  const Component = COMPONENTS[slug as ComponentSlug];
 
-  if (!Component) {
-    return (
-      <p className="rounded-md border border-dashed border-line-strong bg-surface-2 px-4 py-6 text-center text-sm text-muted">
-        This tool is not available yet. It is on the roadmap and will appear here when it ships.
-      </p>
-    );
-  }
+  // The registry only routes `live` tools, and the build asserts every live slug
+  // has a screen here, so a miss means the mapping drifted. Render the 404 rather
+  // than a placeholder that hides it.
+  if (!Component) notFound();
 
   return <Component />;
 }

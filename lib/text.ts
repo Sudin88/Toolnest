@@ -19,13 +19,45 @@ export function utf16Length(text: string): number {
   return text.length;
 }
 
+/** One encoder for the module: constructing one per call is pure overhead. */
+const UTF8_ENCODER = new TextEncoder();
+
 export function utf8ByteLength(text: string): number {
-  return new TextEncoder().encode(text).length;
+  return UTF8_ENCODER.encode(text).length;
 }
 
+/**
+ * Above this many characters the text tools ask for a smaller paste rather than
+ * running a whole-document pass. It is generous — a million characters is a long
+ * report — while keeping the tab responsive on the machine this runs on.
+ */
+export const MAX_TEXT_LENGTH = 1_000_000;
+
+/**
+ * Above this many characters the live-metric tools run their counts on a value
+ * that lags by a render, so a paste big enough that a whole-document pass is
+ * noticeable cannot hold up typing. Below it the counts stay perfectly live,
+ * because they are cheap enough that deferring them would only add lag.
+ */
+export const DEFER_TEXT_LENGTH = 100_000;
+
 export function countSentences(text: string): number {
-  const matches = text.match(/[^.!?…]+[.!?…]+(\s|$)|[^.!?…\s][^.!?…]*$/g);
-  return matches ? matches.filter((s) => s.trim().length > 0).length : 0;
+  // A single forward scan. The previous version matched with a regex that had to
+  // restart at each run of sentence-ending punctuation, which was quadratic on a
+  // document made mostly of them.
+  let sentences = 0;
+  let inSentence = false;
+  for (const char of text) {
+    if (char === "." || char === "!" || char === "?" || char === "…") {
+      if (inSentence) {
+        sentences += 1;
+        inSentence = false;
+      }
+    } else if (/\S/.test(char)) {
+      inSentence = true;
+    }
+  }
+  return inSentence ? sentences + 1 : sentences;
 }
 
 export function countParagraphs(text: string): number {
@@ -96,7 +128,7 @@ function splitWords(text: string): string[] {
     .filter(Boolean);
 }
 
-export function toSentenceCase(text: string): string {
+function toSentenceCase(text: string): string {
   const lowered = text.toLowerCase();
   return lowered.replace(
     /(^\s*|[.!?…]\s+|\n\s*)(\p{Ll})/gu,
@@ -109,44 +141,61 @@ const SMALL_WORDS = new Set([
   "or", "per", "the", "to", "up", "via", "vs",
 ]);
 
-export function toTitleCase(text: string): string {
-  // Unicode letters, so accented words are matched whole and never split
-  // mid-word (which used to produce results like "RéSumé").
-  return text.replace(/[\p{L}][\p{L}'’-]*/gu, (word, offset: number, full: string) => {
-    const isFirst = offset === 0 || /[.!?:]\s*$/.test(full.slice(0, offset)) || /\n\s*$/.test(full.slice(0, offset));
+function toTitleCase(text: string): string {
+  // A single pass that remembers whether the previous word ended a sentence.
+  // The earlier version re-sliced the whole prefix for every word, which was
+  // quadratic on a long document. Unicode letters are matched whole, so accented
+  // words are never split mid-word (which used to produce "RéSumé").
+  const wordPattern = /[\p{L}][\p{L}'’-]*/gu;
+  let result = "";
+  let cursor = 0;
+  let startsSentence = true;
+  let match: RegExpExecArray | null;
+
+  while ((match = wordPattern.exec(text)) !== null) {
+    const between = text.slice(cursor, match.index);
+    if (cursor === 0 || /[.!?:]\s*$/.test(between) || /\n\s*$/.test(between)) startsSentence = true;
+    const word = match[0];
     const lower = word.toLowerCase();
-    if (!isFirst && SMALL_WORDS.has(lower)) return lower;
-    return lower.charAt(0).toUpperCase() + lower.slice(1);
-  });
+    const title =
+      !startsSentence && SMALL_WORDS.has(lower)
+        ? lower
+        : lower.charAt(0).toUpperCase() + lower.slice(1);
+    result += between + title;
+    cursor = match.index + word.length;
+    startsSentence = false;
+  }
+
+  return result + text.slice(cursor);
 }
 
-export function toCamelCase(text: string): string {
+function toCamelCase(text: string): string {
   const words = splitWords(text).map((word) => word.toLowerCase());
   return words
     .map((word, index) => (index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)))
     .join("");
 }
 
-export function toPascalCase(text: string): string {
+function toPascalCase(text: string): string {
   return splitWords(text)
     .map((word) => word.toLowerCase())
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join("");
 }
 
-export function toSnakeCase(text: string): string {
+function toSnakeCase(text: string): string {
   return splitWords(text)
     .map((word) => word.toLowerCase())
     .join("_");
 }
 
-export function toKebabCase(text: string): string {
+function toKebabCase(text: string): string {
   return splitWords(text)
     .map((word) => word.toLowerCase())
     .join("-");
 }
 
-export function toConstantCase(text: string): string {
+function toConstantCase(text: string): string {
   return splitWords(text)
     .map((word) => word.toUpperCase())
     .join("_");
@@ -214,8 +263,12 @@ export interface DedupeOptions {
 
 export interface DedupeResult {
   output: string;
+  /** Lines kept, after trimming, blank removal and de-duplication. */
   kept: number;
-  removed: number;
+  /** Lines dropped because an identical line was already kept. */
+  duplicates: number;
+  /** Blank lines dropped because `removeEmpty` was on. */
+  blanks: number;
   total: number;
 }
 
@@ -224,10 +277,14 @@ export function dedupeLines(input: string, options: DedupeOptions): DedupeResult
   const total = rawLines.length;
   const seen = new Set<string>();
   const kept: string[] = [];
+  let blanks = 0;
 
   for (const rawLine of rawLines) {
     const line = options.trim ? rawLine.trim() : rawLine;
-    if (options.removeEmpty && line === "") continue;
+    if (line === "" && options.removeEmpty) {
+      blanks += 1;
+      continue;
+    }
     const key = options.ignoreCase ? line.toLowerCase() : line;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -241,7 +298,10 @@ export function dedupeLines(input: string, options: DedupeOptions): DedupeResult
   return {
     output: output.join("\n"),
     kept: kept.length,
-    removed: total - kept.length - (options.removeEmpty ? rawLines.filter((l) => l.trim() === "").length : 0),
+    // Every dropped line is either a blank or an exact duplicate of one already
+    // kept, so this split is the single definition of what was removed.
+    duplicates: total - kept.length - blanks,
+    blanks,
     total,
   };
 }

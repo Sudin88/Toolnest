@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 
 import { Check, TextArea } from "@/components/tools/interactive";
 import { Empty, Stat, StatGrid } from "@/components/tools/parts";
@@ -21,9 +21,14 @@ export default function TextCompare() {
   const [ignoreCase, setIgnoreCase] = useState(false);
   const [wordLevel, setWordLevel] = useState(true);
 
+  // The comparison itself is deferred, so the two textareas re-render on the
+  // keystroke and the diff catches up a frame later. Typing stays responsive on
+  // a multi-KB paste without dropping the live diff entirely.
+  const deferredLeft = useDeferredValue(left);
+  const deferredRight = useDeferredValue(right);
   const diff = useMemo(
-    () => diffText(left, right, { ignoreCase, wordLevel }),
-    [left, right, ignoreCase, wordLevel],
+    () => diffText(deferredLeft, deferredRight, { ignoreCase, wordLevel }),
+    [deferredLeft, deferredRight, ignoreCase, wordLevel],
   );
 
   const hasInput = left.length > 0 || right.length > 0;

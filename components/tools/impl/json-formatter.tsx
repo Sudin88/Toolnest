@@ -11,7 +11,6 @@ import { formatBytes, formatNumber } from "@/lib/utils";
 
 const SAMPLE = `{
   "name": "ToolNest",
-  "tools": 28,
   "categories": ["image", "text", "calculators"],
   "free": true,
   "creator": { "private": false, "note": "no account needed" }
@@ -30,7 +29,7 @@ export default function JsonFormatter() {
   const output = useMemo(() => {
     if (!parsed.ok) return "";
     if (layout === "minified") return minifyJson(parsed.value);
-    return stringifyJson(parsed.value, indent === "tab" ? 1 : Number(indent), sortKeys);
+    return stringifyJson(parsed.value, indent === "tab" ? "\t" : Number(indent), sortKeys);
   }, [parsed, layout, indent, sortKeys]);
 
   const stats = useMemo(

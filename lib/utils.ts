@@ -7,8 +7,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /** 1_234_567 -> "1,234,567" */
-export function formatNumber(value: number, locale = "en-US") {
-  return new Intl.NumberFormat(locale).format(value);
+export function formatNumber(value: number) {
+  return new Intl.NumberFormat("en-US").format(value);
 }
 
 /** 1536 -> "1.5 KB" */

@@ -3,7 +3,7 @@
 import { NumberInput, Select } from "@/components/tools/interactive";
 import { Note, Stat, StatGrid } from "@/components/tools/parts";
 import { CURRENCIES, formatMoney } from "@/lib/currency";
-import { useToolDraft } from "@/lib/tool-draft";
+import { draftNumber, draftOneOf, useToolDraft } from "@/lib/tool-draft";
 
 const QUICK_TIPS = [10, 12, 15, 18, 20, 25];
 
@@ -15,12 +15,24 @@ const ROUNDING = [
   { value: "1", label: "Up to the nearest whole unit" },
 ];
 
+/* Built once: `useToolDraft` compares decoder identity, so these must be stable. */
+const decodeCurrency = draftOneOf(CURRENCIES.map((entry) => entry.value));
+const decodeRounding = draftOneOf(ROUNDING.map((entry) => entry.value));
+
 export default function TipCalculator() {
-  const [currency, setCurrency] = useToolDraft<string>("tip-calculator", "currency", "USD");
-  const [bill, setBill] = useToolDraft<number | "">("tip-calculator", "bill", 60);
-  const [percent, setPercent] = useToolDraft<number | "">("tip-calculator", "percent", 18);
-  const [people, setPeople] = useToolDraft<number | "">("tip-calculator", "people", 2);
-  const [rounding, setRounding] = useToolDraft<string>("tip-calculator", "rounding", "none");
+  // Stored values are validated on read, so a stale or hand-edited draft falls
+  // back to the default rather than reaching a formatter as the wrong type.
+  const [currency, setCurrency] = useToolDraft<string>("tip-calculator", "currency", "USD", {
+    decode: decodeCurrency,
+  });
+  const [bill, setBill] = useToolDraft<number | "">("tip-calculator", "bill", 60, { decode: draftNumber });
+  const [percent, setPercent] = useToolDraft<number | "">("tip-calculator", "percent", 18, {
+    decode: draftNumber,
+  });
+  const [people, setPeople] = useToolDraft<number | "">("tip-calculator", "people", 2, { decode: draftNumber });
+  const [rounding, setRounding] = useToolDraft<string>("tip-calculator", "rounding", "none", {
+    decode: decodeRounding,
+  });
 
   const billValue = bill === "" ? 0 : Number(bill);
   const pct = percent === "" ? 0 : Number(percent);

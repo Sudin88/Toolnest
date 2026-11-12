@@ -59,7 +59,12 @@ export function sortJsonKeys(value: unknown): unknown {
   return value;
 }
 
-export function stringifyJson(value: unknown, indent: number, sortKeys: boolean): string {
+/**
+ * `indent` is passed straight to `JSON.stringify`, which accepts either a number
+ * of spaces or a literal string — so a tab really is a tab, matching the note
+ * shown under the output.
+ */
+export function stringifyJson(value: unknown, indent: number | string, sortKeys: boolean): string {
   return JSON.stringify(sortKeys ? sortJsonKeys(value) : value, null, indent);
 }
 

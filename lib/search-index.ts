@@ -1,5 +1,6 @@
 import { getCategory } from "@/lib/tools/categories";
 import { liveTools } from "@/lib/tools/registry";
+import type { ToolCategoryId } from "@/lib/tools/types";
 
 /**
  * A deliberately tiny projection of the registry. Built on the server and passed
@@ -10,6 +11,9 @@ export interface SearchEntry {
   slug: string;
   name: string;
   tagline: string;
+  /** The registry category id, for stable filters that must not match a label. */
+  category: ToolCategoryId;
+  /** The short display tag, e.g. "Image". */
   group: string;
   haystack: string;
 }
@@ -19,6 +23,7 @@ export function buildSearchIndex(): SearchEntry[] {
     slug: tool.slug,
     name: tool.name,
     tagline: tool.tagline,
+    category: tool.category,
     group: getCategory(tool.category).navLabel,
     haystack: [tool.name, tool.tagline, ...tool.keywords].join(" ").toLowerCase(),
   }));

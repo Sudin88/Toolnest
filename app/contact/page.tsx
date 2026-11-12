@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { pageMetadata } from "@/lib/seo";
-import { siteConfig } from "@/lib/site";
+import { contactEmailHref, siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = pageMetadata({
   title: "Contact",
@@ -29,7 +29,7 @@ export default function ContactPage() {
             <>
               <p>
                 Write to{" "}
-                <a href={`mailto:${email}`} className="link">
+                <a href={contactEmailHref ?? undefined} className="link">
                   {email}
                 </a>
                 . A reply is not guaranteed, but every message is read.

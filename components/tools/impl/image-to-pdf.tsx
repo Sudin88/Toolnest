@@ -8,34 +8,19 @@ import { FileDrop, NumberInput, Select } from "@/components/tools/interactive";
 import { Note, Stat, StatGrid, SubHeading } from "@/components/tools/parts";
 import { downloadBlob } from "@/lib/download";
 import { baseName, canvasToBlob, drawToCanvas } from "@/lib/image";
+import {
+  imagePageGeometry,
+  type ImageFit,
+  type ImageOrientation,
+  type ImagePageSize,
+} from "@/lib/pdf";
 import { formatBytes } from "@/lib/utils";
-
-/** PDF points are 1/72 inch. */
-const MM_TO_PT = 72 / 25.4;
-const PDF_MAX = 14_400;
-
-const PAGE_SIZES: Record<string, { width: number; height: number }> = {
-  a4: { width: 595.28, height: 841.89 },
-  letter: { width: 612, height: 792 },
-};
-
-type Orientation = "portrait" | "landscape" | "auto";
-type Fit = "contain" | "fill";
-
-interface Geometry {
-  pageW: number;
-  pageH: number;
-  drawW: number;
-  drawH: number;
-  x: number;
-  y: number;
-}
 
 export default function ImageToPdf() {
   const { image, file, url, error, busy, load, setError } = useImageFile();
-  const [pageSize, setPageSize] = useState("a4");
-  const [orientation, setOrientation] = useState<Orientation>("portrait");
-  const [fit, setFit] = useState<Fit>("contain");
+  const [pageSize, setPageSize] = useState<ImagePageSize>("a4");
+  const [orientation, setOrientation] = useState<ImageOrientation>("portrait");
+  const [fit, setFit] = useState<ImageFit>("contain");
   const [margin, setMargin] = useState<number | "">(10);
   const [blob, setBlob] = useState<Blob | null>(null);
   const [working, setWorking] = useState(false);
@@ -49,39 +34,23 @@ export default function ImageToPdf() {
     setBlob(null);
   }
 
-  const geometry = useMemo<Geometry | null>(() => {
-    if (!image) return null;
-    const marginPt = Math.max(0, typeof margin === "number" ? margin : 0) * MM_TO_PT;
-
-    let pageW: number;
-    let pageH: number;
-    if (pageSize === "match") {
-      pageW = image.width;
-      pageH = image.height;
-      const shrink = Math.min(1, PDF_MAX / Math.max(pageW, pageH));
-      pageW *= shrink;
-      pageH *= shrink;
-    } else {
-      const base = PAGE_SIZES[pageSize];
-      const wantsLandscape =
-        orientation === "landscape" || (orientation === "auto" && image.width > image.height);
-      pageW = wantsLandscape ? base.height : base.width;
-      pageH = wantsLandscape ? base.width : base.height;
-    }
-
-    const availW = Math.max(1, pageW - marginPt * 2);
-    const availH = Math.max(1, pageH - marginPt * 2);
-    const scale =
-      fit === "contain"
-        ? Math.min(availW / image.width, availH / image.height)
-        : Math.max(availW / image.width, availH / image.height);
-    const drawW = image.width * scale;
-    const drawH = image.height * scale;
-    const x = (pageW - drawW) / 2;
-    const y = (pageH - drawH) / 2;
-
-    return { pageW, pageH, drawW, drawH, x, y };
-  }, [image, pageSize, orientation, fit, margin]);
+  // One geometry for the page the image will land on, from the same shared
+  // function the multi-image tool uses — so the two tools cannot disagree about
+  // where an image sits or whether a "fill" crops it.
+  const geometry = useMemo(
+    () =>
+      image
+        ? imagePageGeometry({
+            imageWidth: image.width,
+            imageHeight: image.height,
+            pageSize,
+            orientation,
+            fit,
+            marginMm: typeof margin === "number" ? margin : 0,
+          })
+        : null,
+    [image, pageSize, orientation, fit, margin],
+  );
 
   async function build() {
     if (!image || !file || !geometry) return;
@@ -146,7 +115,7 @@ export default function ImageToPdf() {
               label="Page size"
               value={pageSize}
               onChange={(value) => {
-                setPageSize(value);
+                setPageSize(value as ImagePageSize);
                 setBlob(null);
               }}
               options={[
@@ -159,7 +128,7 @@ export default function ImageToPdf() {
               label="Orientation"
               value={orientation}
               onChange={(value) => {
-                setOrientation(value as Orientation);
+                setOrientation(value as ImageOrientation);
                 setBlob(null);
               }}
               options={[
@@ -174,7 +143,7 @@ export default function ImageToPdf() {
               label="Fit"
               value={fit}
               onChange={(value) => {
-                setFit(value as Fit);
+                setFit(value as ImageFit);
                 setBlob(null);
               }}
               options={[
@@ -213,7 +182,7 @@ export default function ImageToPdf() {
                 >
                   <ImagePreview src={url} alt="Where the image sits on the page" className="size-full object-cover" />
                 </div>
-                {fit === "fill" ? (
+                {geometry.cropped ? (
                   <span className="absolute inset-0 border border-dashed border-highlight/60" aria-hidden="true" />
                 ) : null}
               </div>
@@ -223,10 +192,10 @@ export default function ImageToPdf() {
             <div className="flex flex-col gap-4">
               <StatGrid className="lg:grid-cols-2">
                 <Stat label="Page" value={`${geometry.pageW.toFixed(1)} × ${geometry.pageH.toFixed(1)} pt`} hint={pageLabel} />
-                <Stat label="Image on page" value={`${geometry.drawW.toFixed(1)} × ${geometry.drawH.toFixed(1)} pt`} hint={fit === "fill" ? "Cropped to fill" : "Contained, uncropped"} />
+                <Stat label="Image on page" value={`${geometry.drawW.toFixed(1)} × ${geometry.drawH.toFixed(1)} pt`} hint={geometry.cropped ? "Edges cropped to fill" : fit === "fill" ? "Filled, uncropped" : "Contained, uncropped"} />
               </StatGrid>
 
-              {fit === "fill" ? (
+              {geometry.cropped ? (
                 <Note tone="warn">
                   Filling the page scales the image until it covers the paper, so the edges that spill
                   outside are cropped. Switch to “fit inside” if nothing may be lost.

@@ -4,6 +4,9 @@
  * producing mojibake.
  */
 
+/** Above this the decode input is refused rather than allocated several times over. */
+export const MAX_BASE64_CHARS = 4_000_000;
+
 export function encodeBase64(text: string, urlSafe: boolean): string {
   const bytes = new TextEncoder().encode(text);
   let binary = "";
@@ -23,6 +26,15 @@ export type Base64DecodeResult =
 export function decodeBase64(input: string, tolerant: boolean): Base64DecodeResult {
   let value = input.replace(/\s+/g, "");
   if (value.length === 0) return { ok: true, text: "" };
+
+  // `atob` builds a full binary string, so an unbounded paste would allocate
+  // several times the input before any validation ran. Refuse it up front.
+  if (value.length > MAX_BASE64_CHARS) {
+    return {
+      ok: false,
+      error: `That is longer than the ${MAX_BASE64_CHARS.toLocaleString("en-US")}-character limit for one decode. Split it into smaller pieces.`,
+    };
+  }
 
   // Normalise URL-safe output back to the standard alphabet.
   value = value.replace(/-/g, "+").replace(/_/g, "/");

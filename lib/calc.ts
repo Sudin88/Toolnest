@@ -93,7 +93,7 @@ export const UNIT_GROUPS: Record<UnitCategory, { label: string; units: UnitDefin
   },
 };
 
-export function convertTemperature(value: number, from: string, to: string): number {
+function convertTemperature(value: number, from: string, to: string): number {
   // Normalise to Celsius first, then out to the target.
   let celsius: number;
   if (from === "c") celsius = value;
@@ -250,7 +250,7 @@ export function toIsoDateValue(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-export function daysInMonth(year: number, monthIndex: number): number {
+function daysInMonth(year: number, monthIndex: number): number {
   return new Date(year, monthIndex + 1, 0).getDate();
 }
 
@@ -261,7 +261,7 @@ export interface CalendarSpan {
 }
 
 /** Whole years, months and days between two ordered dates. */
-export function calendarSpan(from: Date, to: Date): CalendarSpan {
+function calendarSpan(from: Date, to: Date): CalendarSpan {
   let years = to.getFullYear() - from.getFullYear();
   let months = to.getMonth() - from.getMonth();
   let days = to.getDate() - from.getDate();
@@ -277,12 +277,12 @@ export function calendarSpan(from: Date, to: Date): CalendarSpan {
   return { years, months, days };
 }
 
-export function isLeapYear(year: number): boolean {
+function isLeapYear(year: number): boolean {
   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 }
 
 /** 29 February birthdays fall on 1 March in a non-leap year, the usual convention. */
-export function birthdayInYear(year: number, birth: Date): Date {
+function birthdayInYear(year: number, birth: Date): Date {
   if (birth.getMonth() === 1 && birth.getDate() === 29 && !isLeapYear(year)) {
     return new Date(year, 2, 1);
   }

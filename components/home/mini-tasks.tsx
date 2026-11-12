@@ -2,9 +2,9 @@
 
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import QRCode from "qrcode";
 import { useEffect, useRef, useState } from "react";
 
+import { siteConfig } from "@/lib/site";
 import { countWords, dedupeLines } from "@/lib/text";
 import { formatNumber } from "@/lib/utils";
 
@@ -88,7 +88,7 @@ function CountWords() {
 function CollapseList() {
   const [text, setText] = useState("");
   const result = dedupeLines(text, { ignoreCase: true, trim: true, removeEmpty: true, sort: false });
-  const removed = Math.max(0, result.total - result.kept);
+  const removed = result.duplicates;
 
   return (
     <MiniCard
@@ -119,7 +119,7 @@ function CollapseList() {
 }
 
 function MakeQr() {
-  const [text, setText] = useState("https://toolnest.example.com");
+  const [text, setText] = useState(siteConfig.url);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -131,13 +131,26 @@ function MakeQr() {
       context?.clearRect(0, 0, canvas.width, canvas.height);
       return;
     }
-    // Draw into the canvas rather than marshalling a data URL through state, so
-    // nothing here has to re-render to show the result.
-    QRCode.toCanvas(canvas, payload, { width: 132, margin: 2, errorCorrectionLevel: "M" }).catch(
-      () => {
-        context?.clearRect(0, 0, canvas.width, canvas.height);
-      },
-    );
+
+    // Two savings in one: the encoder is imported on demand, so it is a separate
+    // chunk rather than part of the home page's initial bundle, and the redraw is
+    // debounced so typing does not re-encode on every character.
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      void import("qrcode")
+        .then(({ default: QRCode }) => {
+          if (cancelled) return;
+          return QRCode.toCanvas(canvas, payload, { width: 132, margin: 2, errorCorrectionLevel: "M" });
+        })
+        .catch(() => {
+          if (!cancelled) context?.clearRect(0, 0, canvas.width, canvas.height);
+        });
+    }, 200);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [text]);
 
   return (

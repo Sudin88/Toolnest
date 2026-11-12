@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 
-import { ImageFacts, ImagePreview, useImageFile } from "@/components/tools/image-workbench";
-import { Check, FileDrop, NumberInput, RangeInput, Select } from "@/components/tools/interactive";
+import {
+  ImageFacts,
+  ImagePreview,
+  useImageFile,
+  useImageResult,
+} from "@/components/tools/image-workbench";
+import { Check, FileDrop, NumberInput, RangeInput, Segmented, Select } from "@/components/tools/interactive";
 import { Empty, Note, Stat, StatGrid } from "@/components/tools/parts";
 import { downloadBlob } from "@/lib/download";
 import { baseName, canvasToBlob, drawToCanvas } from "@/lib/image";
@@ -18,13 +23,6 @@ const MAX_AREA = 268_000_000;
 const encodable = (type: string) =>
   ["image/jpeg", "image/png", "image/webp"].includes(type) ? type : "image/png";
 
-interface Output {
-  blob: Blob;
-  url: string;
-  width: number;
-  height: number;
-}
-
 export default function ResizeImage() {
   const { image, error, busy, load, setError } = useImageFile();
   const [mode, setMode] = useState<Mode>("pixels");
@@ -33,12 +31,10 @@ export default function ResizeImage() {
   const [locked, setLocked] = useState(true);
   const [percent, setPercent] = useState(100);
   const [grade, setGrade] = useState<Grade>("high");
-  const [output, setOutput] = useState<Output | null>(null);
-  const [working, setWorking] = useState(false);
 
-  // A new source re-seeds the fields and invalidates any previous result. Done
-  // during render rather than in an effect: it is state derived from an input
-  // change, so React's own pattern applies and no extra pass is needed.
+  // A new source re-seeds the fields. Done during render rather than in an
+  // effect: it is state derived from an input change, so React's own pattern
+  // applies and no extra pass is needed.
   const [source, setSource] = useState(image);
   if (source !== image) {
     setSource(image);
@@ -46,14 +42,8 @@ export default function ResizeImage() {
       setWidth(image.width);
       setHeight(image.height);
       setPercent(100);
-      setOutput(null);
     }
   }
-
-  useEffect(() => {
-    if (!output) return;
-    return () => URL.revokeObjectURL(output.url);
-  }, [output]);
 
   const target = (() => {
     if (!image) return null;
@@ -85,25 +75,26 @@ export default function ResizeImage() {
 
   const oversize = target ? target.width > MAX_SIDE || target.height > MAX_SIDE || target.width * target.height > MAX_AREA : false;
 
-  async function resize() {
-    if (!image || !target) return;
-    if (oversize) {
-      setError("That is larger than the browser can draw. Reduce the dimensions.");
-      return;
-    }
-    setWorking(true);
-    setError(null);
-    try {
+  // A change to the source or to any control that shapes the output invalidates
+  // a previous result. The hook drops the old preview with it, so the filename
+  // — built from the live `target` — can never describe a blob that has
+  // different dimensions.
+  const settings = useMemo(
+    () => ({ image, mode, width, height, percent, grade }),
+    [image, mode, width, height, percent, grade],
+  );
+  const { result: output, working, run, clear } = useImageResult(
+    settings,
+    async () => {
+      if (!image || !target) throw new Error("The image could not be resized.");
       const canvas = drawToCanvas(image.bitmap, target.width, target.height, undefined, grade);
       const type = encodable(image.type);
       const blob = await canvasToBlob(canvas, type, type === "image/png" ? undefined : 0.92);
-      setOutput({ blob, url: URL.createObjectURL(blob), width: target.width, height: target.height });
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "The image could not be resized.");
-    } finally {
-      setWorking(false);
-    }
-  }
+      return { blob, meta: { width: target.width, height: target.height } };
+    },
+    setError,
+    "The image could not be resized.",
+  );
 
   const filename = image
     ? `${baseName(image.name)}-${target?.width ?? 0}x${target?.height ?? 0}.${encodable(image.type).split("/")[1]}`
@@ -116,7 +107,7 @@ export default function ResizeImage() {
         hint="Its current dimensions are read from the file itself."
         accept="image/*"
         onFile={(files) => {
-          setOutput(null);
+          clear();
           void load(files);
         }}
       />
@@ -135,24 +126,15 @@ export default function ResizeImage() {
           />
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <div>
-              <span className="label">Resize by</span>
-              <div role="group" aria-label="Resize mode" className="inline-flex gap-1 rounded-md border border-line bg-surface-2 p-1">
-                {(["pixels", "percent"] as Mode[]).map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    aria-pressed={mode === value}
-                    onClick={() => setMode(value)}
-                    className={`rounded px-3 py-1.5 text-sm font-medium transition-colors duration-150 ease-out ${
-                      mode === value ? "bg-accent text-on-accent" : "text-muted hover:text-fg"
-                    }`}
-                  >
-                    {value === "pixels" ? "Exact pixels" : "Percentage"}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <Segmented<Mode>
+              label="Resize by"
+              value={mode}
+              onChange={setMode}
+              options={[
+                { value: "pixels", label: "Exact pixels" },
+                { value: "percent", label: "Percentage" },
+              ]}
+            />
             <Select
               label="Resampling"
               value={grade}
@@ -207,7 +189,7 @@ export default function ResizeImage() {
           ) : null}
 
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" className="btn btn-primary" onClick={resize} disabled={working || oversize}>
+            <button type="button" className="btn btn-primary" onClick={() => void run()} disabled={working || oversize}>
               {working ? "Resizing…" : "Resize image"}
             </button>
             {output ? (
@@ -221,12 +203,17 @@ export default function ResizeImage() {
             <div className="panel flex flex-col gap-4 p-4">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-display text-[0.9375rem] font-bold text-fg">Result</h3>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => setOutput(null)}>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={clear}>
                   Clear result
                 </button>
               </div>
               <div className="flex max-h-80 items-center justify-center overflow-hidden rounded-md border border-line bg-surface-2">
-                <ImagePreview src={output.url} alt="Resized result" />
+                <ImagePreview
+                  src={output.url}
+                  alt="Resized result"
+                  width={output.width}
+                  height={output.height}
+                />
               </div>
               <p className="num text-xs text-muted">
                 {output.width} × {output.height} · {formatBytes(output.blob.size)}

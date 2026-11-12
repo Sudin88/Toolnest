@@ -2,6 +2,32 @@ import path from "node:path";
 
 import type { NextConfig } from "next";
 
+/**
+ * Security headers that do not depend on configuration. They live here, rather
+ * than in the middleware, so they cover static assets — JS/CSS chunks, fonts and
+ * icons — as well as pages. The Content Security Policy stays in `proxy.ts`
+ * because it changes with the deployment's AdSense configuration.
+ *
+ * `clipboard-write` is deliberately **not** denied: the copy buttons use the
+ * async Clipboard API and denying it would push every copy onto the deprecated
+ * `execCommand` path. Reading the clipboard is not a capability any tool needs,
+ * so that one is denied.
+ */
+const SECURITY_HEADERS = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Permissions-Policy",
+    value:
+      "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), hid=(), fullscreen=(), clipboard-read=(), display-capture=(), idle-detection=(), magnetometer=(), gyroscope=(), accelerometer=()",
+  },
+  // `preload` is omitted on purpose: it is a two-year commitment over every
+  // subdomain of the registrable domain, which this project does not own alone.
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+];
+
 const nextConfig: NextConfig = {
   /*
    * Cache Components is deliberately OFF.
@@ -34,6 +60,9 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  async headers() {
+    return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },
 };
 

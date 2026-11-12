@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useDeferredValue, useMemo } from "react";
 
 import { CopyButton, TextArea } from "@/components/tools/interactive";
-import { Note, ResultFooter, Stat, StatGrid, TryExample } from "@/components/tools/parts";
+import { LimitNote, Note, ResultFooter, Stat, StatGrid, TryExample } from "@/components/tools/parts";
 import {
+  DEFER_TEXT_LENGTH,
+  MAX_TEXT_LENGTH,
   countCharacters,
   countParagraphs,
   countSentences,
@@ -23,19 +25,28 @@ Paste your own draft here and the counts update as you type — the reading time
 export default function WordCounter() {
   const [text, setText] = useToolInput<string>("word-counter", "text", "", { handover: true });
 
+  // Past the cap the whole-document pass is skipped: the counts would be wrong
+  // anyway, and running them on a multi-megabyte paste is what stalls the tab.
+  const tooLong = text.length > MAX_TEXT_LENGTH;
+  // Past the defer threshold the counts run on a value that lags by a render, so
+  // typing stays responsive; the numbers catch up a moment later. Below it they
+  // are live, because the pass is cheap.
+  const deferred = useDeferredValue(text);
+  const source = tooLong ? "" : text.length > DEFER_TEXT_LENGTH ? deferred : text;
+
   const stats = useMemo(() => {
-    const words = countWords(text);
+    const words = countWords(source);
     return {
       words,
-      characters: countCharacters(text, true),
-      sentences: countSentences(text),
-      paragraphs: countParagraphs(text),
+      characters: countCharacters(source, true),
+      sentences: countSentences(source),
+      paragraphs: countParagraphs(source),
       reading: readingTime(words),
-      bytes: utf8ByteLength(text),
+      bytes: utf8ByteLength(source),
     };
-  }, [text]);
+  }, [source]);
 
-  const keywords = useMemo(() => keywordFrequency(text, 10), [text]);
+  const keywords = useMemo(() => keywordFrequency(source, 10), [source]);
   const topCount = keywords[0]?.count ?? 0;
 
   const summary = [
@@ -62,57 +73,64 @@ export default function WordCounter() {
         </div>
       ) : null}
 
-      <StatGrid>
-        <Stat label="Words" value={formatNumber(stats.words)} />
-        <Stat label="Characters" value={formatNumber(stats.characters)} hint={`${formatNumber(stats.bytes)} bytes in UTF-8`} />
-        <Stat label="Sentences" value={formatNumber(stats.sentences)} />
-        <Stat label="Paragraphs" value={formatNumber(stats.paragraphs)} />
-      </StatGrid>
+      {tooLong ? (
+        <LimitNote length={text.length} limit={MAX_TEXT_LENGTH} />
+      ) : (
+        <>
+          <StatGrid>
+            <Stat label="Words" value={formatNumber(stats.words)} />
+            <Stat label="Characters" value={formatNumber(stats.characters)} hint={`${formatNumber(stats.bytes)} bytes in UTF-8`} />
+            <Stat label="Sentences" value={formatNumber(stats.sentences)} />
+            <Stat label="Paragraphs" value={formatNumber(stats.paragraphs)} />
+          </StatGrid>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted">
-          Reading time{" "}
-          <strong className="font-semibold text-fg">
-            {stats.reading.minutes > 0
-              ? `${stats.reading.minutes} min`
-              : stats.reading.seconds > 0
-                ? `${stats.reading.seconds} sec`
-                : "—"}
-          </strong>{" "}
-          at 200 words per minute.
-        </p>
-        <ResultFooter label="Summary" className="mb-0 w-full sm:w-auto">
-          <CopyButton value={summary} label="Copy summary" disabled={text.length === 0} />
-        </ResultFooter>      </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-muted">
+              Reading time{" "}
+              <strong className="font-semibold text-fg">
+                {stats.reading.minutes > 0
+                  ? `${stats.reading.minutes} min`
+                  : stats.reading.seconds > 0
+                    ? `${stats.reading.seconds} sec`
+                    : "—"}
+              </strong>{" "}
+              at 200 words per minute.
+            </p>
+            <ResultFooter label="Summary" className="mb-0 w-full sm:w-auto">
+              <CopyButton value={summary} label="Copy summary" disabled={text.length === 0} />
+            </ResultFooter>
+          </div>
 
-      <div>
-        <h3 className="font-display text-[0.9375rem] font-bold text-fg">Most used words</h3>
-        {keywords.length === 0 ? (
-          <Note className="mt-3">
-            Common words like “the” and “and” are ignored. Add some prose and the terms you lean on
-            will appear here.
-          </Note>
-        ) : (
-          <ul className="mt-3 flex flex-col gap-2.5">
-            {keywords.map((keyword) => (
-              <li key={keyword.word} className="flex items-center gap-3">
-                <span className="w-32 shrink-0 truncate text-sm font-medium text-fg">
-                  {keyword.word}
-                </span>
-                <span className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-2">
-                  <span
-                    className="block h-full rounded-full bg-accent"
-                    style={{ width: `${topCount ? (keyword.count / topCount) * 100 : 0}%` }}
-                  />
-                </span>
-                <span className="num w-14 shrink-0 text-right text-sm text-muted">
-                  {formatNumber(keyword.count)}×
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+          <div>
+            <h3 className="font-display text-[0.9375rem] font-bold text-fg">Most used words</h3>
+            {keywords.length === 0 ? (
+              <Note className="mt-3">
+                Common words like “the” and “and” are ignored. Add some prose and the terms you lean on
+                will appear here.
+              </Note>
+            ) : (
+              <ul className="mt-3 flex flex-col gap-2.5">
+                {keywords.map((keyword) => (
+                  <li key={keyword.word} className="flex items-center gap-3">
+                    <span className="w-32 shrink-0 truncate text-sm font-medium text-fg">
+                      {keyword.word}
+                    </span>
+                    <span className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-2">
+                      <span
+                        className="block h-full rounded-full bg-accent"
+                        style={{ width: `${topCount ? (keyword.count / topCount) * 100 : 0}%` }}
+                      />
+                    </span>
+                    <span className="num w-14 shrink-0 text-right text-sm text-muted">
+                      {formatNumber(keyword.count)}×
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

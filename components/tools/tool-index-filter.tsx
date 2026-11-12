@@ -46,9 +46,7 @@ export function ToolIndexFilter({
       .map((group) => ({
         ...group,
         items: q
-          ? group.items.filter((item) =>
-              `${item.name} ${item.tagline} ${item.categoryLabel}`.toLowerCase().includes(q),
-            )
+          ? group.items.filter((item) => item.haystack.includes(q))
           : group.items,
       }))
       .filter((group) => group.items.length > 0);

@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 import { LogoMark } from "@/components/brand/logo";
-import { legalNav, secondaryNav, siteConfig } from "@/lib/site";
+import { secondaryNav } from "@/lib/nav";
+import { legalNav, siteConfig, contactEmailHref } from "@/lib/site";
 import { categories } from "@/lib/tools/categories";
 import { countByCategory, liveTools } from "@/lib/tools/registry";
 
@@ -34,7 +35,7 @@ export function SiteFooter() {
             </p>
             <p className="mt-5 text-sm">
               <Link
-                href={siteConfig.contactEmail ? `mailto:${siteConfig.contactEmail}` : "/contact"}
+                href={contactEmailHref ?? "/contact"}
                 className="link"
               >
                 {siteConfig.contactEmail || "Contact us"}

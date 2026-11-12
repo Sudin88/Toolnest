@@ -6,15 +6,27 @@ import { Check, NumberInput, Select } from "@/components/tools/interactive";
 import { Note, Stat, StatGrid } from "@/components/tools/parts";
 import { computeLoan } from "@/lib/calc";
 import { CURRENCIES, formatMoney as money } from "@/lib/currency";
-import { useToolDraft } from "@/lib/tool-draft";
+import { draftNumber, draftOneOf, useToolDraft } from "@/lib/tool-draft";
+
+/** Built once: `useToolDraft` compares decoder identity, so it must be stable. */
+const decodeCurrency = draftOneOf(CURRENCIES.map((entry) => entry.value));
+const decodeTermUnit = draftOneOf(["years", "months"] as const);
 
 export default function LoanCalculator() {
-  const [currency, setCurrency] = useToolDraft<string>("loan-calculator", "currency", "USD");
-  const [amount, setAmount] = useToolDraft<number | "">("loan-calculator", "amount", 250000);
-  const [rate, setRate] = useToolDraft<number | "">("loan-calculator", "rate", 6.5);
-  const [term, setTerm] = useToolDraft<number | "">("loan-calculator", "term", 30);
-  const [termUnit, setTermUnit] = useToolDraft<string>("loan-calculator", "termUnit", "years");
-  const [extra, setExtra] = useToolDraft<number | "">("loan-calculator", "extra", 0);
+  // Stored values are validated on read, so a stale or hand-edited draft falls
+  // back to the default instead of reaching a formatter as the wrong type.
+  const [currency, setCurrency] = useToolDraft<string>("loan-calculator", "currency", "USD", {
+    decode: decodeCurrency,
+  });
+  const [amount, setAmount] = useToolDraft<number | "">("loan-calculator", "amount", 250000, {
+    decode: draftNumber,
+  });
+  const [rate, setRate] = useToolDraft<number | "">("loan-calculator", "rate", 6.5, { decode: draftNumber });
+  const [term, setTerm] = useToolDraft<number | "">("loan-calculator", "term", 30, { decode: draftNumber });
+  const [termUnit, setTermUnit] = useToolDraft<string>("loan-calculator", "termUnit", "years", {
+    decode: decodeTermUnit,
+  });
+  const [extra, setExtra] = useToolDraft<number | "">("loan-calculator", "extra", 0, { decode: draftNumber });
   const [showAll, setShowAll] = useState(false);
 
   const months =

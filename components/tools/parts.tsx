@@ -1,7 +1,7 @@
 import { Info, TriangleAlert } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 
 /**
  * Presentational pieces shared by every tool. These carry no state and no event
@@ -54,6 +54,20 @@ export function Note({
       />
       <span>{children}</span>
     </p>
+  );
+}
+
+/**
+ * Shown in place of a result when a paste is past the cap a tool processes in one
+ * go. The text stays in its box, so nothing is lost — the cap only stops the
+ * pass that would otherwise stall the tab.
+ */
+export function LimitNote({ length, limit }: { length: number; limit: number }) {
+  return (
+    <Note tone="warn">
+      At {formatNumber(length)} characters this paste is past the {formatNumber(limit)}-character
+      limit for one run. Nothing has been sent anywhere — trim it down and the result appears again.
+    </Note>
   );
 }
 

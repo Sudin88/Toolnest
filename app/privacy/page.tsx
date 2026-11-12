@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { pageMetadata } from "@/lib/seo";
-import { adsEnabled, siteConfig } from "@/lib/site";
+import { adsEnabled, contactEmailHref, siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = pageMetadata({
   title: "Privacy Policy",
@@ -132,7 +132,7 @@ export default function PrivacyPage() {
             {siteConfig.contactEmail ? (
               <>
                 Questions about any of this can go to{" "}
-                <a href={`mailto:${siteConfig.contactEmail}`} className="link">
+                <a href={contactEmailHref ?? undefined} className="link">
                   {siteConfig.contactEmail}
                 </a>
                 .

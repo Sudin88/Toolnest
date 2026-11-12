@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  MAX_BATCH_BYTES,
   MAX_PDF_FILES,
   loadPdfDocument,
   looksLikePdf,
@@ -36,6 +37,34 @@ export interface PdfFileEntry {
   rotations: number[];
 }
 
+/** Give the browser a frame to paint the spinner before the heavy work starts. */
+const yieldToPaint = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+/**
+ * A wall-clock ceiling on one document read. pdf-lib yields while it parses, so
+ * a pathologically large or damaged file can otherwise leave the tool "busy"
+ * forever with nothing on screen to explain it.
+ */
+const READ_TIMEOUT_MS = 20_000;
+
+function withTimeout<T>(work: Promise<T>): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error("That document is taking too long to read. It may be very large or unusually complex — try a smaller file."));
+    }, READ_TIMEOUT_MS);
+    work.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (cause: unknown) => {
+        clearTimeout(timer);
+        reject(cause);
+      },
+    );
+  });
+}
+
 async function readPdfFile(file: File): Promise<{
   bytes: Uint8Array;
   pageCount: number;
@@ -45,12 +74,15 @@ async function readPdfFile(file: File): Promise<{
   const problem = validatePdfFile(file);
   if (problem) throw new Error(problem);
 
+  // Let the busy state render before the synchronous parse begins.
+  await yieldToPaint();
+
   const bytes = new Uint8Array(await file.arrayBuffer());
   if (!looksLikePdf(bytes)) {
     throw new Error(`“${file.name}” is not a PDF — the %PDF- header is missing, whatever the name says.`);
   }
 
-  const doc = await loadPdfDocument(bytes);
+  const doc = await withTimeout(loadPdfDocument(bytes));
   return {
     bytes,
     pageCount: doc.getPageCount(),
@@ -99,11 +131,13 @@ export function usePdfFiles() {
   const [busy, setBusy] = useState(false);
   const counter = useRef(0);
   // A live mirror of the list, so `add` can size the next batch against the real
-  // length without reading possibly-stale state during an await.
+  // length and total size without reading possibly-stale state during an await.
   const lengthRef = useRef(0);
+  const bytesRef = useRef(0);
 
   useEffect(() => {
     lengthRef.current = entries.length;
+    bytesRef.current = entries.reduce((sum, entry) => sum + entry.size, 0);
   }, [entries]);
 
   const add = useCallback(async (files: File[]) => {
@@ -111,9 +145,36 @@ export function usePdfFiles() {
     setBusy(true);
     setError(null);
 
+    // Size the batch against both limits *before* reading anything, so a large
+    // drop parses only what fits and reports the rest rather than parsing it all
+    // and then discarding most of it.
+    const room = Math.max(0, MAX_PDF_FILES - lengthRef.current);
+    if (room === 0) {
+      setError(`Only ${MAX_PDF_FILES} files are handled at once. Remove one before adding more.`);
+      setBusy(false);
+      return;
+    }
+
+    let running = bytesRef.current;
+    const batch: File[] = [];
+    let overCount = 0;
+    let overSize = 0;
+    for (const file of files) {
+      if (batch.length >= room) {
+        overCount += 1;
+        continue;
+      }
+      if (running + file.size > MAX_BATCH_BYTES) {
+        overSize += 1;
+        continue;
+      }
+      batch.push(file);
+      running += file.size;
+    }
+
     const added: PdfFileEntry[] = [];
     const problems: string[] = [];
-    for (const file of files) {
+    for (const file of batch) {
       try {
         const { bytes, pageCount, rotations } = await readPdfFile(file);
         counter.current += 1;
@@ -130,15 +191,19 @@ export function usePdfFiles() {
       }
     }
 
-    const room = Math.max(0, MAX_PDF_FILES - lengthRef.current);
-    if (added.length > room) {
-      problems.push(`Only ${MAX_PDF_FILES} files are handled at once, so ${added.length - room} were not added.`);
+    if (overCount > 0) {
+      problems.push(`Only ${MAX_PDF_FILES} files are handled at once, so ${overCount} were not added.`);
+    }
+    if (overSize > 0) {
+      problems.push(
+        `The combined size is limited to ${formatBytes(MAX_BATCH_BYTES)}, so ${overSize} ${overSize === 1 ? "file was" : "files were"} not added.`,
+      );
     }
 
-    const accepted = added.slice(0, room);
-    if (accepted.length > 0) {
-      lengthRef.current += accepted.length;
-      setEntries((prev) => prev.concat(accepted));
+    if (added.length > 0) {
+      lengthRef.current += added.length;
+      bytesRef.current += added.reduce((sum, entry) => sum + entry.size, 0);
+      setEntries((prev) => prev.concat(added));
     }
     if (problems.length > 0) setError(problems.join(" "));
     setBusy(false);
@@ -165,6 +230,84 @@ export function usePdfFiles() {
   }, []);
 
   return { entries, error, busy, add, move, remove, clear, setError };
+}
+
+export interface PdfBuild<TResult> {
+  /** True while a build is in flight. */
+  working: boolean;
+  /** The last build's failure, or `null`. */
+  error: string | null;
+  /** The last successful result, cleared the moment its inputs change. */
+  result: TResult | null;
+  /** Run `build` against the current source. */
+  run(): void;
+  /** Drop the current result and error. */
+  reset(): void;
+}
+
+/**
+ * The build half of every PDF tool: run one async builder over a snapshot of the
+ * tool's inputs, show a spinner, and surface a failure in words.
+ *
+ * The snapshot is the whole invalidation story. Whenever any input changes, the
+ * caller passes a new `source` identity, and a result built from the old one is
+ * dropped **during that render** — not in an effect — so a download can never be
+ * clicked against a document that no longer matches the controls on screen. A
+ * build that finishes after its inputs were replaced is discarded the same way,
+ * which is why nothing may be derived from a build except through its returned
+ * result: the result and its side-products must arrive together or not at all.
+ *
+ * This is the one shared piece the five PDF tools had each written out by hand.
+ */
+export function usePdfBuild<TInput, TResult = Blob>(
+  source: TInput,
+  build: (source: TInput) => Promise<TResult>,
+  errorMessage: string,
+): PdfBuild<TResult> {
+  const [working, setWorking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<TResult | null>(null);
+
+  // Drop a stale result during the render that first sees the new source.
+  const [built, setBuilt] = useState(source);
+  if (built !== source) {
+    setBuilt(source);
+    setResult(null);
+    setError(null);
+  }
+
+  // Read through refs so `run` is stable, and so a build that outlives its
+  // inputs can tell that it is no longer current.
+  const sourceRef = useRef(source);
+  const buildRef = useRef(build);
+  useEffect(() => {
+    sourceRef.current = source;
+    buildRef.current = build;
+  });
+
+  const run = useCallback(async () => {
+    const used = sourceRef.current;
+    setWorking(true);
+    setError(null);
+    setResult(null);
+    try {
+      const built = await buildRef.current(used);
+      if (sourceRef.current !== used) return;
+      setResult(built);
+    } catch (cause) {
+      if (sourceRef.current !== used) return;
+      setError(cause instanceof Error ? cause.message : errorMessage);
+    } finally {
+      setWorking(false);
+    }
+  }, [errorMessage]);
+
+  const reset = useCallback(() => {
+    setResult(null);
+    setError(null);
+  }, []);
+
+  return { working, error, result, run, reset };
 }
 
 /** The file, its size and its page count — the three facts worth repeating. */

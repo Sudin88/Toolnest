@@ -3,7 +3,7 @@
 import { CornerDownLeft, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import type { SearchEntry } from "@/lib/search-index";
 import { rankEntries } from "@/lib/search-rank";
@@ -72,12 +72,74 @@ function categoryItem(category: (typeof categories)[number]): PaletteItem {
   };
 }
 
+/**
+ * A value that lags behind by `delay` ms, so a fast typist causes one ranking
+ * pass rather than one per keystroke. An empty value is never deferred, so
+ * opening the palette shows its starting list at once instead of the previous
+ * query's results for one tick.
+ */
+function useDebounced(value: string, delay: number): string {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setSettled(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return value === "" ? "" : settled;
+}
+
+/**
+ * One option row. Memoised because a keystroke changes the list but leaves most
+ * rows identical — only the highlighted one takes a new `active` prop.
+ */
+const PaletteRow = memo(function PaletteRow({
+  item,
+  index,
+  active,
+  onSelect,
+  onHover,
+}: {
+  item: PaletteItem;
+  index: number;
+  active: boolean;
+  onSelect: () => void;
+  onHover: (index: number) => void;
+}) {
+  return (
+    <Link
+      id={item.id}
+      role="option"
+      aria-selected={active}
+      href={item.href}
+      onClick={onSelect}
+      onMouseEnter={() => onHover(index)}
+      className={cn(
+        "flex items-center gap-3 rounded-md px-3 py-2.5 no-underline",
+        active ? "bg-surface-2 text-fg" : "text-fg",
+      )}
+    >
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-semibold">{item.name}</span>
+        <span className="block truncate text-xs text-muted">{item.tagline}</span>
+      </span>
+      <span className="shrink-0 rounded border border-line px-1.5 py-0.5 text-xs text-muted">
+        {item.tag}
+      </span>
+      {active ? (
+        <CornerDownLeft className="size-3.5 shrink-0 text-muted" aria-hidden="true" />
+      ) : null}
+    </Link>
+  );
+});
+
 export function ToolSearch({ entries }: { entries: SearchEntry[] }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
+  // Ranking runs on the settled query, not the live one, so holding down a key
+  // does not start a ranking pass per character.
+  const debouncedQuery = useDebounced(query, 120);
   const shortcutLabel = useIsMac() ? "⌘K" : "Ctrl K";
   const recentSlugs = useRecentSlugs();
   const favouriteSlugs = useFavouriteSlugs();
@@ -86,7 +148,7 @@ export function ToolSearch({ entries }: { entries: SearchEntry[] }) {
   // then what you starred, then the most popular tools, then the categories. A
   // query searches tools and categories together.
   const groups = useMemo<PaletteGroup[]>(() => {
-    const q = query.trim().toLowerCase();
+    const q = debouncedQuery.trim().toLowerCase();
 
     if (!q) {
       const bySlug = new Map(entries.map((entry) => [entry.slug, entry]));
@@ -116,7 +178,7 @@ export function ToolSearch({ entries }: { entries: SearchEntry[] }) {
       ];
     }
 
-    const tools = rankEntries(entries, query, MAX_RESULTS).map(toolItem);
+    const tools = rankEntries(entries, debouncedQuery, MAX_RESULTS).map(toolItem);
     const matchedCategories = categories
       .filter(
         (category) =>
@@ -126,9 +188,12 @@ export function ToolSearch({ entries }: { entries: SearchEntry[] }) {
       .map(categoryItem);
 
     return [{ label: "Results", items: [...tools, ...matchedCategories] }];
-  }, [query, entries, recentSlugs, favouriteSlugs]);
+  }, [debouncedQuery, entries, recentSlugs, favouriteSlugs]);
 
   const flat = useMemo(() => groups.flatMap((group) => group.items), [groups]);
+
+  /** Stable so a hovering pointer does not defeat the row memo. */
+  const handleHover = useCallback((index: number) => setActive(index), []);
 
   const open = useCallback(() => {
     const dialog = dialogRef.current;
@@ -274,30 +339,14 @@ export function ToolSearch({ entries }: { entries: SearchEntry[] }) {
                   optionIndex += 1;
                   const index = optionIndex;
                   return (
-                    <Link
+                    <PaletteRow
                       key={item.id}
-                      id={item.id}
-                      role="option"
-                      aria-selected={index === active}
-                      href={item.href}
-                      onClick={close}
-                      onMouseEnter={() => setActive(index)}
-                      className={cn(
-                        "flex items-center gap-3 rounded-md px-3 py-2.5 no-underline",
-                        index === active ? "bg-surface-2 text-fg" : "text-fg",
-                      )}
-                    >
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-semibold">{item.name}</span>
-                        <span className="block truncate text-xs text-muted">{item.tagline}</span>
-                      </span>
-                      <span className="shrink-0 rounded border border-line px-1.5 py-0.5 text-xs text-muted">
-                        {item.tag}
-                      </span>
-                      {index === active ? (
-                        <CornerDownLeft className="size-3.5 shrink-0 text-muted" aria-hidden="true" />
-                      ) : null}
-                    </Link>
+                      item={item}
+                      index={index}
+                      active={index === active}
+                      onSelect={close}
+                      onHover={handleHover}
+                    />
                   );
                 })}
               </div>

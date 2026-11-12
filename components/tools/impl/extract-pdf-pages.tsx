@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import { FileDrop, TextInput } from "@/components/tools/interactive";
 import { ResultFooter, Note, Stat, StatGrid, TryExample } from "@/components/tools/parts";
-import { PdfFacts, usePdfFile } from "@/components/tools/pdf-workbench";
+import { PdfFacts, usePdfBuild, usePdfFile } from "@/components/tools/pdf-workbench";
 import { downloadBlob } from "@/lib/download";
 import { copyPagesToNewDocument, fileStem, parsePageRanges } from "@/lib/pdf";
 import { formatBytes } from "@/lib/utils";
@@ -18,40 +18,25 @@ import { formatBytes } from "@/lib/utils";
 export default function ExtractPdfPages() {
   const { pdf, error, busy, load, clear } = usePdfFile();
   const [input, setInput] = useState("");
-  const [working, setWorking] = useState(false);
-  const [buildError, setBuildError] = useState<string | null>(null);
-  const [blob, setBlob] = useState<Blob | null>(null);
-
-  const [blobFor, setBlobFor] = useState<{ pdf: unknown; input: string }>({ pdf, input });
-  if (blobFor.pdf !== pdf || blobFor.input !== input) {
-    setBlobFor({ pdf, input });
-    setBlob(null);
-    setBuildError(null);
-  }
 
   const parsed = useMemo(
     () => (pdf ? parsePageRanges(input, pdf.pageCount) : { pages: [], errors: [] }),
     [pdf, input],
   );
-
-  const example = pdf ? (pdf.pageCount >= 3 ? "3, 1, 1" : "1") : "1";
-
-  async function extract() {
-    if (!pdf || parsed.pages.length === 0) return;
-    setWorking(true);
-    setBuildError(null);
-    setBlob(null);
-    try {
-      const bytes = await copyPagesToNewDocument(pdf.bytes, parsed.pages);
+  const source = useMemo(() => ({ pdf, parsed }), [pdf, parsed]);
+  const { working, error: buildError, result: blob, run } = usePdfBuild(
+    source,
+    async (current) => {
+      if (!current.pdf) throw new Error("Load a PDF first.");
+      const bytes = await copyPagesToNewDocument(current.pdf.bytes, current.parsed.pages);
       const copy = new Uint8Array(bytes.length);
       copy.set(bytes);
-      setBlob(new Blob([copy], { type: "application/pdf" }));
-    } catch (cause) {
-      setBuildError(cause instanceof Error ? cause.message : "The pages could not be extracted.");
-    } finally {
-      setWorking(false);
-    }
-  }
+      return new Blob([copy], { type: "application/pdf" });
+    },
+    "The pages could not be extracted.",
+  );
+
+  const example = pdf ? (pdf.pageCount >= 3 ? "3, 1, 1" : "1") : "1";
 
   const filename = pdf ? `${fileStem(pdf.file.name)}-extract.pdf` : "extract.pdf";
   const preview = parsed.pages.slice(0, 40);
@@ -131,11 +116,14 @@ export default function ExtractPdfPages() {
             <button
               type="button"
               className="btn btn-primary"
-              onClick={() => void extract()}
-              disabled={working || parsed.pages.length === 0}
+              onClick={() => void run()}
+              disabled={working || parsed.pages.length === 0 || parsed.errors.length > 0}
             >
               {working ? "Extracting…" : "Extract pages"}
             </button>
+            {parsed.errors.length > 0 && parsed.pages.length > 0 ? (
+              <span className="text-sm text-muted">Fix the page range above to continue.</span>
+            ) : null}
           </div>
 
           {blob ? (

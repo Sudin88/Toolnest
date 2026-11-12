@@ -3,8 +3,8 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { MobileMenu } from "@/components/navigation/mobile-menu";
 import { ToolSearch } from "@/components/navigation/tool-search";
+import { primaryNav } from "@/lib/nav";
 import { buildSearchIndex } from "@/lib/search-index";
-import { primaryNav } from "@/lib/site";
 
 /**
  * The header carries brand, destination and search, in that order of weight.

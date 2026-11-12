@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { FileDrop, Segmented } from "@/components/tools/interactive";
 import { ResultFooter, Note, Stat, StatGrid } from "@/components/tools/parts";
-import { PdfFacts, usePdfFile } from "@/components/tools/pdf-workbench";
+import { PdfFacts, usePdfBuild, usePdfFile } from "@/components/tools/pdf-workbench";
 import { downloadBlob } from "@/lib/download";
 import { fileStem, normaliseAngle, rotatePdf } from "@/lib/pdf";
 import { formatBytes } from "@/lib/utils";
@@ -21,47 +21,41 @@ export default function RotatePdf() {
   const [mode, setMode] = useState<Mode>("all");
   const [allDelta, setAllDelta] = useState(90);
   const [per, setPer] = useState<number[]>([]);
-  const [working, setWorking] = useState(false);
-  const [buildError, setBuildError] = useState<string | null>(null);
-  const [blob, setBlob] = useState<Blob | null>(null);
 
+  // A new document resets the per-page turns; a previous result is dropped by
+  // the build hook, because `pdf` is part of its input.
   const [signature, setSignature] = useState<unknown>(pdf);
   if (signature !== pdf) {
     setSignature(pdf);
     setPer(pdf ? pdf.rotations.map(() => 0) : []);
-    setBlob(null);
-    setBuildError(null);
   }
 
-  const deltas = mode === "all" ? (pdf ? pdf.rotations.map(() => allDelta) : []) : per;
+  const deltas = useMemo(
+    () => (mode === "all" ? (pdf ? pdf.rotations.map(() => allDelta) : []) : per),
+    [mode, pdf, allDelta, per],
+  );
+  const source = useMemo(() => ({ pdf, deltas }), [pdf, deltas]);
+  const { working, error: buildError, result: blob, run } = usePdfBuild(
+    source,
+    async (input) => {
+      if (!input.pdf) throw new Error("Load a PDF first.");
+      const bytes = await rotatePdf(input.pdf.bytes, input.deltas);
+      const copy = new Uint8Array(bytes.length);
+      copy.set(bytes);
+      return new Blob([copy], { type: "application/pdf" });
+    },
+    "The document could not be rotated.",
+  );
+
   const net = pdf ? pdf.rotations.map((base, index) => normaliseAngle(base + (deltas[index] ?? 0))) : [];
   const changed = pdf ? net.some((angle, index) => angle !== normaliseAngle(pdf.rotations[index])) : false;
 
   function bump(index: number) {
     setPer((prev) => prev.map((value, at) => (at === index ? normaliseAngle(value + 90) : value)));
-    setBlob(null);
   }
 
   function resetPage(index: number) {
     setPer((prev) => prev.map((value, at) => (at === index ? 0 : value)));
-    setBlob(null);
-  }
-
-  async function apply() {
-    if (!pdf) return;
-    setWorking(true);
-    setBuildError(null);
-    setBlob(null);
-    try {
-      const bytes = await rotatePdf(pdf.bytes, deltas);
-      const copy = new Uint8Array(bytes.length);
-      copy.set(bytes);
-      setBlob(new Blob([copy], { type: "application/pdf" }));
-    } catch (cause) {
-      setBuildError(cause instanceof Error ? cause.message : "The document could not be rotated.");
-    } finally {
-      setWorking(false);
-    }
   }
 
   const filename = pdf ? `${fileStem(pdf.file.name)}-rotated.pdf` : "rotated.pdf";
@@ -87,10 +81,7 @@ export default function RotatePdf() {
           <Segmented<Mode>
             label="Which pages"
             value={mode}
-            onChange={(value) => {
-              setMode(value);
-              setBlob(null);
-            }}
+            onChange={(value) => setMode(value)}
             options={[
               { value: "all", label: "Every page" },
               { value: "per", label: "Per page" },
@@ -101,10 +92,7 @@ export default function RotatePdf() {
             <Segmented
               label="Turn"
               value={String(allDelta)}
-              onChange={(value) => {
-                setAllDelta(Number(value));
-                setBlob(null);
-              }}
+              onChange={(value) => setAllDelta(Number(value))}
               options={[
                 { value: "90", label: "90° right" },
                 { value: "180", label: "180°" },
@@ -151,7 +139,7 @@ export default function RotatePdf() {
           {buildError ? <Note tone="warn">{buildError}</Note> : null}
 
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" className="btn btn-primary" onClick={() => void apply()} disabled={working || !changed}>
+            <button type="button" className="btn btn-primary" onClick={() => void run()} disabled={working || !changed}>
               {working ? "Rotating…" : "Rotate pages"}
             </button>
             {!changed ? <span className="text-sm text-muted">No page is turned yet.</span> : null}

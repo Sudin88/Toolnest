@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import { FileDrop, RangeInput, Segmented, TextInput } from "@/components/tools/interactive";
 import { ResultFooter, Note, Stat, StatGrid, TryExample } from "@/components/tools/parts";
-import { PdfFacts, usePdfFile } from "@/components/tools/pdf-workbench";
+import { PdfFacts, usePdfBuild, usePdfFile } from "@/components/tools/pdf-workbench";
 import { downloadBlob } from "@/lib/download";
 import { fileStem, parsePageRanges, watermarkPdf } from "@/lib/pdf";
 import { formatBytes } from "@/lib/utils";
@@ -26,50 +26,53 @@ export default function WatermarkPdf() {
   const [rotation, setRotation] = useState<Rotation>("45");
   const [colour, setColour] = useState(COLOURS[0].value);
   const [pages, setPages] = useState("");
-  const [working, setWorking] = useState(false);
-  const [buildError, setBuildError] = useState<string | null>(null);
-  const [blob, setBlob] = useState<Blob | null>(null);
 
-  const [signature, setSignature] = useState<unknown>(pdf);
-  if (signature !== pdf) {
-    setSignature(pdf);
-    setBlob(null);
-    setBuildError(null);
-  }
+  // The built blob is only valid for the exact document *and* the exact options
+  // it was built from. A memoised snapshot of those options changes identity
+  // whenever any of them does, so one comparison invalidates the result no
+  // matter which control moved — and a download can never hand back a document
+  // that no longer matches what is on screen.
+  const draft = useMemo(
+    () => ({ text, size, opacity, rotation, colour, pages }),
+    [text, size, opacity, rotation, colour, pages],
+  );
+  const source = useMemo(() => ({ pdf, draft }), [pdf, draft]);
+  const { working, error: buildError, result: blob, run } = usePdfBuild(
+    source,
+    async (input) => {
+      const { pdf: doc, draft: options } = input;
+      if (!doc) throw new Error("Load a PDF first.");
+      const swatch = COLOURS.find((entry) => entry.value === options.colour) ?? COLOURS[0];
+      // `parsePageRanges` reports the pages it could read *and* an error for the
+      // part that was out of range, so acting on the text alone would silently
+      // stamp a truncated selection. The action is blocked on an error below.
+      const range = options.pages.trim() ? parsePageRanges(options.pages, doc.pageCount) : null;
+      const bytes = await watermarkPdf(doc.bytes, {
+        text: options.text,
+        size: options.size,
+        opacity: options.opacity / 100,
+        rotationDeg: Number(options.rotation),
+        color: swatch.rgb,
+        pages: range && range.pages.length > 0 ? range.pages : undefined,
+      });
+      const copy = new Uint8Array(bytes.length);
+      copy.set(bytes);
+      return new Blob([copy], { type: "application/pdf" });
+    },
+    "The watermark could not be added.",
+  );
 
   const parsed = useMemo(
     () => (pdf && pages.trim() ? parsePageRanges(pages, pdf.pageCount) : null),
     [pdf, pages],
   );
+  // Any error blocks the action.
+  const rangeInvalid = Boolean(parsed && parsed.errors.length > 0);
 
   const swatch = COLOURS.find((entry) => entry.value === colour) ?? COLOURS[0];
   const first = pdf?.sizes[0];
   const fraction = typeof size === "number" ? size : 60;
   const previewScale = first ? Math.min(1, 260 / first.width) : 1;
-
-  async function apply() {
-    if (!pdf || text.trim().length === 0) return;
-    setWorking(true);
-    setBuildError(null);
-    setBlob(null);
-    try {
-      const bytes = await watermarkPdf(pdf.bytes, {
-        text,
-        size,
-        opacity: opacity / 100,
-        rotationDeg: Number(rotation),
-        color: swatch.rgb,
-        pages: parsed && parsed.pages.length > 0 ? parsed.pages : undefined,
-      });
-      const copy = new Uint8Array(bytes.length);
-      copy.set(bytes);
-      setBlob(new Blob([copy], { type: "application/pdf" }));
-    } catch (cause) {
-      setBuildError(cause instanceof Error ? cause.message : "The watermark could not be added.");
-    } finally {
-      setWorking(false);
-    }
-  }
 
   const filename = pdf ? `${fileStem(pdf.file.name)}-watermarked.pdf` : "watermarked.pdf";
   const markedPages = parsed && parsed.pages.length > 0 ? new Set(parsed.pages).size : (pdf?.pageCount ?? 0);
@@ -162,7 +165,7 @@ export default function WatermarkPdf() {
             onChange={setPages}
             placeholder={`Empty marks every page (1-${pdf.pageCount})`}
             hint="Use 1-based numbers and hyphens, e.g. 1-3, 7."
-            invalid={Boolean(parsed && parsed.errors.length > 0)}
+            invalid={rangeInvalid}
           />
           {parsed && parsed.errors.length > 0 ? <Note tone="warn">{parsed.errors.join(" ")}</Note> : null}
 
@@ -209,12 +212,16 @@ export default function WatermarkPdf() {
             <button
               type="button"
               className="btn btn-primary"
-              onClick={() => void apply()}
-              disabled={working || text.trim().length === 0}
+              onClick={() => void run()}
+              disabled={working || text.trim().length === 0 || rangeInvalid}
             >
               {working ? "Adding…" : "Add watermark"}
             </button>
-            {text.trim().length === 0 ? <span className="text-sm text-muted">Type the watermark text first.</span> : null}
+            {rangeInvalid ? (
+              <span className="text-sm text-muted">Fix the page range above first.</span>
+            ) : text.trim().length === 0 ? (
+              <span className="text-sm text-muted">Type the watermark text first.</span>
+            ) : null}
           </div>
 
           {blob ? (

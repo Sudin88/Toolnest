@@ -40,7 +40,7 @@ export function Hero() {
           <SmartBox entries={searchIndex} />
           <p className="mt-3 text-sm text-muted">
             Press <kbd className="kbd">/</kbd> anywhere to search, or{" "}
-            <Link href="#tools-index" className="link">
+            <Link href="#tools-index-heading" className="link">
               browse the full index
             </Link>
             .

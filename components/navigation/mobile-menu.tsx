@@ -6,9 +6,8 @@ import { useLayoutEffect, useState } from "react";
 
 import { Logo } from "@/components/brand/logo";
 import { IconTile } from "@/components/ui/icon-tile";
+import { primaryNav, secondaryNav } from "@/lib/nav";
 import type { SearchEntry } from "@/lib/search-index";
-import { primaryNav, secondaryNav } from "@/lib/site";
-import { categoryBySlug } from "@/lib/tools/categories";
 
 /**
  * The mobile navigation. It receives the same search index as the desktop bar so
@@ -58,7 +57,6 @@ export function MobileMenu({ entries }: { entries: SearchEntry[] }) {
             </p>
             <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
               {primaryNav.map((item) => {
-                const category = categoryBySlug.get(item.href.split("/").pop() ?? "");
                 return (
                   <li key={item.href}>
                     <Link
@@ -66,9 +64,7 @@ export function MobileMenu({ entries }: { entries: SearchEntry[] }) {
                       onClick={() => setOpen(false)}
                       className="flex min-h-12 items-center gap-3 rounded-md px-3 text-[0.9375rem] font-medium text-fg no-underline transition-colors duration-150 ease-out hover:bg-surface-2"
                     >
-                      {category ? (
-                        <IconTile icon={category.icon} color={category.color} size="sm" />
-                      ) : null}
+                      <IconTile icon={item.icon} color={item.color} size="sm" />
                       {item.label}
                     </Link>
                   </li>

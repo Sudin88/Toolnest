@@ -6,6 +6,14 @@
  * The fallback is an RFC 2606 reserved domain so an unconfigured deploy can
  * never accidentally emit someone else's live URL.
  */
+/** AdSense publisher ids are always `ca-pub-` followed by exactly 16 digits. */
+const ADSENSE_PATTERN = /^ca-pub-\d{16}$/;
+/** Deliberately strict: nothing that could break out of a `mailto:` header. */
+const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+const RAW_ADSENSE = process.env.NEXT_PUBLIC_ADSENSE_CLIENT?.trim() ?? "";
+const RAW_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() ?? "";
+
 export const siteConfig = {
   name: "ToolNest",
   tagline: "One destination. Every tool you need.",
@@ -14,37 +22,40 @@ export const siteConfig = {
   url: (process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://toolnest.example.com"),
   locale: "en_US",
   localeShort: "en",
-  /** AdSense publisher id (e.g. "ca-pub-0000000000000000"). Ads stay off until set. */
-  adsenseClient: process.env.NEXT_PUBLIC_ADSENSE_CLIENT?.trim() || "",
-  /** Shown on the contact page. Hidden entirely until a real address is set. */
-  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || "",
+  /**
+   * AdSense publisher id, e.g. "ca-pub-0000000000000000". Ads stay off until a
+   * syntactically valid id is set; a malformed one is treated as unset rather
+   * than switching ads — and their whole host allowlist — on.
+   */
+  adsenseClient: ADSENSE_PATTERN.test(RAW_ADSENSE) ? RAW_ADSENSE : "",
+  /** Shown on the contact page. Empty unless a plausible address is set. */
+  contactEmail: EMAIL_PATTERN.test(RAW_EMAIL) ? RAW_EMAIL : "",
 } as const;
 
-export const adsEnabled = siteConfig.adsenseClient.startsWith("ca-pub-");
+export const adsEnabled = siteConfig.adsenseClient !== "";
+
+/** The AdSense loader, with the client id passed as a properly-encoded query. */
+export function adsenseLoaderUrl(): string | null {
+  if (!adsEnabled) return null;
+  const url = new URL("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js");
+  url.searchParams.set("client", siteConfig.adsenseClient);
+  return url.toString();
+}
+
+/** A safe `mailto:` href for the validated contact address, or null when unset. */
+export const contactEmailHref = siteConfig.contactEmail
+  ? `mailto:${encodeURIComponent(siteConfig.contactEmail)}`
+  : null;
 
 export function absoluteUrl(path = "/") {
   return new URL(path, siteConfig.url).toString();
 }
 
 /**
- * Where the product talks about itself. Kept in one place so the footer,
- * the About page and the sitemap never drift apart.
+ * The legal links, kept here because they are their own small set with no
+ * registry counterpart. The product navigation — the category strip, the daily
+ * link and the header entries — is derived from the registry in `lib/nav.ts`.
  */
-export const primaryNav = [
-  { label: "PDF", href: "/categories/pdf-tools" },
-  { label: "Image", href: "/categories/image-tools" },
-  { label: "Text", href: "/categories/text-tools" },
-  { label: "Calculators", href: "/categories/calculators" },
-  { label: "Developer", href: "/categories/developer-tools" },
-] as const;
-
-export const secondaryNav = [
-  { label: "All tools", href: "/tools" },
-  { label: "Daily tools", href: "/categories/daily-tools" },
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
-] as const;
-
 export const legalNav = [
   { label: "Privacy", href: "/privacy" },
   { label: "Terms", href: "/terms" },

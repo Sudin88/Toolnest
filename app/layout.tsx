@@ -4,7 +4,7 @@ import Script from "next/script";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { adsEnabled, siteConfig } from "@/lib/site";
+import { adsEnabled, adsenseLoaderUrl, siteConfig } from "@/lib/site";
 
 import "./globals.css";
 
@@ -92,7 +92,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             id="adsbygoogle-loader"
             strategy="afterInteractive"
             crossOrigin="anonymous"
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${siteConfig.adsenseClient}`}
+            src={adsenseLoaderUrl() ?? undefined}
           />
         ) : null}
       </body>

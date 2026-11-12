@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { ImageFacts, ImagePreview, useImageFile } from "@/components/tools/image-workbench";
 import { CopyButton, FileDrop } from "@/components/tools/interactive";
@@ -9,6 +9,8 @@ import { readFileAsDataUrl, formatLabel } from "@/lib/image";
 import { formatBytes, formatNumber } from "@/lib/utils";
 
 const SMALL_ENOUGH_BYTES = 2 * 1024;
+/** Past this a data URI is too long to build or render, so the file is refused. */
+const MAX_INLINE_BYTES = 4 * 1024 * 1024;
 
 export default function ImageToBase64() {
   const { image, file, url, error, busy, load, setError } = useImageFile();
@@ -16,6 +18,9 @@ export default function ImageToBase64() {
 
   useEffect(() => {
     if (!file) return;
+    // A data URI for a file this large is a multi-megabyte string that would then
+    // be copied and rendered several times over, so it is not built at all.
+    if (file.size > MAX_INLINE_BYTES) return;
     let cancelled = false;
     readFileAsDataUrl(file)
       .then((value) => {
@@ -32,13 +37,29 @@ export default function ImageToBase64() {
   // A result is only valid for the file it was read from, so staleness is derived
   // rather than reset in an effect.
   const dataUri = read && read.file === file ? read.dataUri : null;
+  // The refusal is derived as well, so it needs no effect to push it into state.
+  const refused = file && file.size > MAX_INLINE_BYTES ? file.size : null;
+  const message = refused
+    ? `That image is ${formatBytes(refused)}, past the ${formatBytes(MAX_INLINE_BYTES)} limit for inlining as a data URI. Resize it first.`
+    : error;
 
-  const raw = dataUri ? dataUri.slice(dataUri.indexOf(",") + 1) : "";
-  const cssValue = dataUri ? `background-image: url("${dataUri}");` : "";
-  const htmlValue = dataUri
-    ? `<img src="${dataUri}" alt="" width="${image?.width ?? 0}" height="${image?.height ?? 0}">`
-    : "";
-  const inflation = dataUri && image ? Math.round((dataUri.length / image.size - 1) * 100) : 0;
+  // The derived copies are built once per file rather than on every render: for a
+  // large image the URI is several megabytes, and copying it three times on each
+  // unrelated re-render is pure waste.
+  const derived = useMemo(() => {
+    if (!dataUri || !image) return null;
+    return {
+      raw: dataUri.slice(dataUri.indexOf(",") + 1),
+      cssValue: `background-image: url("${dataUri}");`,
+      htmlValue: `<img src="${dataUri}" alt="" width="${image.width}" height="${image.height}">`,
+      inflation: Math.round((dataUri.length / image.size - 1) * 100),
+    };
+  }, [dataUri, image]);
+
+  const raw = derived?.raw ?? "";
+  const cssValue = derived?.cssValue ?? "";
+  const htmlValue = derived?.htmlValue ?? "";
+  const inflation = derived?.inflation ?? 0;
   const tooBig = image ? image.size > SMALL_ENOUGH_BYTES : false;
 
   return (
@@ -50,7 +71,7 @@ export default function ImageToBase64() {
         onFile={(files) => void load(files)}
       />
 
-      {error ? <Note tone="warn">{error}</Note> : null}
+      {message ? <Note tone="warn">{message}</Note> : null}
       {busy ? <p className="text-sm text-muted">Reading the file…</p> : null}
 
       {image ? (
@@ -59,7 +80,12 @@ export default function ImageToBase64() {
             <div className="panel flex flex-col gap-4 p-4">
               <h3 className="font-display text-[0.9375rem] font-bold text-fg">Preview</h3>
               <div className="flex max-h-56 items-center justify-center overflow-hidden rounded-md border border-line bg-surface-2">
-                <ImagePreview src={url} alt={`Preview: ${image.name}`} />
+                <ImagePreview
+                  src={url}
+                  alt={`Preview: ${image.name}`}
+                  width={image.width}
+                  height={image.height}
+                />
               </div>
               <ImageFacts
                 name={image.name}
@@ -85,7 +111,7 @@ export default function ImageToBase64() {
                     hint="Base64 turns three bytes into four"
                   />
                 </StatGrid>
-              ) : (
+              ) : refused ? null : (
                 <p className="text-sm text-muted">Reading the file…</p>
               )}
 

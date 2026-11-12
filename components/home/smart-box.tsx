@@ -34,7 +34,6 @@ interface Suggestion {
   slug: string;
   name: string;
   tagline: string;
-  group: string;
   reason?: string;
   handover: boolean;
 }
@@ -50,7 +49,7 @@ export function SmartBox({ entries }: { entries: SearchEntry[] }) {
   const bySlug = useMemo(() => new Map(entries.map((entry) => [entry.slug, entry])), [entries]);
   const detection = useMemo(() => detectInput(value), [value]);
   const imageTools = useMemo(
-    () => entries.filter((entry) => entry.group === "Image").slice(0, 4),
+    () => entries.filter((entry) => entry.category === "image").slice(0, 4),
     [entries],
   );
 
@@ -62,7 +61,6 @@ export function SmartBox({ entries }: { entries: SearchEntry[] }) {
           slug: entry.slug,
           name: entry.name,
           tagline: entry.tagline,
-          group: entry.group,
           handover: false,
         })),
       };
@@ -77,7 +75,6 @@ export function SmartBox({ entries }: { entries: SearchEntry[] }) {
           slug: entry.slug,
           name: entry.name,
           tagline: entry.tagline,
-          group: entry.group,
           reason: suggestion.reason,
           handover: HANDOVER_SLUGS.has(entry.slug),
         });
@@ -91,7 +88,6 @@ export function SmartBox({ entries }: { entries: SearchEntry[] }) {
         slug: entry.slug,
         name: entry.name,
         tagline: entry.tagline,
-        group: entry.group,
         handover: false,
       })),
     };

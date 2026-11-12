@@ -1,3 +1,4 @@
+import { componentSlugs } from "@/lib/tools/component-slugs";
 import { calculatorTools } from "@/lib/tools/definitions/calculators";
 import { dailyTools } from "@/lib/tools/definitions/daily";
 import { developerTools } from "@/lib/tools/definitions/developer";
@@ -30,17 +31,40 @@ if (bySlug.size !== tools.length) {
 }
 
 export const liveTools = tools.filter((tool) => tool.status === "live");
+/**
+ * Declared but not built. Every consumer of the directory — the sitemap, the
+ * search index, the category and home listings, and `generateStaticParams` — is
+ * derived from `liveTools`, and `app/tools/[slug]/page.tsx` calls `notFound()`
+ * for anything that is not live, so a planned entry cannot be routed, linked,
+ * listed or indexed. Nothing in the registry is `planned` today, so that path is
+ * covered structurally rather than by a definition; `tests/registry.test.ts`
+ * asserts the partition that the coverage rests on.
+ */
 export const plannedTools = tools.filter((tool) => tool.status === "planned");
+
+// Every live tool must have exactly one screen, and no screen may exist for a
+// tool the registry does not call live. Without this, a renamed slug compiles,
+// prerenders, gets linked and indexed, and serves a placeholder while calling a
+// working tool "on the roadmap". `components/tools/tool-host.tsx` types its
+// loader map against `componentSlugs`, so this one check closes the loop.
+{
+  const liveSlugs = new Set(liveTools.map((tool) => tool.slug));
+  const screens = new Set<string>(componentSlugs);
+  const missing = [...liveSlugs].filter((slug) => !screens.has(slug));
+  const unknown = [...screens].filter((slug) => !liveSlugs.has(slug));
+
+  if (missing.length > 0 || unknown.length > 0) {
+    throw new Error(
+      "The tool screens in components/tools/tool-host.tsx are out of step with the registry" +
+        (missing.length > 0 ? ` — no screen for: ${missing.join(", ")}` : "") +
+        (unknown.length > 0 ? ` — screens for unknown or planned tools: ${unknown.join(", ")}` : "") +
+        ". Add the screen, remove the stale slug from lib/tools/component-slugs.ts, or flip the tool to \"live\".",
+    );
+  }
+}
 
 export function getTool(slug: string): ToolDefinition | undefined {
   return bySlug.get(slug);
-}
-
-/** Throws when the slug is unknown — use where the caller already resolved a route. */
-export function requireTool(slug: string): ToolDefinition {
-  const tool = bySlug.get(slug);
-  if (!tool) throw new Error(`Unknown tool slug: ${slug}`);
-  return tool;
 }
 
 export function isLive(slug: string): boolean {
@@ -78,53 +102,4 @@ export function relatedTools(slug: string, limit = 4): ToolDefinition[] {
   const siblings = liveTools.filter((t) => t.category === tool.category && t.slug !== slug);
   const others = liveTools.filter((t) => t.category !== tool.category);
   return [...siblings, ...others].slice(0, limit);
-}
-
-/** Case-insensitive match across name, tagline, keywords and description. */
-export function searchTools(query: string, limit = 12): ToolDefinition[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return [];
-
-  const terms = q.split(/\s+/);
-  const scored = liveTools
-    .map((tool) => {
-      const name = tool.name.toLowerCase();
-      const tagline = tool.tagline.toLowerCase();
-      const haystack = [name, tagline, ...tool.keywords.map((k) => k.toLowerCase()), tool.description.toLowerCase()];
-
-      let score = 0;
-      for (const term of terms) {
-        let matched = false;
-        if (name.startsWith(term)) {
-          score += 60;
-          matched = true;
-        } else if (name.includes(term)) {
-          score += 40;
-          matched = true;
-        }
-        if (tagline.includes(term)) {
-          score += 14;
-          matched = true;
-        }
-        if (tool.keywords.some((k) => k.toLowerCase().includes(term))) {
-          score += 8;
-          matched = true;
-        }
-        if (!matched && haystack.some((h) => h.includes(term))) {
-          score += 3;
-          matched = true;
-        }
-        if (!matched) return { tool, score: -1 };
-      }
-      return { tool, score };
-    })
-    .filter((entry) => entry.score > 0)
-    .sort((a, b) => b.score - a.score || b.tool.rank - a.tool.rank);
-
-  return scored.slice(0, limit).map((entry) => entry.tool);
-}
-
-/** Categories that actually have at least one shipped tool. */
-export function liveCategories(): ToolCategoryId[] {
-  return [...new Set(liveTools.map((tool) => tool.category))];
 }
