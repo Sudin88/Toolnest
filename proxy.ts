@@ -50,6 +50,10 @@ const ADS_FRAME = [
   "https://tpc.googlesyndication.com",
   "https://*.googlesyndication.com",
   "https://*.doubleclick.net",
+  // The traffic-quality script opens a frame back into its own host and one
+  // into Google, both from this document, so both belong in frame-src.
+  "https://*.adtrafficquality.google",
+  "https://www.google.com",
   "https://fundingchoicesmessages.google.com",
 ];
 
