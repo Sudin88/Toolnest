@@ -37,9 +37,8 @@ export default function ContactPage() {
             </>
           ) : (
             <p>
-              A monitored contact address has not been configured for this deployment yet. Until one
-              is, treat this page as a placeholder: whoever runs this site needs to set{" "}
-              <code>NEXT_PUBLIC_CONTACT_EMAIL</code> before pointing people here.
+              No contact address is published on this deployment. The notes below still describe
+              what makes a report useful, and they apply as soon as one is.
             </p>
           )}
 
