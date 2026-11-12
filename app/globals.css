@@ -667,6 +667,12 @@
     margin-top: 1rem;
   }
 
+  /* Guides group each heading and its copy into a <section> for anchor ids, so
+     the rhythm has to hold one level deeper as well. */
+  .prose-tool section > * + * {
+    margin-top: 1rem;
+  }
+
   .prose-tool h2 {
     font-size: 1.25rem;
     margin-top: 2.25rem;

@@ -122,6 +122,56 @@ export function toolJsonLd(tool: ToolDefinition) {
   };
 }
 
+/**
+ * A guide as an `Article`. `author` and `publisher` are the site rather than a
+ * named person: the guides are written for the site and attributing them to an
+ * invented byline would be a lie about who is accountable for them.
+ */
+export function articleJsonLd({
+  title,
+  description,
+  path,
+  updated,
+}: {
+  title: string;
+  description: string;
+  path: string;
+  /** ISO date. Emitted as both published and modified. */
+  updated: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: title,
+    description,
+    url: absoluteUrl(path),
+    mainEntityOfPage: absoluteUrl(path),
+    datePublished: updated,
+    dateModified: updated,
+    inLanguage: siteConfig.localeShort,
+    author: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url },
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      logo: { "@type": "ImageObject", url: absoluteUrl("/logo.png") },
+    },
+  };
+}
+
+/** Steps a guide presents as a sequence, so the sequence can surface in search. */
+export function howToJsonLd(name: string, steps: string[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name,
+    step: steps.map((text, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      text,
+    })),
+  };
+}
+
 export function itemListJsonLd(
   name: string,
   items: { name: string; path: string }[],

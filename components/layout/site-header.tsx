@@ -36,6 +36,12 @@ export function SiteHeader() {
             </Link>
           ))}
           <Link
+            href="/guides"
+            className="rounded-md px-3 py-2 text-[0.9375rem] font-medium text-muted no-underline transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-fg"
+          >
+            Guides
+          </Link>
+          <Link
             href="/tools"
             className="ml-1 inline-flex items-center rounded-md px-3 py-2 text-[0.9375rem] font-semibold text-accent-text no-underline transition-colors duration-150 ease-out hover:bg-accent/10"
           >

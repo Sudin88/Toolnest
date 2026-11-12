@@ -27,6 +27,7 @@ const daily = getCategory("daily");
 
 export const secondaryNav = [
   { label: "All tools", href: "/tools" },
+  { label: "Guides", href: "/guides" },
   { label: `${daily.navLabel} tools`, href: `/categories/${daily.slug}` },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
