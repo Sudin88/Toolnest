@@ -36,7 +36,7 @@ export async function generateMetadata({
   if (!tool || tool.status !== "live") return {};
 
   return pageMetadata({
-    title: `${tool.name}: Free Online Tool`,
+    title: tool.metaTitle ?? `${tool.name}: Free Online Tool`,
     description: tool.description,
     path: `/tools/${tool.slug}`,
   });
@@ -105,6 +105,23 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
             <div className="mt-14 flex flex-col gap-10">
               <p className="measure text-[0.9375rem] leading-relaxed text-muted">{tool.description}</p>
 
+              {tool.local ? (
+                <section aria-labelledby="privacy" className="prose-tool measure">
+                  <h2 id="privacy">Private by design</h2>
+                  <p>
+                    This tool runs entirely in your browser. Whatever you type, paste or drop in is
+                    handled by JavaScript on your own device and never sent to a server, so there is
+                    no upload step and nothing is stored once you close the tab.
+                  </p>
+                  <p>
+                    You do not have to take that on trust. Open your browser&apos;s developer tools,
+                    switch to the Network tab and use the tool: you will see requests for the page
+                    itself and none carrying your data. Load the page, then disconnect from the
+                    internet, and it still works.
+                  </p>
+                </section>
+              ) : null}
+
               {howTo.length > 0 ? (
                 <section aria-labelledby="how-to" className="prose-tool measure">
                   <h2 id="how-to">How to use the {tool.name}</h2>
@@ -165,6 +182,13 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
                     The tool
                   </a>
                 </li>
+                {tool.local ? (
+                  <li>
+                    <a href="#privacy" className="text-muted no-underline hover:text-fg">
+                      Private by design
+                    </a>
+                  </li>
+                ) : null}
                 {howTo.length > 0 ? (
                   <li>
                     <a href="#how-to" className="text-muted no-underline hover:text-fg">

@@ -29,6 +29,12 @@ export interface ToolDefinition {
   /** Meta description, 120–160 chars, unique per tool. */
   description: string;
   /**
+   * Search-facing `<title>` when the default `"{name}: Free Online Tool"` does
+   * not carry the query the tool should win. Falls back to that default, so only
+   * tools with a specific target phrase set it.
+   */
+  metaTitle?: string;
+  /**
    * The tool's file-type or object mark, from the icon library. It is rendered
    * in its category's colour, so a tool reads as part of its shelf.
    */
