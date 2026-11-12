@@ -1,7 +1,8 @@
 import { imageGuides } from "@/lib/guides/definitions/image";
 import { pdfGuides } from "@/lib/guides/definitions/pdf";
 import type { Guide, GuideTopic } from "@/lib/guides/types";
-import { liveTools } from "@/lib/tools/registry";
+import type { ToolCategoryId } from "@/lib/tools/types";
+import { liveTools, liveToolsInCategory } from "@/lib/tools/registry";
 
 /**
  * The guides registry, the single source of truth for the editorial layer.
@@ -49,6 +50,29 @@ export function getGuide(slug: string): Guide | undefined {
 
 export function guidesInTopic(topic: GuideTopic): Guide[] {
   return guides.filter((guide) => guide.topic === topic);
+}
+
+/** Every tool a guide hands the reader over to, from its declared references. */
+function guideToolSlugs(guide: Guide): string[] {
+  return [...guide.tools, ...guide.sections.map((section) => section.tool)].filter(
+    (slug): slug is string => Boolean(slug),
+  );
+}
+
+/**
+ * The guides that lead into a given tool. Derived from the same declared
+ * references the load-time check validates, so a guide cannot be listed against
+ * a tool it does not actually offer. A tool no guide writes about gets no
+ * block, rather than a padded one.
+ */
+export function guidesForTool(toolSlug: string): Guide[] {
+  return guides.filter((guide) => guideToolSlugs(guide).includes(toolSlug));
+}
+
+/** Guides that reference at least one live tool on this shelf. */
+export function guidesForCategory(category: ToolCategoryId): Guide[] {
+  const slugs = new Set(liveToolsInCategory(category).map((tool) => tool.slug));
+  return guides.filter((guide) => guideToolSlugs(guide).some((slug) => slugs.has(slug)));
 }
 
 /**

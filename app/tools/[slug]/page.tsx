@@ -10,6 +10,7 @@ import { Shortcuts } from "@/components/tools/interactive";
 import { ToolHost } from "@/components/tools/tool-host";
 import { ToolRow } from "@/components/tools/tool-row";
 import { FaqAccordion } from "@/components/ui/faq-accordion";
+import { guidesForTool } from "@/lib/guides/registry";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata, toolJsonLd } from "@/lib/seo";
 import { getCategory } from "@/lib/tools/categories";
 import { getTool, liveTools, relatedTools } from "@/lib/tools/registry";
@@ -59,6 +60,7 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
   const related = relatedTools(tool.slug, 4);
   const howTo = tool.howTo ?? [];
   const limits = tool.limits ?? [];
+  const toolGuides = guidesForTool(tool.slug);
 
   return (
     <>
@@ -169,6 +171,29 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
                 ))}
               </ul>
             </section>
+
+            {/* The guides that hand the reader over to this tool. Guides link
+                down to tools; this is the same link read the other way, which is
+                what keeps the pair a cluster rather than a one-way funnel. */}
+            {toolGuides.length > 0 ? (
+              <section aria-labelledby="tool-guides" className="mt-14 border-t border-line pt-10 lg:hidden">
+                <h2 id="tool-guides" className="text-2xl text-fg">
+                  Guides
+                </h2>
+                <ul className="mt-4 flex flex-col gap-3">
+                  {toolGuides.map((guide) => (
+                    <li key={guide.slug} className="border-b border-line pb-3 last:border-b-0">
+                      <Link
+                        href={`/guides/${guide.slug}`}
+                        className="text-[0.9375rem] font-medium text-fg no-underline hover:text-accent-text"
+                      >
+                        {guide.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
           </div>
 
           {/* Wide-screen rail. It stays put while the workspace scrolls, so the
@@ -244,6 +269,24 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
                 </Link>
               </p>
             </div>
+
+            {toolGuides.length > 0 ? (
+              <div className="panel mt-4 p-4">
+                <p className="eyebrow text-fg">Guides</p>
+                <ul className="mt-3 flex flex-col gap-2.5 text-sm leading-relaxed">
+                  {toolGuides.map((guide) => (
+                    <li key={guide.slug}>
+                      <Link
+                        href={`/guides/${guide.slug}`}
+                        className="text-muted no-underline hover:text-fg"
+                      >
+                        {guide.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
 
             <div className="panel mt-4 p-4">
               <p className="flex items-center gap-2 eyebrow text-fg">

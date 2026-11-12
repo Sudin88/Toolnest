@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { GuideCard } from "@/components/guides/guide-card";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { JsonLd } from "@/components/seo/json-ld";
 import { ToolIndexFilter } from "@/components/tools/tool-index-filter";
 import { IconTile } from "@/components/ui/icon-tile";
 import { breadcrumbJsonLd, itemListJsonLd, pageMetadata } from "@/lib/seo";
+import { guidesForCategory } from "@/lib/guides/registry";
 import { categories, categoryBySlug } from "@/lib/tools/categories";
 import { countByCategory, liveToolsInCategory } from "@/lib/tools/registry";
 import { indexGroups } from "@/lib/tools/index-view";
@@ -48,6 +50,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   const group = indexGroups().find((entry) => entry.slug === category.slug);
   const tools = liveToolsInCategory(category.id);
   const others = categories.filter((item) => item.id !== category.id);
+  const categoryGuides = guidesForCategory(category.id);
 
   return (
     <>
@@ -78,6 +81,21 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
             as working links when they are ready.
           </p>
         )}
+
+        {categoryGuides.length > 0 ? (
+          <section aria-labelledby="category-guides" className="pt-14">
+            <h2 id="category-guides" className="eyebrow">
+              Guides
+            </h2>
+            <ul className="mt-6 grid gap-x-10 gap-y-8 sm:grid-cols-2">
+              {categoryGuides.map((guide) => (
+                <li key={guide.slug}>
+                  <GuideCard guide={guide} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         <section aria-labelledby="other-categories" className="pt-14">
           <h2 id="other-categories" className="eyebrow">

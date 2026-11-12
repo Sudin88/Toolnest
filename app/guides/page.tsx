@@ -1,9 +1,8 @@
-import Link from "next/link";
-
+import { GuideCard } from "@/components/guides/guide-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbJsonLd, itemListJsonLd, pageMetadata } from "@/lib/seo";
-import { guideReadingMinutes, guides, guidesInTopic, guideTopics } from "@/lib/guides/registry";
+import { guides, guidesInTopic, guideTopics } from "@/lib/guides/registry";
 
 export const metadata = pageMetadata({
   title: "Guides",
@@ -36,18 +35,8 @@ export default function GuidesPage() {
               </h2>
               <ul className="mt-6 grid gap-x-10 gap-y-8 sm:grid-cols-2">
                 {group.items.map((guide) => (
-                  <li key={guide.slug} className="border-t border-line pt-6">
-                    <Link href={`/guides/${guide.slug}`} className="group block no-underline">
-                      <h3 className="text-lg font-semibold leading-snug tracking-[-0.01em] text-fg transition-colors duration-150 ease-out group-hover:text-accent-text">
-                        {guide.title}
-                      </h3>
-                      <p className="measure mt-2 text-[0.9375rem] leading-relaxed text-muted">
-                        {guide.description}
-                      </p>
-                      <p className="num mt-3 font-mono text-xs uppercase tracking-[0.1em] text-muted">
-                        {guideReadingMinutes(guide)} min read
-                      </p>
-                    </Link>
+                  <li key={guide.slug}>
+                    <GuideCard guide={guide} />
                   </li>
                 ))}
               </ul>

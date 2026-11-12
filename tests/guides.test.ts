@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { getGuide, guideReadingMinutes, guides, guidesInTopic, guideTopics } from "@/lib/guides/registry";
-import { liveTools } from "@/lib/tools/registry";
+import {
+  getGuide,
+  guideReadingMinutes,
+  guides,
+  guidesForCategory,
+  guidesForTool,
+  guidesInTopic,
+  guideTopics,
+} from "@/lib/guides/registry";
+import { liveTools, liveToolsInCategory } from "@/lib/tools/registry";
 
 /**
  * The guides are the editorial layer, and the failure that matters is a guide
@@ -95,5 +103,45 @@ describe("guides", () => {
     const first = guides[0];
     expect(getGuide(first.slug)).toBe(first);
     expect(getGuide("no-such-guide")).toBeUndefined();
+  });
+
+  /**
+   * The reverse links are what turn the guides and the tools into one cluster
+   * instead of a one-way funnel into the product, so the derivation is pinned:
+   * a tool is only listed against a guide that actually declares it.
+   */
+  describe("reverse links", () => {
+    const declaredTools = (guide: (typeof guides)[number]) =>
+      [...guide.tools, ...guide.sections.map((section) => section.tool)].filter(
+        (slug): slug is string => Boolean(slug),
+      );
+
+    it("lists a tool only against guides that declare it", () => {
+      const inbound = guidesForTool("merge-pdf");
+      expect(inbound.length).toBeGreaterThan(0);
+
+      for (const guide of inbound) {
+        expect(declaredTools(guide)).toContain("merge-pdf");
+      }
+    });
+
+    it("returns nothing rather than padding a tool no guide writes about", () => {
+      const orphan = liveTools.find((tool) => guidesForTool(tool.slug).length === 0);
+      expect(orphan, "expected at least one live tool with no guide").toBeDefined();
+      expect(guidesForTool(orphan!.slug)).toEqual([]);
+    });
+
+    it("gives a category only the guides that reach its own tools", () => {
+      const pdf = guidesForCategory("pdf");
+      expect(pdf.length).toBeGreaterThan(0);
+
+      const pdfSlugs = new Set(liveToolsInCategory("pdf").map((tool) => tool.slug));
+      for (const guide of pdf) {
+        expect(declaredTools(guide).some((slug) => pdfSlugs.has(slug)), guide.slug).toBe(true);
+      }
+
+      // Nothing is written about the calculator shelf, so its section must not render.
+      expect(guidesForCategory("calculators")).toEqual([]);
+    });
   });
 });
