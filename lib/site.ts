@@ -13,6 +13,8 @@ const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
 const RAW_ADSENSE = process.env.NEXT_PUBLIC_ADSENSE_CLIENT?.trim() ?? "";
 const RAW_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() ?? "";
+/** Search Console's verification token, emitted only once one is configured. */
+const RAW_VERIFICATION = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim() ?? "";
 
 export const siteConfig = {
   name: "AllTools",
@@ -30,9 +32,25 @@ export const siteConfig = {
   adsenseClient: ADSENSE_PATTERN.test(RAW_ADSENSE) ? RAW_ADSENSE : "",
   /** Shown on the contact page. Empty unless a plausible address is set. */
   contactEmail: EMAIL_PATTERN.test(RAW_EMAIL) ? RAW_EMAIL : "",
+  /** Google Search Console ownership token, or "" when verification is not set up. */
+  googleSiteVerification: RAW_VERIFICATION,
 } as const;
 
 export const adsEnabled = siteConfig.adsenseClient !== "";
+
+/**
+ * The one social card, served from `public/og.png`.
+ *
+ * It is declared here rather than in `lib/seo.ts` because the root layout needs
+ * it as well, and `lib/seo.ts` reaches into the tool registry — which would drag
+ * the category icons onto every route for a value that is four numbers.
+ */
+export const socialImage = {
+  url: "/og.png",
+  width: 1200,
+  height: 630,
+  alt: `${siteConfig.name}: ${siteConfig.tagline}`,
+} as const;
 
 /** The AdSense loader, with the client id passed as a properly-encoded query. */
 export function adsenseLoaderUrl(): string | null {

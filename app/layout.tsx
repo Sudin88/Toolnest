@@ -4,7 +4,7 @@ import Script from "next/script";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { adsEnabled, adsenseLoaderUrl, siteConfig } from "@/lib/site";
+import { adsEnabled, adsenseLoaderUrl, siteConfig, socialImage } from "@/lib/site";
 
 import "./globals.css";
 
@@ -49,11 +49,13 @@ export const metadata: Metadata = {
     url: siteConfig.url,
     title: `${siteConfig.name}: ${siteConfig.tagline}`,
     description: siteConfig.description,
+    images: [socialImage],
   },
   twitter: {
     card: "summary_large_image",
     title: `${siteConfig.name}: ${siteConfig.tagline}`,
     description: siteConfig.description,
+    images: [socialImage.url],
   },
   robots: {
     index: true,
@@ -63,6 +65,11 @@ export const metadata: Metadata = {
   // Proves domain ownership to AdSense without a separate verification file,
   // and only when a real publisher id is configured.
   ...(adsEnabled ? { other: { "google-adsense-account": siteConfig.adsenseClient } } : {}),
+  // Search Console's URL-prefix verification, emitted only once the token from
+  // the property's "HTML tag" method is configured.
+  ...(siteConfig.googleSiteVerification
+    ? { verification: { google: siteConfig.googleSiteVerification } }
+    : {}),
   formatDetection: { telephone: false, address: false, email: false },
 };
 

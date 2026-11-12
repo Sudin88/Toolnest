@@ -104,7 +104,7 @@ provision — the incremental cache is the Worker's own static asset store.
 
 ### 1. Configure environment
 
-All three variables are **build-time**. Next.js inlines `NEXT_PUBLIC_*` during
+All four variables are **build-time**. Next.js inlines `NEXT_PUBLIC_*` during
 the build, so they must be set in the environment that runs `npm run deploy`,
 not just at runtime.
 
@@ -117,6 +117,7 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_SITE_URL` | Public origin. Drives canonical URLs, the sitemap and social previews. Falls back to an RFC 2606 reserved domain, so an unconfigured deploy can never emit someone else's URL. |
 | `NEXT_PUBLIC_ADSENSE_CLIENT` | AdSense publisher id (`ca-pub-…`). Ads are off everywhere until this is a real id. Once set, the loader and the ownership meta tag are emitted and `/ads.txt` starts serving. |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | Address shown on the contact page. The mailto link is hidden until it is set. |
+| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Search Console ownership token from the property's "HTML tag" method. The `google-site-verification` meta tag is emitted only once this is set; leave it empty when verifying by DNS instead. |
 
 ### 2. Preview the real worker
 
@@ -170,6 +171,30 @@ id is configured.
 
 Until step 2 the deployment makes no third-party request at all: no loader, no
 meta tag, and `/ads.txt` answers `404`.
+
+### 6. Search visibility (Search Console)
+
+Everything a crawler needs is generated from the registry, so it cannot drift
+from the tools that actually exist: `/sitemap.xml`, `/robots.txt`, a canonical
+and Open Graph/Twitter block on every page (`lib/seo.ts`), and JSON-LD —
+`Organization` and `WebSite` on the home page, `BreadcrumbList` and `ItemList`
+on the index and category pages, `FAQPage` where there are questions, and
+`SoftwareApplication` on each tool.
+
+The share card is `public/og.png` (1200×630) and the square logo referenced by
+the `Organization` schema is `public/logo.png` (512×512). Both are committed
+artefacts generated from the site's own tokens and mark, so they match the brand;
+regenerate rather than hand-edit if the brand changes.
+
+To verify the property in Search Console, pick one method:
+
+- **HTML tag** (URL-prefix property). Copy the token from the tag Google shows,
+  set `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`, and redeploy. The
+  `google-site-verification` meta tag appears on every page.
+- **DNS TXT** (Domain property, recommended by Google). Add the record in
+  Cloudflare; no build or deploy is needed.
+
+Then submit `sitemap.xml` once, and it will be re-read automatically.
 
 ### Caching and cost
 

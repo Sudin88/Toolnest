@@ -7,7 +7,7 @@ import { ToolIndexFilter } from "@/components/tools/tool-index-filter";
 import { FaqAccordion } from "@/components/ui/faq-accordion";
 import { Section, SectionHeading } from "@/components/ui/section";
 import { assertContent } from "@/lib/content-check";
-import { faqJsonLd, websiteJsonLd } from "@/lib/seo";
+import { faqJsonLd, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { indexGroups } from "@/lib/tools/index-view";
 import { liveTools } from "@/lib/tools/registry";
 import type { Faq } from "@/lib/tools/types";
@@ -111,6 +111,7 @@ export default function HomePage() {
         </div>
       </Section>
 
+      <JsonLd data={organizationJsonLd()} />
       <JsonLd data={websiteJsonLd()} />
       <JsonLd data={faqJsonLd(homeFaqs)} />
     </>

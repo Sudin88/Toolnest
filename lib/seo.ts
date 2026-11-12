@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { absoluteUrl, siteConfig } from "@/lib/site";
+import { absoluteUrl, siteConfig, socialImage } from "@/lib/site";
 import { getCategory } from "@/lib/tools/categories";
 import type { Faq, ToolDefinition } from "@/lib/tools/types";
 
@@ -36,12 +36,30 @@ export function pageMetadata({
       url: absoluteUrl(path),
       title: socialTitle,
       description,
+      images: [socialImage],
     },
     twitter: {
       card: "summary_large_image",
       title: socialTitle,
       description,
+      images: [socialImage.url],
     },
+  };
+}
+
+/**
+ * The brand as an entity, so a search engine can attach the name to the site
+ * instead of inferring it page by page. `logo` is the square app icon rendered
+ * to PNG: structured data wants a raster logo, and the favicon is an SVG.
+ */
+export function organizationJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: siteConfig.name,
+    url: siteConfig.url,
+    description: siteConfig.description,
+    logo: absoluteUrl("/logo.png"),
   };
 }
 
