@@ -15,13 +15,19 @@ import { adsEnabled } from "@/lib/site";
  *   so an unconfigured deploy ships a tighter policy than one that shows ads.
  *   They are named individually — never `*.google.com`, which would also allow
  *   every user-content subdomain.
- * - Fonts are self-hosted, scripts are same-origin, and there is no server
- *   endpoint, so `connect-src` stays `'self'`.
+ * - Fonts are self-hosted and there is no server endpoint, so `connect-src` stays
+ *   `'self'` apart from the two third parties below.
+ * - Cloudflare injects its own Web Analytics beacon into the HTML at the edge,
+ *   so it is not a script the app can choose to include or leave out. It is
+ *   cookieless and aggregate, which is why allowing it does not change what the
+ *   site can honestly say about how it handles files.
  *
  * The other security headers (nosniff, frame options, referrer policy,
  * permissions policy, HSTS) apply to static assets as well, so they are emitted
  * from `next.config.ts` where they cover every route.
  */
+const ZONE_SCRIPT = ["https://static.cloudflareinsights.com"];
+const ZONE_CONNECT = ["https://cloudflareinsights.com"];
 const ADS_SCRIPT = [
   "https://pagead2.googlesyndication.com",
   "https://*.googlesyndication.com",
@@ -61,9 +67,15 @@ const ADS_FRAME = [
 
 function contentSecurityPolicy(): string {
   const dev = process.env.NODE_ENV !== "production";
-  const scriptSrc = ["'self'", "'unsafe-inline'", ...(dev ? ["'unsafe-eval'"] : []), ...(adsEnabled ? ADS_SCRIPT : [])];
+  const scriptSrc = [
+    "'self'",
+    "'unsafe-inline'",
+    ...(dev ? ["'unsafe-eval'"] : []),
+    ...ZONE_SCRIPT,
+    ...(adsEnabled ? ADS_SCRIPT : []),
+  ];
   const imgSrc = ["'self'", "data:", "blob:", ...(adsEnabled ? ADS_IMG : [])];
-  const connectSrc = ["'self'", ...(adsEnabled ? ADS_CONNECT : [])];
+  const connectSrc = ["'self'", ...ZONE_CONNECT, ...(adsEnabled ? ADS_CONNECT : [])];
 
   return [
     "default-src 'self'",
