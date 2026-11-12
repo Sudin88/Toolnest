@@ -8,6 +8,17 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  "routes": [
+    {
+      // The public hostname. `alltools.indevs.in` is its own zone in this
+      // account, so Cloudflare creates the proxied DNS record and the edge
+      // certificate for it when the worker is deployed — no record to add by
+      // hand. Declaring a route leaves `workers_dev` unset, which disables the
+      // `*.workers.dev` URL, so this domain is the worker's only address.
+      "pattern": "alltools.indevs.in",
+      "custom_domain": true
+    }
+  ],
   "services": [
     {
       // The worker calls itself to read the incremental cache and to run the
