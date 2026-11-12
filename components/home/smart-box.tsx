@@ -109,6 +109,13 @@ export function SmartBox({ entries }: { entries: SearchEntry[] }) {
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
+    // A blank field has nothing to rank, and `rankEntries` answers an empty
+    // query with the first tools in the index — so submitting it would open
+    // whichever tool happens to be first. Send the visitor to the index instead.
+    if (!value.trim() && !dropped) {
+      router.push(`/tools`);
+      return;
+    }
     const target = suggestions[active] ?? suggestions[0];
     if (target) choose(target);
     else router.push(`/tools`);

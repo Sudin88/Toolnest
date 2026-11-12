@@ -17,9 +17,14 @@ import { formatBytes } from "@/lib/utils";
 
 type Mode = "range" | "every" | "single";
 
-/** One produced file, named by the pages it holds. */
+/**
+ * One produced file, named by the pages it holds.
+ *
+ * Every page is listed, not just the first and last: a group of `1,3,5` named
+ * "1-5" would claim a contiguous run the file does not contain.
+ */
 function summarise(prefix: string, pages: number[]): string {
-  const label = pages.length === 1 ? `page-${pages[0]}` : `pages-${pages[0]}-${pages[pages.length - 1]}`;
+  const label = pages.length === 1 ? `page-${pages[0]}` : `pages-${pages.join("-")}`;
   return `${prefix}-${label}.pdf`;
 }
 

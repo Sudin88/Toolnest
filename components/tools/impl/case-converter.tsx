@@ -5,15 +5,20 @@ import { useMemo } from "react";
 import { CopyButton, TextArea } from "@/components/tools/interactive";
 import { Empty, LimitNote, Note, ResultFooter, TryExample } from "@/components/tools/parts";
 import { CASE_IDS, CASE_LABELS, MAX_TEXT_LENGTH, applyCase, countCharacters, type CaseId } from "@/lib/text";
-import { useToolDraft } from "@/lib/tool-draft";
+import { draftOneOf, useToolDraft } from "@/lib/tool-draft";
 import { useToolInput } from "@/lib/tool-input";
 import { cn, formatNumber } from "@/lib/utils";
 
 const SAMPLE = "the QUICK brown fox JUMPS over the lazy dog";
 
+// A stale or hand-edited draft can hold a case id this build no longer defines,
+// which would render `undefined` in the result footer and in the textarea's
+// label. Decoding falls back to the initial value instead.
+const decodeCase = draftOneOf(CASE_IDS);
+
 export default function CaseConverter() {
   const [text, setText] = useToolInput<string>("case-converter", "text", "", { handover: true });
-  const [active, setActive] = useToolDraft<CaseId>("case-converter", "active", "upper");
+  const [active, setActive] = useToolDraft<CaseId>("case-converter", "active", "upper", { decode: decodeCase });
 
   // Past the cap the conversion is skipped rather than run on every keystroke —
   // the case walk over a multi-megabyte paste is what stalls the tab.

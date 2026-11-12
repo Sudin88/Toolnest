@@ -3,8 +3,9 @@
 import { useDeferredValue, useMemo, useState } from "react";
 
 import { Check, TextArea } from "@/components/tools/interactive";
-import { Empty, Stat, StatGrid } from "@/components/tools/parts";
-import { diffText, type LineDiff } from "@/lib/diff";
+import { Empty, LimitNote, Stat, StatGrid } from "@/components/tools/parts";
+import { diffText, type DiffSummary, type LineDiff } from "@/lib/diff";
+import { MAX_TEXT_LENGTH } from "@/lib/text";
 import { cn, formatNumber } from "@/lib/utils";
 
 const SAMPLE_LEFT = `The workshop opens at nine.
@@ -15,11 +16,19 @@ const SAMPLE_RIGHT = `The workshop opens at half past nine.
 Bring your own tools, and a notebook.
 Tea and coffee are provided.`;
 
+/** Shown while the inputs are past the cap, when no comparison runs at all. */
+const EMPTY_DIFF: DiffSummary = { lines: [], added: 0, removed: 0, unchanged: 0 };
+
 export default function TextCompare() {
   const [left, setLeft] = useState("");
   const [right, setRight] = useState("");
   const [ignoreCase, setIgnoreCase] = useState(false);
   const [wordLevel, setWordLevel] = useState(true);
+
+  // Past the cap the whole comparison is skipped, not just the LCS table: the
+  // line split, the `normalize` copies and the word tokenizer all run over the
+  // raw input first. The text stays in its boxes; only the diff stops.
+  const tooLong = left.length > MAX_TEXT_LENGTH || right.length > MAX_TEXT_LENGTH;
 
   // The comparison itself is deferred, so the two textareas re-render on the
   // keystroke and the diff catches up a frame later. Typing stays responsive on
@@ -27,8 +36,8 @@ export default function TextCompare() {
   const deferredLeft = useDeferredValue(left);
   const deferredRight = useDeferredValue(right);
   const diff = useMemo(
-    () => diffText(deferredLeft, deferredRight, { ignoreCase, wordLevel }),
-    [deferredLeft, deferredRight, ignoreCase, wordLevel],
+    () => (tooLong ? EMPTY_DIFF : diffText(deferredLeft, deferredRight, { ignoreCase, wordLevel })),
+    [tooLong, deferredLeft, deferredRight, ignoreCase, wordLevel],
   );
 
   const hasInput = left.length > 0 || right.length > 0;
@@ -59,15 +68,19 @@ export default function TextCompare() {
         <Check checked={ignoreCase} onChange={setIgnoreCase} label="Ignore letter case" />
       </div>
 
-      <StatGrid className="lg:grid-cols-3">
-        <Stat label="Added lines" value={formatNumber(diff.added)} />
-        <Stat label="Removed lines" value={formatNumber(diff.removed)} />
-        <Stat label="Unchanged lines" value={formatNumber(diff.unchanged)} />
-      </StatGrid>
+      {tooLong ? null : (
+        <StatGrid className="lg:grid-cols-3">
+          <Stat label="Added lines" value={formatNumber(diff.added)} />
+          <Stat label="Removed lines" value={formatNumber(diff.removed)} />
+          <Stat label="Unchanged lines" value={formatNumber(diff.unchanged)} />
+        </StatGrid>
+      )}
 
       <div>
         <h3 className="mb-2 font-display text-[0.9375rem] font-bold text-fg">Differences</h3>
-        {!hasInput ? (
+        {tooLong ? (
+          <LimitNote length={Math.max(left.length, right.length)} limit={MAX_TEXT_LENGTH} />
+        ) : !hasInput ? (
           <Empty
             action={
               <button

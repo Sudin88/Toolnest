@@ -3,9 +3,10 @@
 import { useDeferredValue, useMemo, useState } from "react";
 
 import { Select, TextArea } from "@/components/tools/interactive";
-import { Note, Stat, StatGrid } from "@/components/tools/parts";
+import { LimitNote, Note, Stat, StatGrid } from "@/components/tools/parts";
 import {
   DEFER_TEXT_LENGTH,
+  MAX_TEXT_LENGTH,
   countCharacters,
   countWords,
   utf16Length,
@@ -32,8 +33,13 @@ export default function CharacterCounter() {
   // The byte count allocates a `Uint8Array` the size of the text on every pass,
   // so above the defer threshold the metrics run on a value that lags a render
   // rather than on every keystroke. Below it they stay live.
+  //
+  // Past the cap the metrics are not computed at all: an empty source keeps that
+  // allocation off a multi-megabyte paste entirely. The text stays in its box;
+  // only the counting stops.
+  const tooLong = text.length > MAX_TEXT_LENGTH;
   const deferred = useDeferredValue(text);
-  const source = text.length > DEFER_TEXT_LENGTH ? deferred : text;
+  const source = tooLong ? "" : text.length > DEFER_TEXT_LENGTH ? deferred : text;
 
   const stats = useMemo(
     () => ({
@@ -61,54 +67,60 @@ export default function CharacterCounter() {
         placeholder="Paste the copy you need to measure…"
       />
 
-      <StatGrid>
-        <Stat label="With spaces" value={formatNumber(stats.withSpaces)} />
-        <Stat label="Without spaces" value={formatNumber(stats.withoutSpaces)} />
-        <Stat label="Words" value={formatNumber(stats.words)} />
-        <Stat
-          label="UTF-8 bytes"
-          value={formatNumber(stats.bytes)}
-          hint={`${formatNumber(stats.utf16)} UTF-16 code units`}
-        />
-      </StatGrid>
+      {tooLong ? (
+        <LimitNote length={text.length} limit={MAX_TEXT_LENGTH} />
+      ) : (
+        <>
+          <StatGrid>
+            <Stat label="With spaces" value={formatNumber(stats.withSpaces)} />
+            <Stat label="Without spaces" value={formatNumber(stats.withoutSpaces)} />
+            <Stat label="Words" value={formatNumber(stats.words)} />
+            <Stat
+              label="UTF-8 bytes"
+              value={formatNumber(stats.bytes)}
+              hint={`${formatNumber(stats.utf16)} UTF-16 code units`}
+            />
+          </StatGrid>
 
-      <div className="flex flex-col gap-3">
-        <Select
-          label="Check against a limit"
-          value={limitId}
-          onChange={setLimitId}
-          options={LIMITS.map((item) => ({ value: item.value, label: item.label }))}
-        />
+          <div className="flex flex-col gap-3">
+            <Select
+              label="Check against a limit"
+              value={limitId}
+              onChange={setLimitId}
+              options={LIMITS.map((item) => ({ value: item.value, label: item.label }))}
+            />
 
-        {limit.max > 0 ? (
-          <>
-            <div
-              className="h-2 w-full overflow-hidden rounded-full bg-surface-2"
-              role="img"
-              aria-label={`${stats.withSpaces} of ${limit.max} characters used`}
-            >
-              <div
-                className={cn(
-                  "h-full rounded-full transition-colors duration-150 ease-out",
-                  over ? "bg-highlight" : atWarn ? "bg-highlight/70" : "bg-accent",
-                )}
-                style={{ width: `${usedPct}%` }}
-              />
-            </div>
-            <p
-              className={cn("text-sm", over ? "text-highlight-strong" : "text-muted")}
-              role="status"
-            >
-              <span className="num font-semibold text-fg">{formatNumber(stats.withSpaces)}</span> of{" "}
-              <span className="num">{formatNumber(limit.max)}</span> characters —{" "}
-              {over
-                ? `${formatNumber(stats.withSpaces - limit.max)} over the limit`
-                : `${formatNumber(limit.max - stats.withSpaces)} to spare`}
-              .
-            </p>
-          </>
-        ) : null}
-      </div>
+            {limit.max > 0 ? (
+              <>
+                <div
+                  className="h-2 w-full overflow-hidden rounded-full bg-surface-2"
+                  role="img"
+                  aria-label={`${stats.withSpaces} of ${limit.max} characters used`}
+                >
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-colors duration-150 ease-out",
+                      over ? "bg-highlight" : atWarn ? "bg-highlight/70" : "bg-accent",
+                    )}
+                    style={{ width: `${usedPct}%` }}
+                  />
+                </div>
+                <p
+                  className={cn("text-sm", over ? "text-highlight-strong" : "text-muted")}
+                  role="status"
+                >
+                  <span className="num font-semibold text-fg">{formatNumber(stats.withSpaces)}</span> of{" "}
+                  <span className="num">{formatNumber(limit.max)}</span> characters —{" "}
+                  {over
+                    ? `${formatNumber(stats.withSpaces - limit.max)} over the limit`
+                    : `${formatNumber(limit.max - stats.withSpaces)} to spare`}
+                  .
+                </p>
+              </>
+            ) : null}
+          </div>
+        </>
+      )}
 
       <Note>
         Characters with and without spaces differ by the number of spaces, and that count is
