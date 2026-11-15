@@ -12,7 +12,7 @@ import {
 import { FileDrop, NumberInput, RangeInput, Select } from "@/components/tools/interactive";
 import { Empty, Note } from "@/components/tools/parts";
 import { downloadBlob } from "@/lib/download";
-import { baseName, canvasToBlob, drawToCanvas, formatLabel, savingsRatio } from "@/lib/image";
+import { baseName, canvasToBlob, drawToCanvas, extensionFor, formatLabel, savingsRatio } from "@/lib/image";
 
 const FORMATS = [
   { value: "auto", label: "Same as the original" },
@@ -36,15 +36,23 @@ export default function CompressImage() {
     [image, format, quality, maxEdge],
   );
 
+  // A format the browser cannot write is not offered. Safari's canvas has no
+  // WebP encoder and quietly substitutes a PNG, so an offered WebP could only
+  // ever produce a file whose extension lies about its contents.
+  const formats =
+    image?.encoders["image/webp"] === false
+      ? FORMATS.filter((option) => option.value !== "image/webp")
+      : FORMATS;
+
+  // Auto keeps an original the browser can re-encode. A source with no encoder
+  // here, including WebP on Safari, becomes a JPEG.
   const targetType =
     format !== "auto"
       ? format
-      : ["image/jpeg", "image/png", "image/webp"].includes(image?.type ?? "")
-        ? (image?.type as string)
+      : image?.type && image.encoders[image.type]
+        ? image.type
         : "image/jpeg";
   const lossy = targetType !== "image/png";
-  // Auto keeps an original the browser can re-encode. Anything else (GIF, BMP,
-  // AVIF, SVG) has no encoder here, so it silently becomes a JPEG.
   const autoToJpeg = format === "auto" && targetType === "image/jpeg" && image?.type !== "image/jpeg";
 
   const { result: output, working, run, clear } = useImageResult(
@@ -62,14 +70,17 @@ export default function CompressImage() {
         targetType === "image/jpeg" ? "#ffffff" : undefined,
       );
       const blob = await canvasToBlob(canvas, targetType, lossy ? level / 100 : undefined);
-      return { blob, meta: { width, height, type: targetType } };
+      // The blob's own type, not the one that was asked for: a browser that
+      // cannot write the requested format hands back a PNG, and the label, the
+      // stats and the filename all have to say PNG.
+      return { blob, meta: { width, height, type: blob.type } };
     },
     setError,
     "The image could not be compressed.",
   );
 
   const saving = output && image ? Math.round((1 - savingsRatio(image.size, output.blob.size)) * 100) : 0;
-  const filename = image ? `${baseName(image.name)}-compressed.${targetType.split("/")[1]}` : "image";
+  const filename = image ? `${baseName(image.name)}-compressed.${extensionFor(output?.blob.type ?? targetType)}` : "image";
 
   return (
     <div className="flex flex-col gap-6">
@@ -146,7 +157,7 @@ export default function CompressImage() {
           </div>
 
           <div className="grid gap-5 sm:grid-cols-3">
-            <Select label="Output format" value={format} onChange={setFormat} options={FORMATS} />
+            <Select label="Output format" value={format} onChange={setFormat} options={formats} />
             <RangeInput
               label="Quality"
               value={quality}
@@ -177,8 +188,12 @@ export default function CompressImage() {
           {autoToJpeg ? (
             <Note>
               The browser cannot re-encode {formatLabel(image.type)}, so Auto saves it as JPEG.
-              Choose PNG or WebP if you need transparency.
+              Choose PNG if you need transparency.
             </Note>
+          ) : null}
+
+          {image.encoders["image/webp"] === false && !autoToJpeg ? (
+            <Note>This browser cannot create WebP files, so that output is not offered.</Note>
           ) : null}
 
           <div className="flex flex-wrap items-center gap-3">

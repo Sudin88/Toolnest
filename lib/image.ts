@@ -16,6 +16,12 @@ export interface LoadedImage {
   name: string;
   /** Original size in bytes. */
   size: number;
+  /**
+   * The formats this browser can actually *write*, keyed by MIME type. A canvas
+   * asked for a format it cannot encode does not fail, it quietly returns a PNG,
+   * so every label and filename is checked against this before it is shown.
+   */
+  encoders: Record<string, boolean>;
 }
 
 /** A file this large is refused before anything is decoded. */
@@ -125,6 +131,41 @@ export function declaredDimensions(bytes: Uint8Array): { width: number; height: 
   return null;
 }
 
+/**
+ * Whether this browser can *write* a format, probed once per session.
+ *
+ * A canvas asked for a type it cannot encode does not fail: the spec says it
+ * quietly produces a PNG instead. Safari has never had a canvas WebP encoder, so
+ * asking for "image/webp" there returns a PNG, and naming that file ".webp" ships
+ * a mislabelled download with nothing to warn anyone. The returned type is the
+ * only signal there is, so the returned type is what gets checked.
+ */
+const encodeProbes = new Map<string, Promise<boolean>>();
+
+export function canEncodeImageType(type: string): Promise<boolean> {
+  const started = encodeProbes.get(type);
+  if (started) return started;
+
+  const probe = new Promise<boolean>((resolve) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 4;
+    canvas.height = 4;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      resolve(false);
+      return;
+    }
+    context.fillRect(0, 0, 4, 4);
+    canvas.toBlob((blob) => resolve(blob?.type === type), type);
+  });
+
+  encodeProbes.set(type, probe);
+  return probe;
+}
+
+/** The output formats the image tools offer, and so the ones worth probing. */
+const ENCODER_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
 export async function loadImageFile(file: File): Promise<LoadedImage> {
   if (file.size > MAX_IMAGE_BYTES) {
     throw new Error(
@@ -170,6 +211,11 @@ export async function loadImageFile(file: File): Promise<LoadedImage> {
     type: sniffed,
     name: file.name,
     size: file.size,
+    encoders: Object.fromEntries(
+      await Promise.all(
+        ENCODER_TYPES.map(async (type) => [type, await canEncodeImageType(type)] as const),
+      ),
+    ),
   };
 }
 
@@ -233,6 +279,24 @@ export const FORMAT_LABELS: Record<string, string> = {
 
 export function formatLabel(type: string) {
   return FORMAT_LABELS[type] ?? (type.split("/")[1]?.toUpperCase() || "image");
+}
+
+const EXTENSIONS: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/bmp": "bmp",
+  "image/avif": "avif",
+};
+
+/**
+ * The extension for a MIME type, e.g. "image/jpeg" -> "jpg". Built from the type
+ * a blob actually reports, never the one that was requested, so a file is always
+ * named for what it is.
+ */
+export function extensionFor(type: string) {
+  return EXTENSIONS[type] ?? (type.split("/")[1] || "img");
 }
 
 /** The ratio between the re-encoded size and the original, e.g. 0.42 for -58%. */

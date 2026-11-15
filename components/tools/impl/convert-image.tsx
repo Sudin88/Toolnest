@@ -12,7 +12,7 @@ import {
 import { FileDrop, RangeInput, Select } from "@/components/tools/interactive";
 import { Empty, Note } from "@/components/tools/parts";
 import { downloadBlob } from "@/lib/download";
-import { baseName, canvasToBlob, drawToCanvas, formatLabel, mayHaveAlpha } from "@/lib/image";
+import { baseName, canvasToBlob, drawToCanvas, extensionFor, formatLabel, mayHaveAlpha } from "@/lib/image";
 import { formatBytes } from "@/lib/utils";
 
 const TARGETS = [
@@ -21,22 +21,23 @@ const TARGETS = [
   { value: "image/webp", label: "WebP: smallest for the web" },
 ];
 
-const EXT: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-};
-
 export default function ConvertImage() {
   const { image, url, error, busy, load, setError } = useImageFile();
   const [target, setTarget] = useState("image/jpeg");
   const [quality, setQuality] = useState(90);
   const [matte, setMatte] = useState("#ffffff");
 
+  // A format the browser cannot write is not offered. Safari's canvas has no
+  // WebP encoder and quietly substitutes a PNG, so an offered WebP would only
+  // ever produce a file whose extension lies about its contents.
+  const targets = image
+    ? TARGETS.filter((option) => image.encoders[option.value] !== false)
+    : TARGETS;
+
   // A new source *or* a changed setting invalidates any previous result. The
   // memoised snapshot changes identity whenever an option does, and the result
-  // hook drops the old preview with it, so the filename (`EXT[target]`) and the
-  // stats can never describe a blob built from older options.
+  // hook drops the old preview with it, so the filename and the stats can never
+  // describe a blob built from older options.
   const settings = useMemo(
     () => ({ image, target, quality, matte }),
     [image, target, quality, matte],
@@ -52,7 +53,10 @@ export default function ConvertImage() {
         type === "image/jpeg" ? fill : undefined,
       );
       const blob = await canvasToBlob(canvas, type, type !== "image/png" ? level / 100 : undefined);
-      return { blob, meta: { type } };
+      // The blob's own type, not the one that was asked for: a browser that
+      // cannot write the requested format hands back a PNG, and the label, the
+      // stats and the filename all have to say PNG.
+      return { blob, meta: { type: blob.type } };
     },
     setError,
     "The image could not be converted.",
@@ -60,7 +64,7 @@ export default function ConvertImage() {
 
   const lossy = target !== "image/png";
   const transparencyAtRisk = target === "image/jpeg" && mayHaveAlpha(image?.type ?? "");
-  const filename = image ? `${baseName(image.name)}.${EXT[target]}` : "image";
+  const filename = image ? `${baseName(image.name)}.${extensionFor(output?.blob.type ?? target)}` : "image";
 
   return (
     <div className="flex flex-col gap-6">
@@ -129,7 +133,7 @@ export default function ConvertImage() {
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <Select label="Convert to" value={target} onChange={setTarget} options={TARGETS} />
+            <Select label="Convert to" value={target} onChange={setTarget} options={targets} />
             <RangeInput
               label="Quality"
               value={quality}
@@ -162,6 +166,13 @@ export default function ConvertImage() {
             </Note>
           ) : null}
 
+          {image && image.encoders["image/webp"] === false ? (
+            <Note>
+              This browser cannot create WebP files, so that choice is not offered. Every other
+              format here is written as its name says.
+            </Note>
+          ) : null}
+
           {!lossy ? (
             <Note>
               PNG is lossless, so the quality slider does nothing and the file will usually be larger
@@ -176,7 +187,7 @@ export default function ConvertImage() {
             </button>
             {output ? (
               <button type="button" className="btn btn-secondary" onClick={() => downloadBlob(output.blob, filename)}>
-                Download {EXT[target].toUpperCase()}
+                Download {formatLabel(output.type).toUpperCase()}
               </button>
             ) : null}
           </div>

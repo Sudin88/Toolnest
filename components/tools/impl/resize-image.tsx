@@ -11,7 +11,7 @@ import {
 import { Check, FileDrop, NumberInput, RangeInput, Segmented, Select } from "@/components/tools/interactive";
 import { Empty, Note, Stat, StatGrid } from "@/components/tools/parts";
 import { downloadBlob } from "@/lib/download";
-import { baseName, canvasToBlob, drawToCanvas } from "@/lib/image";
+import { baseName, canvasToBlob, drawToCanvas, extensionFor } from "@/lib/image";
 import { formatBytes, formatNumber } from "@/lib/utils";
 
 type Mode = "pixels" | "percent";
@@ -20,8 +20,15 @@ type Grade = "low" | "medium" | "high";
 const MAX_SIDE = 16_384;
 const MAX_AREA = 268_000_000;
 
-const encodable = (type: string) =>
-  ["image/jpeg", "image/png", "image/webp"].includes(type) ? type : "image/png";
+const WRITABLE = ["image/jpeg", "image/png", "image/webp"];
+
+/**
+ * Resizing keeps the source format wherever the browser can write it. Where it
+ * cannot, WebP on Safari being the case that matters, the result is a lossless
+ * PNG rather than a file named for a format it does not contain.
+ */
+const encodable = (type: string, encoders: Record<string, boolean>) =>
+  WRITABLE.includes(type) && encoders[type] ? type : "image/png";
 
 export default function ResizeImage() {
   const { image, error, busy, load, setError } = useImageFile();
@@ -88,7 +95,7 @@ export default function ResizeImage() {
     async () => {
       if (!image || !target) throw new Error("The image could not be resized.");
       const canvas = drawToCanvas(image.bitmap, target.width, target.height, undefined, grade);
-      const type = encodable(image.type);
+      const type = encodable(image.type, image.encoders);
       const blob = await canvasToBlob(canvas, type, type === "image/png" ? undefined : 0.92);
       return { blob, meta: { width: target.width, height: target.height } };
     },
@@ -97,7 +104,7 @@ export default function ResizeImage() {
   );
 
   const filename = image
-    ? `${baseName(image.name)}-${target?.width ?? 0}x${target?.height ?? 0}.${encodable(image.type).split("/")[1]}`
+    ? `${baseName(image.name)}-${target?.width ?? 0}x${target?.height ?? 0}.${extensionFor(output?.blob.type ?? encodable(image.type, image.encoders))}`
     : "image";
 
   return (
@@ -222,6 +229,10 @@ export default function ResizeImage() {
           ) : (
             <Empty>Choose a size, then resize. The preview and download appear here.</Empty>
           )}
+
+          {image.type === "image/webp" && image.encoders["image/webp"] === false ? (
+            <Note>This browser cannot write WebP, so the result is saved as PNG.</Note>
+          ) : null}
 
           <Note>
             Re-encoding through the Canvas API drops the EXIF block, so camera details and GPS
