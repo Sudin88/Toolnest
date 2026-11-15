@@ -12,9 +12,31 @@
  * document is ever uploaded, which is why every PDF tool can say so.
  */
 
-import { PDFDocument, StandardFonts, degrees, rgb } from "pdf-lib";
+import type { PDFDocument } from "pdf-lib";
 
 import { formatBytes, formatNumber } from "@/lib/utils";
+
+/**
+ * pdf-lib is the largest thing this site ever asks a browser to fetch, and only
+ * the document functions below need it. A module-scope import put all of it on
+ * the first load of every PDF tool, before the visitor had chosen a file, and
+ * most visitors never choose one. It is fetched on the first document operation
+ * instead, which is also the moment the file they picked is being read.
+ *
+ * The promise is held rather than the module, so concurrent callers share one
+ * request and the second and later operations reuse the first result.
+ */
+let pdfLib: Promise<typeof import("pdf-lib")> | null = null;
+
+export function loadPdfLib(): Promise<typeof import("pdf-lib")> {
+  pdfLib ??= import("pdf-lib").catch(() => {
+    // A failed chunk request must not poison every PDF tool until the visitor
+    // reloads the whole app. The next user action gets one fresh attempt.
+    pdfLib = null;
+    throw new Error("The PDF engine could not be loaded. Check your connection and try again.");
+  });
+  return pdfLib;
+}
 
 /** PDF points are 1/72 inch. */
 export const MM_TO_PT = 72 / 25.4;
@@ -322,6 +344,8 @@ export async function loadPdfDocument(bytes: Uint8Array): Promise<PDFDocument> {
     throw new Error("That file does not look like a PDF. The %PDF- header is missing.");
   }
 
+  const { PDFDocument } = await loadPdfLib();
+
   let doc: PDFDocument;
   try {
     // `ignoreEncryption` lets the load itself succeed so the document's real
@@ -376,6 +400,7 @@ export async function pdfPageCount(bytes: Uint8Array): Promise<number> {
 }
 
 export async function mergePdfs(entries: PdfEntry[]): Promise<Uint8Array> {
+  const { PDFDocument } = await loadPdfLib();
   const out = await PDFDocument.create();
   for (const entry of entries) {
     const source = await loadPdfDocument(entry.bytes);
@@ -391,6 +416,7 @@ export async function copyPagesToNewDocument(
   pages: number[],
 ): Promise<Uint8Array> {
   const source = await loadPdfDocument(bytes);
+  const { PDFDocument } = await loadPdfLib();
   const out = await PDFDocument.create();
   const copied = await out.copyPages(
     source,
@@ -402,6 +428,7 @@ export async function copyPagesToNewDocument(
 
 /** A whole-document rotation: `rotations[i]` is added to page `i`'s own angle. */
 export async function rotatePdf(bytes: Uint8Array, rotations: number[]): Promise<Uint8Array> {
+  const { degrees } = await loadPdfLib();
   const doc = await loadPdfDocument(bytes);
   doc.getPages().forEach((page, index) => {
     const delta = rotations[index] ?? 0;
@@ -428,6 +455,7 @@ export async function watermarkPdf(
   bytes: Uint8Array,
   options: WatermarkOptions,
 ): Promise<Uint8Array> {
+  const { StandardFonts, degrees, rgb } = await loadPdfLib();
   const doc = await loadPdfDocument(bytes);
   const font = await doc.embedFont(StandardFonts.HelveticaBold);
   const textW = font.widthOfTextAtSize(options.text, options.size);

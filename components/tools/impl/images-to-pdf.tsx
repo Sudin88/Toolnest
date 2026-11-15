@@ -1,7 +1,6 @@
 "use client";
 
-import { PDFDocument } from "pdf-lib";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import { useImageBatch } from "@/components/tools/image-batch";
 import { PageSetupControls, PageSetupPreview, type PageSetup } from "@/components/tools/impl/images-to-pdf-panels";
@@ -9,7 +8,7 @@ import { FileDrop, FileList } from "@/components/tools/interactive";
 import { Note, ResultFooter, Stat, StatGrid } from "@/components/tools/parts";
 import { downloadBlob } from "@/lib/download";
 import { baseName, canvasToBlob, drawToCanvas } from "@/lib/image";
-import { imagePageGeometry } from "@/lib/pdf";
+import { imagePageGeometry, loadPdfLib } from "@/lib/pdf";
 import { formatBytes } from "@/lib/utils";
 
 /**
@@ -25,6 +24,7 @@ import { formatBytes } from "@/lib/utils";
  * `images-to-pdf-panels`, so this file keeps only the build and the results.
  */
 export default function ImagesToPdf() {
+  const buildVersion = useRef(0);
   const [buildError, setBuildError] = useState<string | null>(null);
   const [blob, setBlob] = useState<Blob | null>(null);
   const [working, setWorking] = useState(false);
@@ -39,6 +39,7 @@ export default function ImagesToPdf() {
   // old inputs, so a download can never save pages that no longer match the list
   // on screen.
   const reset = useCallback(() => {
+    buildVersion.current += 1;
     setBlob(null);
     setBuildError(null);
   }, []);
@@ -72,10 +73,12 @@ export default function ImagesToPdf() {
 
   async function build() {
     if (entries.length === 0 || !geometry) return;
+    const version = ++buildVersion.current;
     setWorking(true);
     setBuildError(null);
     setBlob(null);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const pdf = await PDFDocument.create();
 
       for (const entry of entries) {
@@ -110,8 +113,10 @@ export default function ImagesToPdf() {
       const output = await pdf.save();
       const bytes = new Uint8Array(output.length);
       bytes.set(output);
+      if (buildVersion.current !== version) return;
       setBlob(new Blob([bytes], { type: "application/pdf" }));
     } catch (cause) {
+      if (buildVersion.current !== version) return;
       setBuildError(cause instanceof Error ? cause.message : "The PDF could not be built.");
     } finally {
       setWorking(false);
@@ -133,7 +138,7 @@ export default function ImagesToPdf() {
         hint="JPEG and PNG embed directly; other formats are rasterised to PNG first."
         accept="image/*"
         multiple
-        busy={busy}
+        busy={busy || working}
         error={error}
         onFile={(files) => void add(files)}
       />

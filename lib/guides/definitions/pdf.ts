@@ -7,7 +7,7 @@ export const pdfGuides: Guide[] = [
     metaTitle: "How to Merge PDFs Without Uploading Them",
     description:
       "Combine several PDFs into one document entirely in the browser, in the order you choose, with nothing sent to a server. Here is how it works.",
-    updated: "2026-11-12",
+    updated: "2026-11-15",
     topic: "PDF",
     tools: ["merge-pdf", "split-pdf", "images-to-pdf"],
     intro: [
@@ -53,8 +53,8 @@ export const pdfGuides: Guide[] = [
         id: "checking-it-stayed-local",
         heading: "Checking that nothing left your machine",
         body: [
-          "You do not have to take a privacy claim on trust. Press F12 or Ctrl+Shift+I to open developer tools, choose the Network tab and clear it, then merge a file. A local tool adds no request while it works. A tool that uploads your document has to send the bytes, and you would see a POST with a body roughly the size of the file.",
-          "The stronger test is to load the page first, then turn off your Wi-Fi and merge with the connection down. A tool that needs a server fails immediately; a tool that runs in the tab does not notice.",
+          "You do not have to take a privacy claim on trust. Press F12 or Ctrl+Shift+I to open developer tools, choose the Network tab and clear it, then merge a file. A local tool sends no request carrying your document. A tool that uploads has to send the bytes, and you would see a POST with a body roughly the size of the file.",
+          "Some pages defer their PDF engine until you choose a file. Add a harmless sample first, wait for any JavaScript request to finish, clear the Network list, then disconnect and merge. The engine may have needed a download; your document did not.",
         ],
         tool: "merge-pdf",
       },
@@ -93,7 +93,7 @@ export const pdfGuides: Guide[] = [
     metaTitle: "How to Split a PDF in Your Browser",
     description:
       "Pull a page range out of a PDF, or break a long document into single pages, entirely in the browser. No upload, no queue, nothing kept afterwards.",
-    updated: "2026-11-12",
+    updated: "2026-11-15",
     topic: "PDF",
     tools: ["split-pdf", "extract-pdf-pages", "merge-pdf"],
     intro: [
@@ -145,7 +145,7 @@ export const pdfGuides: Guide[] = [
         id: "confirming-no-upload",
         heading: "Confirming the file stayed on your device",
         body: [
-          "Open developer tools, switch to the Network tab and split a file. A local tool adds no request as it works. You can also load the page, disconnect from the internet and split anyway, which a server-based tool cannot do.",
+          "Open developer tools, switch to the Network tab and split a file. A local tool may fetch its own JavaScript when you first add the document, but it sends no request containing the document itself. Once that engine has loaded, disconnecting does not stop the split.",
           "When you have the parts you need, joining some of them back together is the same local operation in reverse.",
         ],
         tool: "merge-pdf",
@@ -176,7 +176,7 @@ export const pdfGuides: Guide[] = [
     metaTitle: "How to Tell If a PDF Tool Uploads Your File",
     description:
       "A five-minute test that shows whether an online tool sends your document to a server or handles it in the browser, using only your own developer tools.",
-    updated: "2026-11-12",
+    updated: "2026-11-15",
     topic: "PDF",
     tools: ["merge-pdf", "split-pdf", "rotate-pdf", "compress-image"],
     intro: [
@@ -189,21 +189,21 @@ export const pdfGuides: Guide[] = [
         heading: "Watch the Network tab while you work",
         body: [
           "Open the tool, press F12 or Ctrl+Shift+I, and choose the Network tab. Clear whatever is already listed. Now do the work: add your file, run the operation, download the result.",
-          "A tool that keeps the file on your device adds no request while it processes. A tool that uploads it has to send the bytes, and the bytes have to appear somewhere, so look for a POST or PUT whose body is roughly the size of your file.",
+          "A local tool may fetch JavaScript or WebAssembly when you first use it, but those are downloads with no copy of your file in the request. A tool that uploads has to send the bytes, so look for a POST or PUT whose body is roughly the size of your file.",
         ],
         bullets: [
-          "A request appearing the moment you add a file, before you click anything, is an upload. Some tools send immediately.",
-          "A request whose body is hundreds of kilobytes when your file is hundreds of kilobytes is an upload.",
-          "No request at all between adding the file and getting the result means the work happened in the tab.",
+          "A GET for a JavaScript or WebAssembly file is the page loading its engine, not uploading your document.",
+          "A POST or PUT whose body is hundreds of kilobytes when your file is hundreds of kilobytes is an upload.",
+          "No request carrying your file between adding it and getting the result means the work happened in the tab.",
         ],
         tool: "merge-pdf",
       },
       {
         id: "load-then-disconnect",
-        heading: "Load the page, then disconnect",
+        heading: "Let the engine load, then disconnect",
         body: [
-          "This is the test that settles it. Load the tool while you still have a connection, then turn off Wi-Fi or unplug the cable and use it. A tool that needs a server fails at the first step, usually with a spinner that never resolves or a generic error. A tool that runs in the browser will not notice the difference.",
-          "There is one limit worth knowing. A page that never finished loading cannot pass this test, so load it fully and only then go offline. Working offline also proves only where the processing happened, not what the page does with your data before you act, so pair it with the Network tab reading above.",
+          "Modern pages may defer a large processing engine until the first time you choose a file. Keep the Network tab open, add a harmless sample and wait for requests for JavaScript or WebAssembly to finish. Clear the list, disconnect, then run the operation. A browser engine keeps working; a server-backed tool cannot.",
+          "The distinction is in the request. Downloading application code has no request body and returns JavaScript or WebAssembly. Uploading your file sends a request body roughly the size of the document. Offline use proves where processing happened only after the engine was available, so pair it with the Network tab reading above.",
         ],
       },
       {
@@ -235,7 +235,7 @@ export const pdfGuides: Guide[] = [
           "Read what the tool claims, and notice whether it explains a mechanism or simply asserts that it is safe.",
           "Open the Network tab and clear it before adding a file.",
           "Watch for a request the moment the file is added, and compare its size with the file.",
-          "Load the page, disconnect from the network, and try the operation anyway.",
+          "Let the page load its processing engine, disconnect from the network, and try the operation again.",
           "If the file still has to go somewhere, prefer the tool with no upload over the one with a retention policy.",
         ],
         tool: "split-pdf",
@@ -256,7 +256,7 @@ export const pdfGuides: Guide[] = [
       },
       {
         q: "Is offline use proof that nothing is uploaded?",
-        a: "It proves the processing happened on your device, since there was no connection available to do it anywhere else. If you also want to know what the page does with analytics or error reports, read those requests separately in the Network tab.",
+        a: "Once the page's processing engine has loaded, offline use proves the operation happened on your device because there was no connection available to do it elsewhere. To see what the page did before you disconnected, read those earlier requests in the Network tab too.",
       },
     ],
   },

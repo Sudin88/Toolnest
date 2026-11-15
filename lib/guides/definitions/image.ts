@@ -287,7 +287,7 @@ export const imageGuides: Guide[] = [
     metaTitle: "How to Turn an Image Into a PDF Page",
     description:
       "Convert one photo or scan into a clean PDF page with the right paper size, fit mode and margin, and know when the multi-page tool fits better.",
-    updated: "2026-11-12",
+    updated: "2026-11-15",
     topic: "Images",
     tools: ["image-to-pdf", "images-to-pdf"],
     intro: [
@@ -355,7 +355,7 @@ export const imageGuides: Guide[] = [
         heading: "Why the file stays on your device",
         body: [
           "Of all the documents people convert, the ones most worth keeping to yourself are the least glamorous: an identity document photographed for a form, a payslip, a bank statement, a medical letter, a signed contract page. Ordinary converter sites ask for exactly these files and receive them as a matter of course.",
-          "A converter that runs in the browser reads the image into the tab, builds the PDF there and hands it back to your downloads folder. Nothing in that sequence needs a server, which you can prove by loading the page, disconnecting, and converting anyway.",
+          "A converter that runs in the browser reads the image into the tab, builds the PDF there and hands it back to your downloads folder. It may download its PDF engine on the first build, but no request carries the image. Once that code has loaded, the conversion still works with the network disconnected.",
         ],
         tool: "image-to-pdf",
       },

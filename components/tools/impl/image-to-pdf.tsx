@@ -1,7 +1,6 @@
 "use client";
 
-import { PDFDocument } from "pdf-lib";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { useImageFile } from "@/components/tools/image-workbench";
 import { PageSetupControls, PageSetupPreview, type PageSetup } from "@/components/tools/impl/images-to-pdf-panels";
@@ -9,11 +8,12 @@ import { FileDrop } from "@/components/tools/interactive";
 import { Note, Stat, StatGrid } from "@/components/tools/parts";
 import { downloadBlob } from "@/lib/download";
 import { baseName, canvasToBlob, drawToCanvas } from "@/lib/image";
-import { imagePageGeometry } from "@/lib/pdf";
+import { imagePageGeometry, loadPdfLib } from "@/lib/pdf";
 import { formatBytes } from "@/lib/utils";
 
 export default function ImageToPdf() {
   const { image, file, url, error, busy, load, setError } = useImageFile();
+  const buildVersion = useRef(0);
   const [setup, setSetup] = useState<PageSetup>({
     pageSize: "a4",
     orientation: "portrait",
@@ -28,6 +28,7 @@ export default function ImageToPdf() {
   // Any change to the page setup drops a document built from the old one, so a
   // download can never save a page that no longer matches the controls on screen.
   function applySetup(patch: Partial<PageSetup>) {
+    buildVersion.current += 1;
     setSetup((current) => ({ ...current, ...patch }));
     setBlob(null);
   }
@@ -61,9 +62,11 @@ export default function ImageToPdf() {
 
   async function build() {
     if (!image || !file || !geometry) return;
+    const version = ++buildVersion.current;
     setWorking(true);
     setError(null);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const pdf = await PDFDocument.create();
       const bytes = new Uint8Array(await file.arrayBuffer());
 
@@ -88,8 +91,10 @@ export default function ImageToPdf() {
       const output = await pdf.save();
       const bytesOut = new Uint8Array(output.length);
       bytesOut.set(output);
+      if (buildVersion.current !== version) return;
       setBlob(new Blob([bytesOut], { type: "application/pdf" }));
     } catch (cause) {
+      if (buildVersion.current !== version) return;
       setError(cause instanceof Error ? cause.message : "The PDF could not be built.");
     } finally {
       setWorking(false);
@@ -106,7 +111,9 @@ export default function ImageToPdf() {
         label="Drop an image here"
         hint="JPEG and PNG embed directly; other formats are rasterised to PNG first."
         accept="image/*"
+        busy={busy || working}
         onFile={(files) => {
+          buildVersion.current += 1;
           setBlob(null);
           void load(files);
         }}

@@ -117,9 +117,8 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
                   </p>
                   <p>
                     You do not have to take that on trust. Open your browser&apos;s developer tools,
-                    switch to the Network tab and use the tool: you will see requests for the page
-                    itself and none carrying your data. Load the page, then disconnect from the
-                    internet, and it still works.
+                    switch to the Network tab and use the tool. The page may fetch code it needs to
+                    do the work, but no request carries what you typed, pasted or dropped.
                   </p>
                 </section>
               ) : null}

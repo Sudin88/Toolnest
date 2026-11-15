@@ -405,13 +405,14 @@ export function FileDrop({
 
   // Keep the paste listener subscribed once, reading the latest props from a ref
   // so an inline onFile never re-registers the listener on every render.
-  const configRef = useRef({ onFile, multiple });
+  const configRef = useRef({ onFile, multiple, busy });
   useEffect(() => {
-    configRef.current = { onFile, multiple };
+    configRef.current = { onFile, multiple, busy };
   });
 
   useEffect(() => {
     function onPaste(event: ClipboardEvent) {
+      if (configRef.current.busy) return;
       const items = event.clipboardData?.items;
       if (!items) return;
       const files: File[] = [];
@@ -464,7 +465,7 @@ export function FileDrop({
   }
 
   function handleFiles(list: FileList | null) {
-    if (!list || list.length === 0) return;
+    if (busy || !list || list.length === 0) return;
     onFile(Array.from(list));
   }
 
@@ -479,6 +480,7 @@ export function FileDrop({
     <div className={className}>
       <button
         type="button"
+        disabled={busy}
         aria-busy={busy || undefined}
         onClick={() => {
           if (busy) return;
@@ -524,6 +526,7 @@ export function FileDrop({
       <input
         ref={inputRef}
         type="file"
+        disabled={busy}
         accept={accept}
         multiple={multiple}
         aria-label={label}
