@@ -367,6 +367,16 @@
     font-size: 0.875rem;
   }
 
+  /* iOS zooms the whole page when a control under 16px takes focus. Touch
+     devices get the larger size so the page stays put; pointer and mouse keep
+     the tighter density the layout was designed with. */
+  @media (pointer: coarse) {
+    .field,
+    .field-mono {
+      font-size: 1rem;
+    }
+  }
+
   /* Checkbox. A squared control in the accent, matching the tile radius. */
   .check {
     appearance: none;
