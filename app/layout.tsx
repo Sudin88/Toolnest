@@ -9,17 +9,24 @@ import { adsEnabled, adsenseLoaderUrl, siteConfig, socialImage } from "@/lib/sit
 import "./globals.css";
 
 /**
- * One self-hosted family. Inter carries every surface — headings, body, labels
- * and numbers — so the site has a single voice. The file is copied from
+ * One self-hosted family. Inter carries every surface: headings, body, labels
+ * and numbers, so the site has a single voice. The files are copied from
  * `@fontsource` into `app/fonts/`, so a build makes no request anywhere,
  * including Google. Monospaced surfaces (code, JSON, kbd) use the plain system
  * stack, which costs no download.
+ *
+ * There is no italic face. The whole site sets three words in `<em>`, so a real
+ * italic cut would be a 52 KB download, a sixth of a first load, carried by
+ * every page for them. Browsers slant the upright when asked for a style a
+ * family does not have, which is what those three words get, and nothing is
+ * fetched to make it happen.
+ *
+ * The upright keeps its preload. A page whose largest element is text paints
+ * late without it, then repaints when the face lands, which measured worse on
+ * the largest-contentful-paint than the download costs.
  */
 const inter = localFont({
-  src: [
-    { path: "./fonts/inter-variable.woff2", weight: "100 900", style: "normal" },
-    { path: "./fonts/inter-variable-italic.woff2", weight: "100 900", style: "italic" },
-  ],
+  src: [{ path: "./fonts/inter-variable.woff2", weight: "100 900", style: "normal" }],
   variable: "--font-inter",
   display: "swap",
 });
